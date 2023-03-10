@@ -31,18 +31,18 @@ const ImageContainer = styled.div`
 const SelectDots = styled.div`
     text-align: center;
     position: absolute;
-    bottom: 10px;
+    bottom: 1rem;
     width: 100%;
     & > span {
         display: inline-block;
-        width: 15px;
-        height: 15px;
+        width: 1.5rem;
+        height: 1.5rem;
         border-radius: 50%;
         background-color: #ffffff;
         user-select: none;
         cursor: pointer;
         opacity: 0.5;
-        margin: 8px;
+        margin: 0.8rem;
     }
 
     & > span:hover, & > span.selected {
