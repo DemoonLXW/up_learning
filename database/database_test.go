@@ -18,3 +18,13 @@ func TestProvideDatabaseConfig(t *testing.T) {
 	assert.Equal(t, true, config["SkipDefaultTransaction"].(bool))
 	log.Println(config)
 }
+
+func TestProvideDialector(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	config, err := ProvideDatabaseConfig()
+	assert.Nil(t, err)
+	dialector, err := ProvideDialector(config)
+	assert.Nil(t, err)
+	assert.Equal(t, "mysql", dialector.Name())
+
+}

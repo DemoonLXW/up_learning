@@ -1,8 +1,13 @@
 package database
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"os"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type DataBaseConfig map[string]interface{}
@@ -23,4 +28,31 @@ func ProvideDatabaseConfig() (DataBaseConfig, error) {
 		return nil, err
 	}
 	return config, nil
+}
+
+func ProvideDialector(config DataBaseConfig) (gorm.Dialector, error) {
+	dsn, ok := config["dsn"]
+	if !ok {
+		return nil, errors.New("DSN no found")
+	}
+
+	sqlDB, err := sql.Open("mysql", dsn.(string))
+	if err != nil {
+		return nil, err
+	}
+
+	MaxIdleConns, ok := config["MaxIdleConns"]
+	if ok {
+		sqlDB.SetMaxIdleConns(int(MaxIdleConns.(float64)))
+	}
+	MaxOpenConns, ok := config["MaxOpenConns"]
+	if ok {
+		sqlDB.SetMaxOpenConns(int(MaxOpenConns.(float64)))
+	}
+
+	dialector := mysql.New(mysql.Config{
+		Conn: sqlDB,
+	})
+
+	return dialector, nil
 }
