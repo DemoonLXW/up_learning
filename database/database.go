@@ -56,3 +56,12 @@ func ProvideDialector(config DataBaseConfig) (gorm.Dialector, error) {
 
 	return dialector, nil
 }
+
+func ProvideOptions(config DataBaseConfig) (*gorm.Config, error) {
+	var options gorm.Config
+	SkipDefaultTransaction, ok := config["SkipDefaultTransaction"]
+	if ok {
+		options.SkipDefaultTransaction = SkipDefaultTransaction.(bool)
+	}
+	return &options, nil
+}

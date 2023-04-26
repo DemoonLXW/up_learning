@@ -28,3 +28,12 @@ func TestProvideDialector(t *testing.T) {
 	assert.Equal(t, "mysql", dialector.Name())
 
 }
+
+func TestProvideOptions(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	config, err := ProvideDatabaseConfig()
+	assert.Nil(t, err)
+	options, err := ProvideOptions(config)
+	assert.Nil(t, err)
+	assert.Equal(t, options.SkipDefaultTransaction, true)
+}
