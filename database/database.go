@@ -65,3 +65,11 @@ func ProvideOptions(config DataBaseConfig) (*gorm.Config, error) {
 	}
 	return &options, nil
 }
+
+func ProvideDB(dialector gorm.Dialector, opts gorm.Option) (*gorm.DB, error) {
+	gormDB, err := gorm.Open(dialector, opts)
+	if err != nil {
+		return nil, err
+	}
+	return gormDB, nil
+}

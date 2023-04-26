@@ -37,3 +37,17 @@ func TestProvideOptions(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, options.SkipDefaultTransaction, true)
 }
+
+func TestProvideDB(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	config, err := ProvideDatabaseConfig()
+	assert.Nil(t, err)
+	dialector, err := ProvideDialector(config)
+	assert.Nil(t, err)
+	options, err := ProvideOptions(config)
+	assert.Nil(t, err)
+	db, err := ProvideDB(dialector, options)
+	assert.Nil(t, err)
+	assert.Equal(t, db.Config.SkipDefaultTransaction, true)
+
+}
