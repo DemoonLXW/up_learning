@@ -1,5 +1,5 @@
 {
-    "dsn": "learn:123456@tcp(106.52.123.58:3306)/recordings?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true",
+    "dsn": "learn:123456@tcp(106.52.123.58:3306)/up_learning_lxw?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true",
     "MaxIdleConns": 20,
     "MaxOpenConns": 50,
     "SkipDefaultTransaction": true

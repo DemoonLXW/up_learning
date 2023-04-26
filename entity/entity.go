@@ -10,3 +10,7 @@ type Permission struct {
 	DeletedTime  time.Time `gorm:"column:deleted_time;"`
 	ModifiedTime time.Time `gorm:"column:modified_time;"`
 }
+
+func (*Permission) TableName() string {
+	return "permission"
+}
