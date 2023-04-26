@@ -6,8 +6,17 @@ import (
 	"errors"
 	"os"
 
+	"github.com/google/wire"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+)
+
+var DataBaseProvider = wire.NewSet(
+	ProvideDatabaseConfig,
+	ProvideDialector,
+	ProvideOptions,
+	wire.Bind(new(gorm.Option), new(*gorm.Config)),
+	ProvideDB,
 )
 
 type DataBaseConfig map[string]interface{}
