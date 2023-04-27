@@ -49,7 +49,7 @@ func (dao *PermissionDao) UpdatePermission(permission *entity.Permission) error 
 	if err := dao.DB.Where("id = ?", permission.ID).First(&check).Error; err != nil {
 		return errors.Join(errors.New("permission can not be found"), err)
 	}
-	if !check.DeletedTime.IsZero() {
+	if check.DeletedTime != time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local) {
 		return errors.New("permission is deleted")
 	}
 
@@ -69,4 +69,31 @@ func (dao *PermissionDao) UpdatePermission(permission *entity.Permission) error 
 	}
 
 	return tx.Commit().Error
+}
+
+func (dao *PermissionDao) RetrievePermission(current, pageSize int, like, order string) ([]*entity.Permission, error) {
+	var permissions []entity.Permission
+	like = "%" + like + "%"
+	offset := (current - 1) * pageSize
+
+	queryWithoutOrder := func(db *gorm.DB) *gorm.DB {
+		deletedTime := time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)
+
+		return db.Where("deleted_time = ?", deletedTime).Where("action like ? or description like ?", like, like).
+			Limit(pageSize).Offset(offset)
+	}
+	queryWithOrder := func(db *gorm.DB) *gorm.DB {
+		if order != "" {
+			return db.Order(order)
+		}
+		return db
+	}
+
+	dao.DB.Scopes(queryWithoutOrder, queryWithOrder).Find(&permissions)
+	permissions_pointers := make([]*entity.Permission, len(permissions))
+	for i, v := range permissions {
+		permissions_pointers[i] = &v
+	}
+	return permissions_pointers, nil
+
 }
