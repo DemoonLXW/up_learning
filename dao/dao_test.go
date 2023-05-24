@@ -26,19 +26,19 @@ func TestCreatePermission(t *testing.T) {
 }
 
 func TestUpdatePermission(t *testing.T) {
-	// os.Setenv("DB_CONFIG", "../database.config.json")
-	// dao := new(PermissionDao)
-	// db, err := injection.ProvideDataBase()
-	// assert.Nil(t, err)
-	// dao.DB = db
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	dao := new(PermissionDao)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	dao.DB = db
 
-	// permission := entity.Permission{
-	// 	ID:          2,
-	// 	Action:      "test update action",
-	// 	Description: "test update description",
-	// }
-	// err = dao.UpdatePermission(&permission)
-	// assert.Nil(t, err)
+	permission := entity.Permission{
+		ID:          3,
+		Action:      "test update action for ant again",
+		Description: "don't update created time",
+	}
+	err = dao.UpdatePermission(&permission)
+	assert.Nil(t, err)
 
 }
 
@@ -55,15 +55,15 @@ func TestRetrievePermission(t *testing.T) {
 }
 
 func TestDeletePermission(t *testing.T) {
-	// os.Setenv("DB_CONFIG", "../database.config.json")
-	// dao := new(PermissionDao)
-	// db, err := injection.ProvideDataBase()
-	// assert.Nil(t, err)
-	// dao.DB = db
-	// permission := entity.Permission{}
-	// permission.ID = 1
-	// err = dao.DeletePermission(&permission)
-	// assert.Nil(t, err)
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	dao := new(PermissionDao)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	dao.DB = db
+	permission := entity.Permission{}
+	permission.ID = 3
+	err = dao.DeletePermission(&permission)
+	assert.Nil(t, err)
 
 }
 

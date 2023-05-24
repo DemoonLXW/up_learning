@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
@@ -20,6 +21,7 @@ type RolePermissionCreate struct {
 	config
 	mutation *RolePermissionMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetRid sets the "rid" field.
@@ -150,6 +152,7 @@ func (rpc *RolePermissionCreate) createSpec() (*RolePermission, *sqlgraph.Create
 		_node = &RolePermission{config: rpc.config}
 		_spec = sqlgraph.NewCreateSpec(rolepermission.Table, nil)
 	)
+	_spec.OnConflict = rpc.conflict
 	if value, ok := rpc.mutation.CreatedTime(); ok {
 		_spec.SetField(rolepermission.FieldCreatedTime, field.TypeTime, value)
 		_node.CreatedTime = value
@@ -191,10 +194,193 @@ func (rpc *RolePermissionCreate) createSpec() (*RolePermission, *sqlgraph.Create
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.RolePermission.Create().
+//		SetRid(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RolePermissionUpsert) {
+//			SetRid(v+v).
+//		}).
+//		Exec(ctx)
+func (rpc *RolePermissionCreate) OnConflict(opts ...sql.ConflictOption) *RolePermissionUpsertOne {
+	rpc.conflict = opts
+	return &RolePermissionUpsertOne{
+		create: rpc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.RolePermission.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (rpc *RolePermissionCreate) OnConflictColumns(columns ...string) *RolePermissionUpsertOne {
+	rpc.conflict = append(rpc.conflict, sql.ConflictColumns(columns...))
+	return &RolePermissionUpsertOne{
+		create: rpc,
+	}
+}
+
+type (
+	// RolePermissionUpsertOne is the builder for "upsert"-ing
+	//  one RolePermission node.
+	RolePermissionUpsertOne struct {
+		create *RolePermissionCreate
+	}
+
+	// RolePermissionUpsert is the "OnConflict" setter.
+	RolePermissionUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetRid sets the "rid" field.
+func (u *RolePermissionUpsert) SetRid(v uint8) *RolePermissionUpsert {
+	u.Set(rolepermission.FieldRid, v)
+	return u
+}
+
+// UpdateRid sets the "rid" field to the value that was provided on create.
+func (u *RolePermissionUpsert) UpdateRid() *RolePermissionUpsert {
+	u.SetExcluded(rolepermission.FieldRid)
+	return u
+}
+
+// SetPid sets the "pid" field.
+func (u *RolePermissionUpsert) SetPid(v uint16) *RolePermissionUpsert {
+	u.Set(rolepermission.FieldPid, v)
+	return u
+}
+
+// UpdatePid sets the "pid" field to the value that was provided on create.
+func (u *RolePermissionUpsert) UpdatePid() *RolePermissionUpsert {
+	u.SetExcluded(rolepermission.FieldPid)
+	return u
+}
+
+// SetCreatedTime sets the "created_time" field.
+func (u *RolePermissionUpsert) SetCreatedTime(v time.Time) *RolePermissionUpsert {
+	u.Set(rolepermission.FieldCreatedTime, v)
+	return u
+}
+
+// UpdateCreatedTime sets the "created_time" field to the value that was provided on create.
+func (u *RolePermissionUpsert) UpdateCreatedTime() *RolePermissionUpsert {
+	u.SetExcluded(rolepermission.FieldCreatedTime)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.RolePermission.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *RolePermissionUpsertOne) UpdateNewValues() *RolePermissionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.RolePermission.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *RolePermissionUpsertOne) Ignore() *RolePermissionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RolePermissionUpsertOne) DoNothing() *RolePermissionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RolePermissionCreate.OnConflict
+// documentation for more info.
+func (u *RolePermissionUpsertOne) Update(set func(*RolePermissionUpsert)) *RolePermissionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RolePermissionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetRid sets the "rid" field.
+func (u *RolePermissionUpsertOne) SetRid(v uint8) *RolePermissionUpsertOne {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.SetRid(v)
+	})
+}
+
+// UpdateRid sets the "rid" field to the value that was provided on create.
+func (u *RolePermissionUpsertOne) UpdateRid() *RolePermissionUpsertOne {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.UpdateRid()
+	})
+}
+
+// SetPid sets the "pid" field.
+func (u *RolePermissionUpsertOne) SetPid(v uint16) *RolePermissionUpsertOne {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.SetPid(v)
+	})
+}
+
+// UpdatePid sets the "pid" field to the value that was provided on create.
+func (u *RolePermissionUpsertOne) UpdatePid() *RolePermissionUpsertOne {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.UpdatePid()
+	})
+}
+
+// SetCreatedTime sets the "created_time" field.
+func (u *RolePermissionUpsertOne) SetCreatedTime(v time.Time) *RolePermissionUpsertOne {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.SetCreatedTime(v)
+	})
+}
+
+// UpdateCreatedTime sets the "created_time" field to the value that was provided on create.
+func (u *RolePermissionUpsertOne) UpdateCreatedTime() *RolePermissionUpsertOne {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.UpdateCreatedTime()
+	})
+}
+
+// Exec executes the query.
+func (u *RolePermissionUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for RolePermissionCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RolePermissionUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // RolePermissionCreateBulk is the builder for creating many RolePermission entities in bulk.
 type RolePermissionCreateBulk struct {
 	config
 	builders []*RolePermissionCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the RolePermission entities in the database.
@@ -221,6 +407,7 @@ func (rpcb *RolePermissionCreateBulk) Save(ctx context.Context) ([]*RolePermissi
 					_, err = mutators[i+1].Mutate(root, rpcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = rpcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, rpcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -266,6 +453,149 @@ func (rpcb *RolePermissionCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (rpcb *RolePermissionCreateBulk) ExecX(ctx context.Context) {
 	if err := rpcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.RolePermission.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RolePermissionUpsert) {
+//			SetRid(v+v).
+//		}).
+//		Exec(ctx)
+func (rpcb *RolePermissionCreateBulk) OnConflict(opts ...sql.ConflictOption) *RolePermissionUpsertBulk {
+	rpcb.conflict = opts
+	return &RolePermissionUpsertBulk{
+		create: rpcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.RolePermission.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (rpcb *RolePermissionCreateBulk) OnConflictColumns(columns ...string) *RolePermissionUpsertBulk {
+	rpcb.conflict = append(rpcb.conflict, sql.ConflictColumns(columns...))
+	return &RolePermissionUpsertBulk{
+		create: rpcb,
+	}
+}
+
+// RolePermissionUpsertBulk is the builder for "upsert"-ing
+// a bulk of RolePermission nodes.
+type RolePermissionUpsertBulk struct {
+	create *RolePermissionCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.RolePermission.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *RolePermissionUpsertBulk) UpdateNewValues() *RolePermissionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.RolePermission.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *RolePermissionUpsertBulk) Ignore() *RolePermissionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RolePermissionUpsertBulk) DoNothing() *RolePermissionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RolePermissionCreateBulk.OnConflict
+// documentation for more info.
+func (u *RolePermissionUpsertBulk) Update(set func(*RolePermissionUpsert)) *RolePermissionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RolePermissionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetRid sets the "rid" field.
+func (u *RolePermissionUpsertBulk) SetRid(v uint8) *RolePermissionUpsertBulk {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.SetRid(v)
+	})
+}
+
+// UpdateRid sets the "rid" field to the value that was provided on create.
+func (u *RolePermissionUpsertBulk) UpdateRid() *RolePermissionUpsertBulk {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.UpdateRid()
+	})
+}
+
+// SetPid sets the "pid" field.
+func (u *RolePermissionUpsertBulk) SetPid(v uint16) *RolePermissionUpsertBulk {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.SetPid(v)
+	})
+}
+
+// UpdatePid sets the "pid" field to the value that was provided on create.
+func (u *RolePermissionUpsertBulk) UpdatePid() *RolePermissionUpsertBulk {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.UpdatePid()
+	})
+}
+
+// SetCreatedTime sets the "created_time" field.
+func (u *RolePermissionUpsertBulk) SetCreatedTime(v time.Time) *RolePermissionUpsertBulk {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.SetCreatedTime(v)
+	})
+}
+
+// UpdateCreatedTime sets the "created_time" field to the value that was provided on create.
+func (u *RolePermissionUpsertBulk) UpdateCreatedTime() *RolePermissionUpsertBulk {
+	return u.Update(func(s *RolePermissionUpsert) {
+		s.UpdateCreatedTime()
+	})
+}
+
+// Exec executes the query.
+func (u *RolePermissionUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the RolePermissionCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for RolePermissionCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RolePermissionUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
