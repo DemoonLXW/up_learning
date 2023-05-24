@@ -75,6 +75,10 @@ var (
 	NameValidator func(string) error
 	// DefaultCreatedTime holds the default value on creation for the "created_time" field.
 	DefaultCreatedTime func() time.Time
+	// DefaultDeletedTime holds the default value on creation for the "deleted_time" field.
+	DefaultDeletedTime time.Time
+	// DefaultModifiedTime holds the default value on creation for the "modified_time" field.
+	DefaultModifiedTime time.Time
 )
 
 // OrderOption defines the ordering options for the Role queries.

@@ -75,9 +75,25 @@ func (ru *RoleUpdate) SetDeletedTime(t time.Time) *RoleUpdate {
 	return ru
 }
 
+// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableDeletedTime(t *time.Time) *RoleUpdate {
+	if t != nil {
+		ru.SetDeletedTime(*t)
+	}
+	return ru
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (ru *RoleUpdate) SetModifiedTime(t time.Time) *RoleUpdate {
 	ru.mutation.SetModifiedTime(t)
+	return ru
+}
+
+// SetNillableModifiedTime sets the "modified_time" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableModifiedTime(t *time.Time) *RoleUpdate {
+	if t != nil {
+		ru.SetModifiedTime(*t)
+	}
 	return ru
 }
 
@@ -312,9 +328,25 @@ func (ruo *RoleUpdateOne) SetDeletedTime(t time.Time) *RoleUpdateOne {
 	return ruo
 }
 
+// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableDeletedTime(t *time.Time) *RoleUpdateOne {
+	if t != nil {
+		ruo.SetDeletedTime(*t)
+	}
+	return ruo
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (ruo *RoleUpdateOne) SetModifiedTime(t time.Time) *RoleUpdateOne {
 	ruo.mutation.SetModifiedTime(t)
+	return ruo
+}
+
+// SetNillableModifiedTime sets the "modified_time" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableModifiedTime(t *time.Time) *RoleUpdateOne {
+	if t != nil {
+		ruo.SetModifiedTime(*t)
+	}
 	return ruo
 }
 

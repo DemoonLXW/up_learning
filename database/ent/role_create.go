@@ -61,9 +61,25 @@ func (rc *RoleCreate) SetDeletedTime(t time.Time) *RoleCreate {
 	return rc
 }
 
+// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
+func (rc *RoleCreate) SetNillableDeletedTime(t *time.Time) *RoleCreate {
+	if t != nil {
+		rc.SetDeletedTime(*t)
+	}
+	return rc
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (rc *RoleCreate) SetModifiedTime(t time.Time) *RoleCreate {
 	rc.mutation.SetModifiedTime(t)
+	return rc
+}
+
+// SetNillableModifiedTime sets the "modified_time" field if the given value is not nil.
+func (rc *RoleCreate) SetNillableModifiedTime(t *time.Time) *RoleCreate {
+	if t != nil {
+		rc.SetModifiedTime(*t)
+	}
 	return rc
 }
 
@@ -126,6 +142,14 @@ func (rc *RoleCreate) defaults() {
 	if _, ok := rc.mutation.CreatedTime(); !ok {
 		v := role.DefaultCreatedTime()
 		rc.mutation.SetCreatedTime(v)
+	}
+	if _, ok := rc.mutation.DeletedTime(); !ok {
+		v := role.DefaultDeletedTime
+		rc.mutation.SetDeletedTime(v)
+	}
+	if _, ok := rc.mutation.ModifiedTime(); !ok {
+		v := role.DefaultModifiedTime
+		rc.mutation.SetModifiedTime(v)
 	}
 }
 

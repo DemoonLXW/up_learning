@@ -33,8 +33,10 @@ func (Role) Fields() []ent.Field {
 			Optional(),
 		field.Time("created_time").
 			Default(time.Now),
-		field.Time("deleted_time"),
-		field.Time("modified_time"),
+		field.Time("deleted_time").
+			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		field.Time("modified_time").
+			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 	}
 }
 

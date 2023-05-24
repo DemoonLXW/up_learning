@@ -25,6 +25,14 @@ func init() {
 	permissionDescCreatedTime := permissionFields[3].Descriptor()
 	// permission.DefaultCreatedTime holds the default value on creation for the created_time field.
 	permission.DefaultCreatedTime = permissionDescCreatedTime.Default.(func() time.Time)
+	// permissionDescDeletedTime is the schema descriptor for deleted_time field.
+	permissionDescDeletedTime := permissionFields[4].Descriptor()
+	// permission.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	permission.DefaultDeletedTime = permissionDescDeletedTime.Default.(time.Time)
+	// permissionDescModifiedTime is the schema descriptor for modified_time field.
+	permissionDescModifiedTime := permissionFields[5].Descriptor()
+	// permission.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	permission.DefaultModifiedTime = permissionDescModifiedTime.Default.(time.Time)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
 	// roleDescName is the schema descriptor for name field.
@@ -35,6 +43,14 @@ func init() {
 	roleDescCreatedTime := roleFields[3].Descriptor()
 	// role.DefaultCreatedTime holds the default value on creation for the created_time field.
 	role.DefaultCreatedTime = roleDescCreatedTime.Default.(func() time.Time)
+	// roleDescDeletedTime is the schema descriptor for deleted_time field.
+	roleDescDeletedTime := roleFields[4].Descriptor()
+	// role.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	role.DefaultDeletedTime = roleDescDeletedTime.Default.(time.Time)
+	// roleDescModifiedTime is the schema descriptor for modified_time field.
+	roleDescModifiedTime := roleFields[5].Descriptor()
+	// role.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	role.DefaultModifiedTime = roleDescModifiedTime.Default.(time.Time)
 	rolepermissionFields := schema.RolePermission{}.Fields()
 	_ = rolepermissionFields
 	// rolepermissionDescCreatedTime is the schema descriptor for created_time field.

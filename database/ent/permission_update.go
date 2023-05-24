@@ -75,9 +75,25 @@ func (pu *PermissionUpdate) SetDeletedTime(t time.Time) *PermissionUpdate {
 	return pu
 }
 
+// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
+func (pu *PermissionUpdate) SetNillableDeletedTime(t *time.Time) *PermissionUpdate {
+	if t != nil {
+		pu.SetDeletedTime(*t)
+	}
+	return pu
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (pu *PermissionUpdate) SetModifiedTime(t time.Time) *PermissionUpdate {
 	pu.mutation.SetModifiedTime(t)
+	return pu
+}
+
+// SetNillableModifiedTime sets the "modified_time" field if the given value is not nil.
+func (pu *PermissionUpdate) SetNillableModifiedTime(t *time.Time) *PermissionUpdate {
+	if t != nil {
+		pu.SetModifiedTime(*t)
+	}
 	return pu
 }
 
@@ -312,9 +328,25 @@ func (puo *PermissionUpdateOne) SetDeletedTime(t time.Time) *PermissionUpdateOne
 	return puo
 }
 
+// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
+func (puo *PermissionUpdateOne) SetNillableDeletedTime(t *time.Time) *PermissionUpdateOne {
+	if t != nil {
+		puo.SetDeletedTime(*t)
+	}
+	return puo
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (puo *PermissionUpdateOne) SetModifiedTime(t time.Time) *PermissionUpdateOne {
 	puo.mutation.SetModifiedTime(t)
+	return puo
+}
+
+// SetNillableModifiedTime sets the "modified_time" field if the given value is not nil.
+func (puo *PermissionUpdateOne) SetNillableModifiedTime(t *time.Time) *PermissionUpdateOne {
+	if t != nil {
+		puo.SetModifiedTime(*t)
+	}
 	return puo
 }
 

@@ -61,9 +61,25 @@ func (pc *PermissionCreate) SetDeletedTime(t time.Time) *PermissionCreate {
 	return pc
 }
 
+// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
+func (pc *PermissionCreate) SetNillableDeletedTime(t *time.Time) *PermissionCreate {
+	if t != nil {
+		pc.SetDeletedTime(*t)
+	}
+	return pc
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (pc *PermissionCreate) SetModifiedTime(t time.Time) *PermissionCreate {
 	pc.mutation.SetModifiedTime(t)
+	return pc
+}
+
+// SetNillableModifiedTime sets the "modified_time" field if the given value is not nil.
+func (pc *PermissionCreate) SetNillableModifiedTime(t *time.Time) *PermissionCreate {
+	if t != nil {
+		pc.SetModifiedTime(*t)
+	}
 	return pc
 }
 
@@ -126,6 +142,14 @@ func (pc *PermissionCreate) defaults() {
 	if _, ok := pc.mutation.CreatedTime(); !ok {
 		v := permission.DefaultCreatedTime()
 		pc.mutation.SetCreatedTime(v)
+	}
+	if _, ok := pc.mutation.DeletedTime(); !ok {
+		v := permission.DefaultDeletedTime
+		pc.mutation.SetDeletedTime(v)
+	}
+	if _, ok := pc.mutation.ModifiedTime(); !ok {
+		v := permission.DefaultModifiedTime
+		pc.mutation.SetModifiedTime(v)
 	}
 }
 
