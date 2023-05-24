@@ -17,8 +17,8 @@ func TestCreatePermission(t *testing.T) {
 	dao.DB = db
 
 	permission := entity.Permission{
-		Action:      "test insert action",
-		Description: "test insert description",
+		Action:      "test description for ent",
+		Description: "test description for ent",
 	}
 	err = dao.CreatePermission(&permission)
 	assert.Nil(t, err)
@@ -26,30 +26,59 @@ func TestCreatePermission(t *testing.T) {
 }
 
 func TestUpdatePermission(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	dao := new(PermissionDao)
-	db, err := injection.ProvideDataBase()
-	assert.Nil(t, err)
-	dao.DB = db
+	// os.Setenv("DB_CONFIG", "../database.config.json")
+	// dao := new(PermissionDao)
+	// db, err := injection.ProvideDataBase()
+	// assert.Nil(t, err)
+	// dao.DB = db
 
-	permission := entity.Permission{
-		ID:          2,
-		Action:      "test update action",
-		Description: "test update description",
-	}
-	err = dao.UpdatePermission(&permission)
-	assert.Nil(t, err)
+	// permission := entity.Permission{
+	// 	ID:          2,
+	// 	Action:      "test update action",
+	// 	Description: "test update description",
+	// }
+	// err = dao.UpdatePermission(&permission)
+	// assert.Nil(t, err)
 
 }
 
 func TestRetrievePermission(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	dao := new(PermissionDao)
-	db, err := injection.ProvideDataBase()
-	assert.Nil(t, err)
-	dao.DB = db
+	// os.Setenv("DB_CONFIG", "../database.config.json")
+	// dao := new(PermissionDao)
+	// db, err := injection.ProvideDataBase()
+	// assert.Nil(t, err)
+	// dao.DB = db
 
-	permissons, err := dao.RetrievePermission(2, 10, "action", "modified_time")
-	assert.Nil(t, err)
-	assert.Len(t, permissons, 1)
+	// permissons, err := dao.RetrievePermission(2, 10, "action", "modified_time")
+	// assert.Nil(t, err)
+	// assert.Len(t, permissons, 1)
+}
+
+func TestDeletePermission(t *testing.T) {
+	// os.Setenv("DB_CONFIG", "../database.config.json")
+	// dao := new(PermissionDao)
+	// db, err := injection.ProvideDataBase()
+	// assert.Nil(t, err)
+	// dao.DB = db
+	// permission := entity.Permission{}
+	// permission.ID = 1
+	// err = dao.DeletePermission(&permission)
+	// assert.Nil(t, err)
+
+}
+
+func TestManyToMany(t *testing.T) {
+	// os.Setenv("DB_CONFIG", "../database.config.json")
+	// dao := new(PermissionDao)
+	// db, err := injection.ProvideDataBase()
+	// assert.Nil(t, err)
+	// dao.DB = db
+
+	// var per entity.PermissionWithRoles
+	// // dao.DB.SetupJoinTable(&entity.PermissionWithRoles{}, "Permission", &entity.RolePermission{})
+	// // dao.DB.SetupJoinTable(&entity.PermissionWithRoles{}, "Roles", &entity.RolePermission{})
+	// err = dao.DB.Where("pid = ?", 1).Preload("Permissions").Preload("Roles").Find(&per).Error
+
+	// assert.Nil(t, err)
+
 }

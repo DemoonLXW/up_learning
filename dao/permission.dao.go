@@ -1,99 +1,147 @@
 package dao
 
 import (
-	"errors"
-	"time"
+	"context"
+	"fmt"
 
+	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/entity"
-	"gorm.io/gorm"
 )
 
 type PermissionDao struct {
-	DB *gorm.DB
+	DB *ent.Client
 }
 
-func (dao *PermissionDao) CreatePermission(permission *entity.Permission) error {
-	var num int64
-	if err := dao.DB.Table("permission").Select("count(id)").Count(&num).Error; err != nil {
-		return err
+func rollback(tx *ent.Tx, err error) error {
+	if rerr := tx.Rollback(); rerr != nil {
+		err = fmt.Errorf("%w: %v", err, rerr)
+	}
+	return err
+}
+
+func (dao *PermissionDao) CreatePermission(permissionToCreate *entity.Permission) error {
+	ctx := context.Background()
+
+	num, err := dao.DB.Permission.Query().Aggregate(ent.Count()).Int(ctx)
+	if err != nil {
+		return fmt.Errorf("create permission count failed: %w", err)
 	}
 
-	var check entity.Permission
-	if dao.DB.Where("action = ?", permission.Action).First(&check).RowsAffected != 0 {
-		return errors.New("repeat action to insert")
+	checkRepeatAction, err := dao.DB.Permission.Query().Where(permission.Action(permissionToCreate.Action)).Exist(ctx)
+	if err != nil {
+		return fmt.Errorf("create permission check repeat action failed: %w", err)
+	}
+	if checkRepeatAction {
+		return fmt.Errorf("repeat action")
 	}
 
-	tx := dao.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-	if err := tx.Error; err != nil {
-		return err
+	tx, err := dao.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("create permission start a transaction failed: %w", err)
 	}
 
-	permission.ID = uint16(num + 1)
-	permission.CreateTime = time.Now()
-	if err := tx.Omit("deleted_time", "modified_time").Create(permission).Error; err != nil {
-		tx.Rollback()
-		return errors.Join(errors.New("delete fail"), err)
+	err = tx.Permission.Create().
+		SetID(uint16(num + 1)).
+		SetAction(permissionToCreate.Action).
+		SetDescription(permissionToCreate.Description).
+		Exec(ctx)
+	if err != nil {
+		return rollback(tx, err)
 	}
 
-	return tx.Commit().Error
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("create permission transaction commit failed: %w", err)
+	}
+
+	return nil
 
 }
 
 func (dao *PermissionDao) UpdatePermission(permission *entity.Permission) error {
-	var check entity.Permission
-	if err := dao.DB.Where("id = ?", permission.ID).First(&check).Error; err != nil {
-		return errors.Join(errors.New("permission can not be found"), err)
-	}
-	if check.DeletedTime != time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local) {
-		return errors.New("permission is deleted")
-	}
+	// var check entity.Permission
+	// if err := dao.DB.Where("id = ?", permission.ID).First(&check).Error; err != nil {
+	// 	return errors.Join(errors.New("permission can not be found"), err)
+	// }
+	// if !check.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
+	// 	return errors.New("permission is deleted")
+	// }
 
-	tx := dao.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-	if err := tx.Error; err != nil {
-		return err
-	}
-	permission.ModifiedTime = time.Now()
-	if err := tx.Model(permission).Omit("id", "created_time", "deleted_time").Updates(permission).Error; err != nil {
-		tx.Rollback()
-		return errors.Join(errors.New("update permission fail"), err)
-	}
+	// tx := dao.DB.Begin()
+	// defer func() {
+	// 	if r := recover(); r != nil {
+	// 		tx.Rollback()
+	// 	}
+	// }()
+	// if err := tx.Error; err != nil {
+	// 	return err
+	// }
+	// permission.ModifiedTime = time.Now()
+	// if err := tx.Model(permission).Omit("id", "created_time", "deleted_time").Updates(permission).Error; err != nil {
+	// 	tx.Rollback()
+	// 	return errors.Join(errors.New("update permission fail"), err)
+	// }
 
-	return tx.Commit().Error
+	// return tx.Commit().Error
+	return nil
 }
 
 func (dao *PermissionDao) RetrievePermission(current, pageSize int, like, order string) ([]*entity.Permission, error) {
-	var permissions []entity.Permission
-	like = "%" + like + "%"
-	offset := (current - 1) * pageSize
+	// var permissions []entity.Permission
+	// like = "%" + like + "%"
+	// offset := (current - 1) * pageSize
 
-	queryWithoutOrder := func(db *gorm.DB) *gorm.DB {
-		deletedTime := time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)
+	// queryWithoutOrder := func(db *gorm.DB) *gorm.DB {
+	// 	deletedTime := time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)
 
-		return db.Where("deleted_time = ?", deletedTime).Where("action like ? or description like ?", like, like).
-			Limit(pageSize).Offset(offset)
-	}
-	queryWithOrder := func(db *gorm.DB) *gorm.DB {
-		if order != "" {
-			return db.Order(order)
-		}
-		return db
-	}
+	// 	return db.Where("deleted_time = ?", deletedTime).Where("action like ? or description like ?", like, like).
+	// 		Limit(pageSize).Offset(offset)
+	// }
+	// queryWithOrder := func(db *gorm.DB) *gorm.DB {
+	// 	if order != "" {
+	// 		return db.Order(order)
+	// 	}
+	// 	return db
+	// }
 
-	dao.DB.Scopes(queryWithoutOrder, queryWithOrder).Find(&permissions)
-	permissions_pointers := make([]*entity.Permission, len(permissions))
-	for i, v := range permissions {
-		permissions_pointers[i] = &v
-	}
-	return permissions_pointers, nil
+	// dao.DB.Scopes(queryWithoutOrder, queryWithOrder).Find(&permissions)
+	// permissions_pointers := make([]*entity.Permission, len(permissions))
+	// for i, v := range permissions {
+	// 	permissions_pointers[i] = &v
+	// }
+	return make([]*entity.Permission, 3), nil
 
+}
+
+func (dao *PermissionDao) DeletePermission(permission *entity.Permission) error {
+	// var check entity.Permission
+	// if err := dao.DB.Where("id = ?", permission.ID).First(&check).Error; err != nil {
+	// 	return errors.Join(errors.New("permission can not be found"), err)
+	// }
+	// if !check.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
+	// 	return errors.New("permission is already deleted")
+	// }
+
+	// var checkIsUsed entity.Permission
+	// if dao.DB.Table("role_permission").Where("pid = ?", permission.ID).Limit(1).Find(&checkIsUsed).RowsAffected != 0 {
+	// 	return errors.New("permission is alread used")
+	// }
+
+	// tx := dao.DB.Begin()
+	// defer func() {
+	// 	if r := recover(); r != nil {
+	// 		tx.Rollback()
+	// 	}
+	// }()
+	// if err := tx.Error; err != nil {
+	// 	return err
+	// }
+	// if err := tx.Model(permission).Update("deleted_time", time.Now()).Error; err != nil {
+	// 	tx.Rollback()
+	// 	return errors.Join(errors.New("delete permission fail"), err)
+	// }
+
+	// return tx.Commit().Error
+	return nil
 }
