@@ -9,7 +9,7 @@ import (
 
 func TestProvideDataBase(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
-	db, err := ProvideDataBase()
+	client, err := ProvideDataBase()
+	defer client.Close()
 	assert.Nil(t, err)
-	assert.Equal(t, true, db.Config.SkipDefaultTransaction)
 }

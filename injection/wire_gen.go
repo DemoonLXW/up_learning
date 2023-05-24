@@ -8,27 +8,19 @@ package injection
 
 import (
 	"github.com/DemoonLXW/up_learning/database"
-	"gorm.io/gorm"
+	"github.com/DemoonLXW/up_learning/database/ent"
 )
 
 // Injectors from injection.go:
 
-func ProvideDataBase() (*gorm.DB, error) {
+func ProvideDataBase() (*ent.Client, error) {
 	dataBaseConfig, err := database.ProvideDatabaseConfig()
 	if err != nil {
 		return nil, err
 	}
-	dialector, err := database.ProvideDialector(dataBaseConfig)
+	client, err := database.ProvideDB(dataBaseConfig)
 	if err != nil {
 		return nil, err
 	}
-	config, err := database.ProvideOptions(dataBaseConfig)
-	if err != nil {
-		return nil, err
-	}
-	db, err := database.ProvideDB(dialector, config)
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+	return client, nil
 }

@@ -3,19 +3,17 @@ package database
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"os"
 
+	entsql "entgo.io/ent/dialect/sql"
+	"github.com/DemoonLXW/up_learning/database/ent"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/wire"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 var DataBaseProvider = wire.NewSet(
 	ProvideDatabaseConfig,
-	ProvideDialector,
-	ProvideOptions,
-	wire.Bind(new(gorm.Option), new(*gorm.Config)),
 	ProvideDB,
 )
 
@@ -28,57 +26,37 @@ func ProvideDatabaseConfig() (DataBaseConfig, error) {
 	}
 	data, err := os.ReadFile(filepath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read config of database failed: %w", err)
 	}
 
 	var config DataBaseConfig
 	err = json.Unmarshal(data, &config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal config of database failed: %w", err)
 	}
 	return config, nil
 }
 
-func ProvideDialector(config DataBaseConfig) (gorm.Dialector, error) {
+func ProvideDB(config DataBaseConfig) (*ent.Client, error) {
 	dsn, ok := config["dsn"]
 	if !ok {
-		return nil, errors.New("DSN no found")
+		return nil, fmt.Errorf("read dsn in config failed")
 	}
-
-	sqlDB, err := sql.Open("mysql", dsn.(string))
+	db, err := sql.Open("mysql", dsn.(string))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("open database failed: %w", err)
 	}
 
 	MaxIdleConns, ok := config["MaxIdleConns"]
 	if ok {
-		sqlDB.SetMaxIdleConns(int(MaxIdleConns.(float64)))
+		db.SetMaxIdleConns(int(MaxIdleConns.(float64)))
 	}
 	MaxOpenConns, ok := config["MaxOpenConns"]
 	if ok {
-		sqlDB.SetMaxOpenConns(int(MaxOpenConns.(float64)))
+		db.SetMaxOpenConns(int(MaxOpenConns.(float64)))
 	}
 
-	dialector := mysql.New(mysql.Config{
-		Conn: sqlDB,
-	})
+	drv := entsql.OpenDB("mysql", db)
 
-	return dialector, nil
-}
-
-func ProvideOptions(config DataBaseConfig) (*gorm.Config, error) {
-	var options gorm.Config
-	SkipDefaultTransaction, ok := config["SkipDefaultTransaction"]
-	if ok {
-		options.SkipDefaultTransaction = SkipDefaultTransaction.(bool)
-	}
-	return &options, nil
-}
-
-func ProvideDB(dialector gorm.Dialector, opts gorm.Option) (*gorm.DB, error) {
-	gormDB, err := gorm.Open(dialector, opts)
-	if err != nil {
-		return nil, err
-	}
-	return gormDB, nil
+	return ent.NewClient(ent.Driver(drv)), nil
 }
