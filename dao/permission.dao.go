@@ -22,7 +22,7 @@ func rollback(tx *ent.Tx, err error) error {
 	return err
 }
 
-func (dao *PermissionDao) CreatePermission(toCreate *entity.Permission) error {
+func (dao *PermissionDao) CreatePermission(toCreate *ent.Permission) error {
 	ctx := context.Background()
 
 	num, err := dao.DB.Permission.Query().Aggregate(ent.Count()).Int(ctx)
@@ -30,7 +30,7 @@ func (dao *PermissionDao) CreatePermission(toCreate *entity.Permission) error {
 		return fmt.Errorf("create permission count failed: %w", err)
 	}
 
-	checkRepeatAction, err := dao.DB.Permission.Query().Where(permission.Action(toCreate.Action)).Exist(ctx)
+	checkRepeatAction, err := dao.DB.Permission.Query().Where(permission.Action(*toCreate.Action)).Exist(ctx)
 	if err != nil {
 		return fmt.Errorf("create permission check repeat action failed: %w", err)
 	}
@@ -45,8 +45,8 @@ func (dao *PermissionDao) CreatePermission(toCreate *entity.Permission) error {
 
 	err = tx.Permission.Create().
 		SetID(uint16(num + 1)).
-		SetAction(toCreate.Action).
-		SetDescription(toCreate.Description).
+		SetAction(*toCreate.Action).
+		SetDescription(*toCreate.Description).
 		Exec(ctx)
 	if err != nil {
 		return rollback(tx, err)

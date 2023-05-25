@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/injection"
 	"github.com/stretchr/testify/assert"
@@ -17,9 +18,11 @@ func TestCreatePermission(t *testing.T) {
 	assert.Nil(t, err)
 	dao.DB = db
 
-	permission := entity.Permission{
-		Action:      "test description for ent",
-		Description: "test description for ent",
+	action := "test description for ent Nillable"
+	description := "test description for Nillable"
+	permission := ent.Permission{
+		Action:      &action,
+		Description: &description,
 	}
 	err = dao.CreatePermission(&permission)
 	assert.Nil(t, err)
