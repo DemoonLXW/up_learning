@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/entity"
@@ -101,30 +102,33 @@ func (dao *PermissionDao) UpdatePermission(toUpdate *entity.Permission) error {
 	return nil
 }
 
-func (dao *PermissionDao) RetrievePermission(current, pageSize int, like, order string) ([]*entity.Permission, error) {
-	// var permissions []entity.Permission
-	// like = "%" + like + "%"
-	// offset := (current - 1) * pageSize
+func (dao *PermissionDao) RetrievePermission(current, pageSize int, like, sort, order string) ([]*ent.Permission, error) {
+	ctx := context.Background()
 
-	// queryWithoutOrder := func(db *gorm.DB) *gorm.DB {
-	// 	deletedTime := time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)
+	offset := (current - 1) * pageSize
 
-	// 	return db.Where("deleted_time = ?", deletedTime).Where("action like ? or description like ?", like, like).
-	// 		Limit(pageSize).Offset(offset)
-	// }
-	// queryWithOrder := func(db *gorm.DB) *gorm.DB {
-	// 	if order != "" {
-	// 		return db.Order(order)
-	// 	}
-	// 	return db
-	// }
+	permissions, err := dao.DB.Permission.Query().
+		Where(
+			permission.Or(
+				permission.ActionContains(like),
+				permission.DescriptionContains(like),
+			),
+		).
+		Limit(pageSize).
+		Offset(offset).
+		Order(func(s *sql.Selector) {
+			if order == "asc" {
+				s.OrderBy(sql.Asc(sort))
+			} else {
+				s.OrderBy(sql.Desc(sort))
+			}
+		}).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve permission query failed: %w", err)
+	}
 
-	// dao.DB.Scopes(queryWithoutOrder, queryWithOrder).Find(&permissions)
-	// permissions_pointers := make([]*entity.Permission, len(permissions))
-	// for i, v := range permissions {
-	// 	permissions_pointers[i] = &v
-	// }
-	return make([]*entity.Permission, 3), nil
+	return permissions, nil
 
 }
 
