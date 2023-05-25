@@ -36,10 +36,12 @@ func TestUpdatePermission(t *testing.T) {
 	assert.Nil(t, err)
 	dao.DB = db
 
-	permission := entity.Permission{
-		ID:          3,
-		Action:      "test update action for ant again",
-		Description: "don't update created time",
+	action := "test action for ent update"
+	description := "test description for Nillable"
+	permission := ent.Permission{
+		ID:          5,
+		Action:      &action,
+		Description: &description,
 	}
 	err = dao.UpdatePermission(&permission)
 	assert.Nil(t, err)

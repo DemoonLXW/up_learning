@@ -17,9 +17,9 @@ type PermissionDao struct {
 
 func rollback(tx *ent.Tx, err error) error {
 	if rerr := tx.Rollback(); rerr != nil {
-		err = fmt.Errorf("%w: %v", err, rerr)
+		return fmt.Errorf("rollback failed %w: %v", err, rerr)
 	}
-	return err
+	return fmt.Errorf("update permission failed: %w", err)
 }
 
 func (dao *PermissionDao) CreatePermission(toCreate *ent.Permission) error {
@@ -61,7 +61,7 @@ func (dao *PermissionDao) CreatePermission(toCreate *ent.Permission) error {
 
 }
 
-func (dao *PermissionDao) UpdatePermission(toUpdate *entity.Permission) error {
+func (dao *PermissionDao) UpdatePermission(toUpdate *ent.Permission) error {
 	ctx := context.Background()
 
 	originalPermission, err := dao.DB.Permission.Query().Where(permission.ID(toUpdate.ID)).WithRoles().First(ctx)
@@ -82,8 +82,8 @@ func (dao *PermissionDao) UpdatePermission(toUpdate *entity.Permission) error {
 
 	err = tx.Permission.Create().
 		SetID(toUpdate.ID).
-		SetAction(toUpdate.Action).
-		SetDescription(toUpdate.Description).
+		SetAction(*toUpdate.Action).
+		SetDescription(*toUpdate.Description).
 		SetModifiedTime(time.Now()).
 		OnConflict().
 		UpdateAction().
