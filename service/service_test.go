@@ -34,3 +34,22 @@ func TestCreatePermission(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
+func TestUpdatePermission(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+
+	action := "test update permssion in service"
+	description := "test update description in service"
+	permission := ent.Permission{
+		ID:          9,
+		Action:      &action,
+		Description: &description,
+	}
+	err = serv.UpdatePermission(&permission)
+	assert.Nil(t, err)
+
+}
