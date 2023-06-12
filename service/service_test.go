@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -52,4 +53,20 @@ func TestUpdatePermission(t *testing.T) {
 	err = serv.UpdatePermission(&permission)
 	assert.Nil(t, err)
 
+}
+
+func TestRetrievePermission(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	dao := new(ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	dao.DB = db
+
+	permissons, err := dao.RetrievePermission(3, 3, "", "created_time", "desc")
+	assert.Nil(t, err)
+	for _, v := range permissons {
+
+		fmt.Println(v)
+	}
+	assert.Len(t, permissons, 3)
 }

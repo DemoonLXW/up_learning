@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 )
@@ -101,4 +102,34 @@ func (serv *ManagementService) UpdatePermission(toUpdate *ent.Permission) error 
 	}
 
 	return nil
+}
+
+func (serv *ManagementService) RetrievePermission(current, pageSize int, like, sort, order string) ([]*ent.Permission, error) {
+	ctx := context.Background()
+
+	offset := (current - 1) * pageSize
+
+	permissions, err := serv.DB.Permission.Query().
+		Where(
+			permission.Or(
+				permission.ActionContains(like),
+				permission.DescriptionContains(like),
+			),
+		).
+		Limit(pageSize).
+		Offset(offset).
+		Order(func(s *sql.Selector) {
+			if order == "desc" {
+				s.OrderBy(sql.Desc(sort))
+			} else {
+				s.OrderBy(sql.Asc(sort))
+			}
+		}).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve permission query failed: %w", err)
+	}
+
+	return permissions, nil
+
 }
