@@ -70,3 +70,16 @@ func TestRetrievePermission(t *testing.T) {
 	}
 	assert.Len(t, permissons, 3)
 }
+
+func TestDeletePermission(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	dao := new(ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	dao.DB = db
+
+	IDs := []uint16{8, 9, 10}
+	err = dao.DeletePermission(IDs)
+	assert.Nil(t, err)
+
+}
