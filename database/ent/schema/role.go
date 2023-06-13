@@ -28,15 +28,20 @@ func (Role) Fields() []ent.Field {
 			Unique(),
 		field.String("name").
 			Unique().
-			NotEmpty(),
+			NotEmpty().
+			Nillable(),
 		field.String("description").
-			Optional(),
+			Optional().
+			Nillable(),
 		field.Time("created_time").
-			Default(time.Now),
+			Default(time.Now).
+			Nillable(),
 		field.Time("deleted_time").
-			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			Nillable(),
 		field.Time("modified_time").
-			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			Nillable(),
 	}
 }
 
