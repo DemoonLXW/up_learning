@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
+	"github.com/DemoonLXW/up_learning/database/ent/role"
 )
 
 type ManagementService struct {
@@ -169,6 +170,88 @@ func (serv *ManagementService) DeletePermission(toDeleteIDs []uint16) error {
 	err = tx.Commit()
 	if err != nil {
 		return fmt.Errorf("delete permissions transaction commit failed: %w", err)
+	}
+
+	return nil
+}
+
+func (serv *ManagementService) CreateRole(toCreates []*ent.Role) error {
+	ctx := context.Background()
+
+	num, err := serv.DB.Role.Query().Aggregate(ent.Count()).Int(ctx)
+	if err != nil {
+		return fmt.Errorf("create roles count failed: %w", err)
+	}
+
+	names := make([]string, len(toCreates))
+	bulk := make([]*ent.RoleCreate, len(toCreates))
+	for i, v := range toCreates {
+		names[i] = *v.Name
+		bulk[i] = serv.DB.Role.Create().SetID(uint8(num + i + 1)).SetName(*v.Name).SetDescription(*v.Description)
+	}
+
+	checkRepeatName, err := serv.DB.Role.Query().Where(role.NameIn(names...)).Exist(ctx)
+	if err != nil {
+		return fmt.Errorf("create roles check repeat name failed: %w", err)
+	}
+	if checkRepeatName {
+		return fmt.Errorf("repeat role")
+	}
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("create role start a transaction failed: %w", err)
+	}
+
+	err = tx.Role.CreateBulk(bulk...).Exec(ctx)
+	if err != nil {
+		return rollback(tx, "create roles", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("create roles transaction commit failed: %w", err)
+	}
+
+	return nil
+}
+
+func (serv *ManagementService) UpdateRole(toUpdate *ent.Role) error {
+	ctx := context.Background()
+
+	originalRole, err := serv.DB.Role.Query().Where(role.ID(toUpdate.ID)).WithPermissions().WithUsers().First(ctx)
+	if err != nil {
+		return fmt.Errorf("update role find original failed: %w", err)
+	}
+	if !originalRole.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
+		return fmt.Errorf("role is already deleted")
+	}
+	if len(originalRole.Edges.Permissions) != 0 || len(originalRole.Edges.Users) != 0 {
+		return fmt.Errorf("role is already used")
+	}
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("update role start a transaction failed: %w", err)
+	}
+
+	err = tx.Role.Create().
+		SetID(toUpdate.ID).
+		SetName(*toUpdate.Name).
+		SetDescription(*toUpdate.Description).
+		SetModifiedTime(time.Now()).
+		OnConflict().
+		UpdateName().
+		UpdateDescription().
+		UpdateModifiedTime().
+		Exec(ctx)
+	if err != nil {
+		return rollback(tx, "update role", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("update role transaction commit failed: %w", err)
 	}
 
 	return nil
