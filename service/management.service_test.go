@@ -143,3 +143,16 @@ func TestRetrieveRole(t *testing.T) {
 	}
 	assert.Len(t, roles, 1)
 }
+
+func TestDeleteRole(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	dao := new(ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	dao.DB = db
+
+	IDs := []uint8{3, 4}
+	err = dao.DeleteRole(IDs)
+	assert.Nil(t, err)
+
+}
