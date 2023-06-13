@@ -15,6 +15,8 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
+	"github.com/DemoonLXW/up_learning/database/ent/user"
+	"github.com/DemoonLXW/up_learning/database/ent/userrole"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -78,6 +80,8 @@ func checkColumn(table, column string) error {
 			permission.Table:     permission.ValidColumn,
 			role.Table:           role.ValidColumn,
 			rolepermission.Table: rolepermission.ValidColumn,
+			user.Table:           user.ValidColumn,
+			userrole.Table:       userrole.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

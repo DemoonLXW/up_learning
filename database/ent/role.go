@@ -37,11 +37,15 @@ type Role struct {
 type RoleEdges struct {
 	// Permissions holds the value of the permissions edge.
 	Permissions []*Permission `json:"permissions,omitempty"`
+	// Users holds the value of the users edge.
+	Users []*User `json:"users,omitempty"`
 	// RolePermission holds the value of the role_permission edge.
 	RolePermission []*RolePermission `json:"role_permission,omitempty"`
+	// UserRole holds the value of the user_role edge.
+	UserRole []*UserRole `json:"user_role,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
 }
 
 // PermissionsOrErr returns the Permissions value or an error if the edge
@@ -53,13 +57,31 @@ func (e RoleEdges) PermissionsOrErr() ([]*Permission, error) {
 	return nil, &NotLoadedError{edge: "permissions"}
 }
 
+// UsersOrErr returns the Users value or an error if the edge
+// was not loaded in eager-loading.
+func (e RoleEdges) UsersOrErr() ([]*User, error) {
+	if e.loadedTypes[1] {
+		return e.Users, nil
+	}
+	return nil, &NotLoadedError{edge: "users"}
+}
+
 // RolePermissionOrErr returns the RolePermission value or an error if the edge
 // was not loaded in eager-loading.
 func (e RoleEdges) RolePermissionOrErr() ([]*RolePermission, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.RolePermission, nil
 	}
 	return nil, &NotLoadedError{edge: "role_permission"}
+}
+
+// UserRoleOrErr returns the UserRole value or an error if the edge
+// was not loaded in eager-loading.
+func (e RoleEdges) UserRoleOrErr() ([]*UserRole, error) {
+	if e.loadedTypes[3] {
+		return e.UserRole, nil
+	}
+	return nil, &NotLoadedError{edge: "user_role"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -147,9 +169,19 @@ func (r *Role) QueryPermissions() *PermissionQuery {
 	return NewRoleClient(r.config).QueryPermissions(r)
 }
 
+// QueryUsers queries the "users" edge of the Role entity.
+func (r *Role) QueryUsers() *UserQuery {
+	return NewRoleClient(r.config).QueryUsers(r)
+}
+
 // QueryRolePermission queries the "role_permission" edge of the Role entity.
 func (r *Role) QueryRolePermission() *RolePermissionQuery {
 	return NewRoleClient(r.config).QueryRolePermission(r)
+}
+
+// QueryUserRole queries the "user_role" edge of the Role entity.
+func (r *Role) QueryUserRole() *UserRoleQuery {
+	return NewRoleClient(r.config).QueryUserRole(r)
 }
 
 // Update returns a builder for updating this Role.

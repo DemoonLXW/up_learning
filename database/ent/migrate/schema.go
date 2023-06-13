@@ -65,11 +65,57 @@ var (
 			},
 		},
 	}
+	// UserColumns holds the columns for the "user" table.
+	UserColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "username", Type: field.TypeString, Unique: true},
+		{Name: "password", Type: field.TypeString},
+		{Name: "email", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "phone", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "introduction", Type: field.TypeString, Nullable: true},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime},
+		{Name: "modified_time", Type: field.TypeTime},
+	}
+	// UserTable holds the schema information for the "user" table.
+	UserTable = &schema.Table{
+		Name:       "user",
+		Columns:    UserColumns,
+		PrimaryKey: []*schema.Column{UserColumns[0]},
+	}
+	// UserRoleColumns holds the columns for the "user_role" table.
+	UserRoleColumns = []*schema.Column{
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "uid", Type: field.TypeUint32},
+		{Name: "rid", Type: field.TypeUint8},
+	}
+	// UserRoleTable holds the schema information for the "user_role" table.
+	UserRoleTable = &schema.Table{
+		Name:       "user_role",
+		Columns:    UserRoleColumns,
+		PrimaryKey: []*schema.Column{UserRoleColumns[1], UserRoleColumns[2]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_role_user_user",
+				Columns:    []*schema.Column{UserRoleColumns[1]},
+				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "user_role_role_role",
+				Columns:    []*schema.Column{UserRoleColumns[2]},
+				RefColumns: []*schema.Column{RoleColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		PermissionTable,
 		RoleTable,
 		RolePermissionTable,
+		UserTable,
+		UserRoleTable,
 	}
 )
 
@@ -84,5 +130,13 @@ func init() {
 	RolePermissionTable.ForeignKeys[1].RefTable = PermissionTable
 	RolePermissionTable.Annotation = &entsql.Annotation{
 		Table: "role_permission",
+	}
+	UserTable.Annotation = &entsql.Annotation{
+		Table: "user",
+	}
+	UserRoleTable.ForeignKeys[0].RefTable = UserTable
+	UserRoleTable.ForeignKeys[1].RefTable = RoleTable
+	UserRoleTable.Annotation = &entsql.Annotation{
+		Table: "user_role",
 	}
 }

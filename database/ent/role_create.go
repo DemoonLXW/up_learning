@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
+	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
 
 // RoleCreate is the builder for creating a Role entity.
@@ -104,6 +105,21 @@ func (rc *RoleCreate) AddPermissions(p ...*Permission) *RoleCreate {
 		ids[i] = p[i].ID
 	}
 	return rc.AddPermissionIDs(ids...)
+}
+
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (rc *RoleCreate) AddUserIDs(ids ...uint32) *RoleCreate {
+	rc.mutation.AddUserIDs(ids...)
+	return rc
+}
+
+// AddUsers adds the "users" edges to the User entity.
+func (rc *RoleCreate) AddUsers(u ...*User) *RoleCreate {
+	ids := make([]uint32, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return rc.AddUserIDs(ids...)
 }
 
 // Mutation returns the RoleMutation object of the builder.
@@ -242,6 +258,26 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &RolePermissionCreate{config: rc.config, mutation: newRolePermissionMutation(rc.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.UsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   role.UsersTable,
+			Columns: role.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &UserRoleCreate{config: rc.config, mutation: newUserRoleMutation(rc.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields

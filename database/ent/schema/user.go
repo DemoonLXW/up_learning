@@ -10,27 +10,38 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// Role holds the schema definition for the Role entity.
-type Role struct {
+// User holds the schema definition for the User entity.
+type User struct {
 	ent.Schema
 }
 
-func (Role) Annotations() []schema.Annotation {
+func (User) Annotations() []schema.Annotation {
 	return []schema.Annotation{
-		entsql.Annotation{Table: "role"},
+		entsql.Annotation{Table: "user"},
 	}
 }
 
-// Fields of the Role.
-func (Role) Fields() []ent.Field {
+// Fields of the User.
+func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint8("id").
+		field.Uint32("id").
 			Unique(),
-		field.String("name").
+		field.String("username").
+			NotEmpty().
 			Unique().
+			Nillable(),
+		field.String("password").
 			NotEmpty().
 			Nillable(),
-		field.String("description").
+		field.String("email").
+			Unique().
+			Optional().
+			Nillable(),
+		field.String("phone").
+			Unique().
+			Optional().
+			Nillable(),
+		field.String("introduction").
 			Optional().
 			Nillable(),
 		field.Time("created_time").
@@ -45,13 +56,10 @@ func (Role) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Role.
-func (Role) Edges() []ent.Edge {
+// Edges of the User.
+func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("permissions", Permission.Type).
-			Through("role_permission", RolePermission.Type),
-		edge.From("users", User.Type).
-			Ref("roles").
+		edge.To("roles", Role.Type).
 			Through("user_role", UserRole.Type),
 	}
 }

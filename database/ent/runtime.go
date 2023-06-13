@@ -9,6 +9,8 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
 	"github.com/DemoonLXW/up_learning/database/ent/schema"
+	"github.com/DemoonLXW/up_learning/database/ent/user"
+	"github.com/DemoonLXW/up_learning/database/ent/userrole"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -57,4 +59,32 @@ func init() {
 	rolepermissionDescCreatedTime := rolepermissionFields[2].Descriptor()
 	// rolepermission.DefaultCreatedTime holds the default value on creation for the created_time field.
 	rolepermission.DefaultCreatedTime = rolepermissionDescCreatedTime.Default.(func() time.Time)
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescUsername is the schema descriptor for username field.
+	userDescUsername := userFields[1].Descriptor()
+	// user.UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	user.UsernameValidator = userDescUsername.Validators[0].(func(string) error)
+	// userDescPassword is the schema descriptor for password field.
+	userDescPassword := userFields[2].Descriptor()
+	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
+	user.PasswordValidator = userDescPassword.Validators[0].(func(string) error)
+	// userDescCreatedTime is the schema descriptor for created_time field.
+	userDescCreatedTime := userFields[6].Descriptor()
+	// user.DefaultCreatedTime holds the default value on creation for the created_time field.
+	user.DefaultCreatedTime = userDescCreatedTime.Default.(func() time.Time)
+	// userDescDeletedTime is the schema descriptor for deleted_time field.
+	userDescDeletedTime := userFields[7].Descriptor()
+	// user.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	user.DefaultDeletedTime = userDescDeletedTime.Default.(time.Time)
+	// userDescModifiedTime is the schema descriptor for modified_time field.
+	userDescModifiedTime := userFields[8].Descriptor()
+	// user.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	user.DefaultModifiedTime = userDescModifiedTime.Default.(time.Time)
+	userroleFields := schema.UserRole{}.Fields()
+	_ = userroleFields
+	// userroleDescCreatedTime is the schema descriptor for created_time field.
+	userroleDescCreatedTime := userroleFields[2].Descriptor()
+	// userrole.DefaultCreatedTime holds the default value on creation for the created_time field.
+	userrole.DefaultCreatedTime = userroleDescCreatedTime.Default.(func() time.Time)
 }
