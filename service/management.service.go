@@ -256,3 +256,33 @@ func (serv *ManagementService) UpdateRole(toUpdate *ent.Role) error {
 
 	return nil
 }
+
+func (serv *ManagementService) RetrieveRole(current, pageSize int, like, sort, order string) ([]*ent.Role, error) {
+	ctx := context.Background()
+
+	offset := (current - 1) * pageSize
+
+	roles, err := serv.DB.Role.Query().
+		Where(
+			role.Or(
+				role.NameContains(like),
+				role.DescriptionContains(like),
+			),
+		).
+		Limit(pageSize).
+		Offset(offset).
+		Order(func(s *sql.Selector) {
+			if order == "desc" {
+				s.OrderBy(sql.Desc(sort))
+			} else {
+				s.OrderBy(sql.Asc(sort))
+			}
+		}).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve role query failed: %w", err)
+	}
+
+	return roles, nil
+
+}
