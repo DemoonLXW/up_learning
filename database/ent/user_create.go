@@ -23,15 +23,29 @@ type UserCreate struct {
 	conflict []sql.ConflictOption
 }
 
-// SetUsername sets the "username" field.
-func (uc *UserCreate) SetUsername(s string) *UserCreate {
-	uc.mutation.SetUsername(s)
+// SetAccount sets the "account" field.
+func (uc *UserCreate) SetAccount(s string) *UserCreate {
+	uc.mutation.SetAccount(s)
 	return uc
 }
 
 // SetPassword sets the "password" field.
 func (uc *UserCreate) SetPassword(s string) *UserCreate {
 	uc.mutation.SetPassword(s)
+	return uc
+}
+
+// SetUsername sets the "username" field.
+func (uc *UserCreate) SetUsername(s string) *UserCreate {
+	uc.mutation.SetUsername(s)
+	return uc
+}
+
+// SetNillableUsername sets the "username" field if the given value is not nil.
+func (uc *UserCreate) SetNillableUsername(s *string) *UserCreate {
+	if s != nil {
+		uc.SetUsername(*s)
+	}
 	return uc
 }
 
@@ -191,12 +205,12 @@ func (uc *UserCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
-	if _, ok := uc.mutation.Username(); !ok {
-		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "User.username"`)}
+	if _, ok := uc.mutation.Account(); !ok {
+		return &ValidationError{Name: "account", err: errors.New(`ent: missing required field "User.account"`)}
 	}
-	if v, ok := uc.mutation.Username(); ok {
-		if err := user.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
+	if v, ok := uc.mutation.Account(); ok {
+		if err := user.AccountValidator(v); err != nil {
+			return &ValidationError{Name: "account", err: fmt.Errorf(`ent: validator failed for field "User.account": %w`, err)}
 		}
 	}
 	if _, ok := uc.mutation.Password(); !ok {
@@ -249,13 +263,17 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
-	if value, ok := uc.mutation.Username(); ok {
-		_spec.SetField(user.FieldUsername, field.TypeString, value)
-		_node.Username = &value
+	if value, ok := uc.mutation.Account(); ok {
+		_spec.SetField(user.FieldAccount, field.TypeString, value)
+		_node.Account = &value
 	}
 	if value, ok := uc.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 		_node.Password = &value
+	}
+	if value, ok := uc.mutation.Username(); ok {
+		_spec.SetField(user.FieldUsername, field.TypeString, value)
+		_node.Username = &value
 	}
 	if value, ok := uc.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -308,7 +326,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.User.Create().
-//		SetUsername(v).
+//		SetAccount(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -317,7 +335,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserUpsert) {
-//			SetUsername(v+v).
+//			SetAccount(v+v).
 //		}).
 //		Exec(ctx)
 func (uc *UserCreate) OnConflict(opts ...sql.ConflictOption) *UserUpsertOne {
@@ -353,15 +371,15 @@ type (
 	}
 )
 
-// SetUsername sets the "username" field.
-func (u *UserUpsert) SetUsername(v string) *UserUpsert {
-	u.Set(user.FieldUsername, v)
+// SetAccount sets the "account" field.
+func (u *UserUpsert) SetAccount(v string) *UserUpsert {
+	u.Set(user.FieldAccount, v)
 	return u
 }
 
-// UpdateUsername sets the "username" field to the value that was provided on create.
-func (u *UserUpsert) UpdateUsername() *UserUpsert {
-	u.SetExcluded(user.FieldUsername)
+// UpdateAccount sets the "account" field to the value that was provided on create.
+func (u *UserUpsert) UpdateAccount() *UserUpsert {
+	u.SetExcluded(user.FieldAccount)
 	return u
 }
 
@@ -374,6 +392,24 @@ func (u *UserUpsert) SetPassword(v string) *UserUpsert {
 // UpdatePassword sets the "password" field to the value that was provided on create.
 func (u *UserUpsert) UpdatePassword() *UserUpsert {
 	u.SetExcluded(user.FieldPassword)
+	return u
+}
+
+// SetUsername sets the "username" field.
+func (u *UserUpsert) SetUsername(v string) *UserUpsert {
+	u.Set(user.FieldUsername, v)
+	return u
+}
+
+// UpdateUsername sets the "username" field to the value that was provided on create.
+func (u *UserUpsert) UpdateUsername() *UserUpsert {
+	u.SetExcluded(user.FieldUsername)
+	return u
+}
+
+// ClearUsername clears the value of the "username" field.
+func (u *UserUpsert) ClearUsername() *UserUpsert {
+	u.SetNull(user.FieldUsername)
 	return u
 }
 
@@ -515,17 +551,17 @@ func (u *UserUpsertOne) Update(set func(*UserUpsert)) *UserUpsertOne {
 	return u
 }
 
-// SetUsername sets the "username" field.
-func (u *UserUpsertOne) SetUsername(v string) *UserUpsertOne {
+// SetAccount sets the "account" field.
+func (u *UserUpsertOne) SetAccount(v string) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.SetUsername(v)
+		s.SetAccount(v)
 	})
 }
 
-// UpdateUsername sets the "username" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateUsername() *UserUpsertOne {
+// UpdateAccount sets the "account" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateAccount() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateUsername()
+		s.UpdateAccount()
 	})
 }
 
@@ -540,6 +576,27 @@ func (u *UserUpsertOne) SetPassword(v string) *UserUpsertOne {
 func (u *UserUpsertOne) UpdatePassword() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdatePassword()
+	})
+}
+
+// SetUsername sets the "username" field.
+func (u *UserUpsertOne) SetUsername(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetUsername(v)
+	})
+}
+
+// UpdateUsername sets the "username" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateUsername() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateUsername()
+	})
+}
+
+// ClearUsername clears the value of the "username" field.
+func (u *UserUpsertOne) ClearUsername() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearUsername()
 	})
 }
 
@@ -779,7 +836,7 @@ func (ucb *UserCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserUpsert) {
-//			SetUsername(v+v).
+//			SetAccount(v+v).
 //		}).
 //		Exec(ctx)
 func (ucb *UserCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserUpsertBulk {
@@ -858,17 +915,17 @@ func (u *UserUpsertBulk) Update(set func(*UserUpsert)) *UserUpsertBulk {
 	return u
 }
 
-// SetUsername sets the "username" field.
-func (u *UserUpsertBulk) SetUsername(v string) *UserUpsertBulk {
+// SetAccount sets the "account" field.
+func (u *UserUpsertBulk) SetAccount(v string) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.SetUsername(v)
+		s.SetAccount(v)
 	})
 }
 
-// UpdateUsername sets the "username" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateUsername() *UserUpsertBulk {
+// UpdateAccount sets the "account" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateAccount() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateUsername()
+		s.UpdateAccount()
 	})
 }
 
@@ -883,6 +940,27 @@ func (u *UserUpsertBulk) SetPassword(v string) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdatePassword() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdatePassword()
+	})
+}
+
+// SetUsername sets the "username" field.
+func (u *UserUpsertBulk) SetUsername(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetUsername(v)
+	})
+}
+
+// UpdateUsername sets the "username" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateUsername() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateUsername()
+	})
+}
+
+// ClearUsername clears the value of the "username" field.
+func (u *UserUpsertBulk) ClearUsername() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearUsername()
 	})
 }
 

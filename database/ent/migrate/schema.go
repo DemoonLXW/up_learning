@@ -68,8 +68,9 @@ var (
 	// UserColumns holds the columns for the "user" table.
 	UserColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true},
-		{Name: "username", Type: field.TypeString, Unique: true},
+		{Name: "account", Type: field.TypeString, Unique: true},
 		{Name: "password", Type: field.TypeString},
+		{Name: "username", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "email", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "phone", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "introduction", Type: field.TypeString, Nullable: true},

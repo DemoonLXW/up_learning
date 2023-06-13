@@ -29,15 +29,35 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
-// SetUsername sets the "username" field.
-func (uu *UserUpdate) SetUsername(s string) *UserUpdate {
-	uu.mutation.SetUsername(s)
+// SetAccount sets the "account" field.
+func (uu *UserUpdate) SetAccount(s string) *UserUpdate {
+	uu.mutation.SetAccount(s)
 	return uu
 }
 
 // SetPassword sets the "password" field.
 func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
 	uu.mutation.SetPassword(s)
+	return uu
+}
+
+// SetUsername sets the "username" field.
+func (uu *UserUpdate) SetUsername(s string) *UserUpdate {
+	uu.mutation.SetUsername(s)
+	return uu
+}
+
+// SetNillableUsername sets the "username" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableUsername(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetUsername(*s)
+	}
+	return uu
+}
+
+// ClearUsername clears the value of the "username" field.
+func (uu *UserUpdate) ClearUsername() *UserUpdate {
+	uu.mutation.ClearUsername()
 	return uu
 }
 
@@ -213,9 +233,9 @@ func (uu *UserUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (uu *UserUpdate) check() error {
-	if v, ok := uu.mutation.Username(); ok {
-		if err := user.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
+	if v, ok := uu.mutation.Account(); ok {
+		if err := user.AccountValidator(v); err != nil {
+			return &ValidationError{Name: "account", err: fmt.Errorf(`ent: validator failed for field "User.account": %w`, err)}
 		}
 	}
 	if v, ok := uu.mutation.Password(); ok {
@@ -238,11 +258,17 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := uu.mutation.Username(); ok {
-		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	if value, ok := uu.mutation.Account(); ok {
+		_spec.SetField(user.FieldAccount, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.Username(); ok {
+		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	}
+	if uu.mutation.UsernameCleared() {
+		_spec.ClearField(user.FieldUsername, field.TypeString)
 	}
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -348,15 +374,35 @@ type UserUpdateOne struct {
 	mutation *UserMutation
 }
 
-// SetUsername sets the "username" field.
-func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
-	uuo.mutation.SetUsername(s)
+// SetAccount sets the "account" field.
+func (uuo *UserUpdateOne) SetAccount(s string) *UserUpdateOne {
+	uuo.mutation.SetAccount(s)
 	return uuo
 }
 
 // SetPassword sets the "password" field.
 func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
 	uuo.mutation.SetPassword(s)
+	return uuo
+}
+
+// SetUsername sets the "username" field.
+func (uuo *UserUpdateOne) SetUsername(s string) *UserUpdateOne {
+	uuo.mutation.SetUsername(s)
+	return uuo
+}
+
+// SetNillableUsername sets the "username" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableUsername(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetUsername(*s)
+	}
+	return uuo
+}
+
+// ClearUsername clears the value of the "username" field.
+func (uuo *UserUpdateOne) ClearUsername() *UserUpdateOne {
+	uuo.mutation.ClearUsername()
 	return uuo
 }
 
@@ -545,9 +591,9 @@ func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (uuo *UserUpdateOne) check() error {
-	if v, ok := uuo.mutation.Username(); ok {
-		if err := user.UsernameValidator(v); err != nil {
-			return &ValidationError{Name: "username", err: fmt.Errorf(`ent: validator failed for field "User.username": %w`, err)}
+	if v, ok := uuo.mutation.Account(); ok {
+		if err := user.AccountValidator(v); err != nil {
+			return &ValidationError{Name: "account", err: fmt.Errorf(`ent: validator failed for field "User.account": %w`, err)}
 		}
 	}
 	if v, ok := uuo.mutation.Password(); ok {
@@ -587,11 +633,17 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			}
 		}
 	}
-	if value, ok := uuo.mutation.Username(); ok {
-		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	if value, ok := uuo.mutation.Account(); ok {
+		_spec.SetField(user.FieldAccount, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Username(); ok {
+		_spec.SetField(user.FieldUsername, field.TypeString, value)
+	}
+	if uuo.mutation.UsernameCleared() {
+		_spec.ClearField(user.FieldUsername, field.TypeString)
 	}
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)

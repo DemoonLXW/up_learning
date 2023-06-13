@@ -26,12 +26,16 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.Uint32("id").
 			Unique(),
-		field.String("username").
+		field.String("account").
 			NotEmpty().
 			Unique().
 			Nillable(),
 		field.String("password").
 			NotEmpty().
+			Nillable(),
+		field.String("username").
+			Optional().
+			Unique().
 			Nillable(),
 		field.String("email").
 			Unique().
