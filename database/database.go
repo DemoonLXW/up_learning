@@ -10,11 +10,13 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/wire"
+	"github.com/redis/go-redis/v9"
 )
 
 var DataBaseProvider = wire.NewSet(
 	ProvideDatabaseConfig,
 	ProvideDB,
+	ProvideRedis,
 )
 
 type DataBaseConfig map[string]interface{}
@@ -38,6 +40,7 @@ func ProvideDatabaseConfig() (DataBaseConfig, error) {
 }
 
 func ProvideDB(config DataBaseConfig) (*ent.Client, error) {
+	config = config["mysql"].(map[string]interface{})
 	dsn, ok := config["dsn"]
 	if !ok {
 		return nil, fmt.Errorf("read dsn in config failed")
@@ -59,4 +62,20 @@ func ProvideDB(config DataBaseConfig) (*ent.Client, error) {
 	drv := entsql.OpenDB("mysql", db)
 
 	return ent.NewClient(ent.Driver(drv)), nil
+}
+
+func ProvideRedis(config DataBaseConfig) (*redis.Client, error) {
+	config = config["redis"].(map[string]interface{})
+	url, ok := config["url"]
+	if !ok {
+		return nil, fmt.Errorf("read url in config failed")
+	}
+	opt, err := redis.ParseURL(url.(string))
+	if err != nil {
+		return nil, fmt.Errorf("open redis failed: %w", err)
+	}
+
+	rdb := redis.NewClient(opt)
+
+	return rdb, nil
 }
