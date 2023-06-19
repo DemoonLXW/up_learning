@@ -40,25 +40,25 @@ func (serv *UserService) Login(account, password string) (string, error) {
 		return "", fmt.Errorf("user login convert time to string failed: %w", err)
 	}
 	key := fmt.Sprintf("user:%d", u.ID)
-	cookie := fmt.Sprintf("%x", md5.Sum([]byte(key+expire_date.String())))
-	user_cookies, err := serv.Redis.HGetAll(ctx, key).Result()
+	token := fmt.Sprintf("%x", md5.Sum([]byte(key+expire_date.String())))
+	user_tokens, err := serv.Redis.HGetAll(ctx, key).Result()
 	switch {
-	case err == redis.Nil, err == nil && len(user_cookies) < 5:
+	case err == redis.Nil, err == nil && len(user_tokens) < 5:
 		{
-			_, err = serv.Redis.HSet(ctx, key, cookie, string(expire_date_byte)).Result()
+			_, err = serv.Redis.HSet(ctx, key, token, string(expire_date_byte)).Result()
 			if err != nil {
-				return "", fmt.Errorf("user login set cookie failed: %w", err)
+				return "", fmt.Errorf("user login set token failed: %w", err)
 			}
 		}
 	case err != nil:
 		{
-			return "", fmt.Errorf("user login get cookies failed: %w", err)
+			return "", fmt.Errorf("user login get tokens failed: %w", err)
 		}
-	case len(user_cookies) >= 5:
+	case len(user_tokens) >= 5:
 		{
 			to_delete_key := ""
 			to_delete_time := time.Now()
-			for k, v := range user_cookies {
+			for k, v := range user_tokens {
 				expire_time, err := time.Parse(time.RFC3339, v)
 				if err != nil {
 					return "", fmt.Errorf("user login parse string to time failed: %w", err)
@@ -71,15 +71,34 @@ func (serv *UserService) Login(account, password string) (string, error) {
 
 			_, err := serv.Redis.HDel(ctx, key, to_delete_key).Result()
 			if err != nil {
-				return "", fmt.Errorf("user login delete cookie failed: %w", err)
+				return "", fmt.Errorf("user login delete token failed: %w", err)
 			}
 
-			_, err = serv.Redis.HSet(ctx, key, cookie, string(expire_date_byte)).Result()
+			_, err = serv.Redis.HSet(ctx, key, token, string(expire_date_byte)).Result()
 			if err != nil {
-				return "", fmt.Errorf("user login set cookie failed: %w", err)
+				return "", fmt.Errorf("user login set token failed: %w", err)
 			}
 		}
 	}
 
-	return cookie, nil
+	return token, nil
+}
+
+func (serv *UserService) Logout(id uint32, token string) error {
+	ctx := context.Background()
+
+	key := fmt.Sprintf("user:%d", id)
+	num, err := serv.Redis.HDel(ctx, key, token).Result()
+	switch {
+	case num == 0:
+		{
+			return fmt.Errorf("user logout token does not exist failed: %w", err)
+		}
+	case err != nil:
+		{
+			return fmt.Errorf("user logout delete token failed: %w", err)
+		}
+	}
+
+	return nil
 }
