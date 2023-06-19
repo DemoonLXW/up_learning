@@ -25,9 +25,10 @@ func TestLogin(t *testing.T) {
 	// 	fmt.Println(cookie)
 	// 	time.Sleep(3 * time.Second)
 	// }
-	cookie, err := serv.Login("username3", "password3")
+	u, cookie, err := serv.Login("username3", "password3")
 	assert.Nil(t, err)
 	fmt.Println(cookie)
+	fmt.Println(u)
 }
 
 func TestLogout(t *testing.T) {

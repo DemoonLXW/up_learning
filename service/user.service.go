@@ -16,7 +16,7 @@ type UserService struct {
 	Redis *redis.Client
 }
 
-func (serv *UserService) Login(account, password string) (string, error) {
+func (serv *UserService) Login(account, password string) (*ent.User, string, error) {
 	ctx := context.Background()
 
 	u, err := serv.DB.User.Query().Where(
@@ -29,15 +29,15 @@ func (serv *UserService) Login(account, password string) (string, error) {
 			user.Password(password),
 			user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 		),
-	).First(ctx)
+	).WithRoles().First(ctx)
 	if err != nil {
-		return "", fmt.Errorf("user login check credential failed: %w", err)
+		return nil, "", fmt.Errorf("user login check credential failed: %w", err)
 	}
 
 	expire_date := time.Now().In(time.Local)
 	expire_date_byte, err := expire_date.MarshalText()
 	if err != nil {
-		return "", fmt.Errorf("user login convert time to string failed: %w", err)
+		return nil, "", fmt.Errorf("user login convert time to string failed: %w", err)
 	}
 	key := fmt.Sprintf("user:%d", u.ID)
 	token := fmt.Sprintf("%x", md5.Sum([]byte(key+expire_date.String())))
@@ -47,12 +47,12 @@ func (serv *UserService) Login(account, password string) (string, error) {
 		{
 			_, err = serv.Redis.HSet(ctx, key, token, string(expire_date_byte)).Result()
 			if err != nil {
-				return "", fmt.Errorf("user login set token failed: %w", err)
+				return nil, "", fmt.Errorf("user login set token failed: %w", err)
 			}
 		}
 	case err != nil:
 		{
-			return "", fmt.Errorf("user login get tokens failed: %w", err)
+			return nil, "", fmt.Errorf("user login get tokens failed: %w", err)
 		}
 	case len(user_tokens) >= 5:
 		{
@@ -61,7 +61,7 @@ func (serv *UserService) Login(account, password string) (string, error) {
 			for k, v := range user_tokens {
 				expire_time, err := time.Parse(time.RFC3339, v)
 				if err != nil {
-					return "", fmt.Errorf("user login parse string to time failed: %w", err)
+					return nil, "", fmt.Errorf("user login parse string to time failed: %w", err)
 				}
 				if expire_time.Before(to_delete_time) {
 					to_delete_key = k
@@ -71,17 +71,17 @@ func (serv *UserService) Login(account, password string) (string, error) {
 
 			_, err := serv.Redis.HDel(ctx, key, to_delete_key).Result()
 			if err != nil {
-				return "", fmt.Errorf("user login delete token failed: %w", err)
+				return nil, "", fmt.Errorf("user login delete token failed: %w", err)
 			}
 
 			_, err = serv.Redis.HSet(ctx, key, token, string(expire_date_byte)).Result()
 			if err != nil {
-				return "", fmt.Errorf("user login set token failed: %w", err)
+				return nil, "", fmt.Errorf("user login set token failed: %w", err)
 			}
 		}
 	}
 
-	return token, nil
+	return u, token, nil
 }
 
 func (serv *UserService) Logout(id uint32, token string) error {
