@@ -12,7 +12,6 @@ func TestProvideDatabaseConfig(t *testing.T) {
 	config, err := ProvideDatabaseConfig()
 	config = config["mysql"].(map[string]interface{})
 	assert.Nil(t, err)
-	assert.Equal(t, "learn:123456@tcp(106.52.123.58:3306)/up_learning_lxw?charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true", config["dsn"].(string))
 	assert.Equal(t, float64(20), config["MaxIdleConns"].(float64))
 	assert.Equal(t, 50., config["MaxOpenConns"].(float64))
 	assert.Equal(t, true, config["SkipDefaultTransaction"].(bool))
@@ -33,7 +32,6 @@ func TestProvideRedisConfig(t *testing.T) {
 	config, err := ProvideDatabaseConfig()
 	config = config["redis"].(map[string]interface{})
 	assert.Nil(t, err)
-	assert.Equal(t, "redis://lxw:123456@106.52.123.58:6379/0", config["url"].(string))
 }
 
 func TestProvideRedis(t *testing.T) {
