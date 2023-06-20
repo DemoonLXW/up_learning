@@ -16,6 +16,59 @@ type UserService struct {
 	Redis *redis.Client
 }
 
+func (serv *UserService) CreateAndSaveToken(id uint32) (string, error) {
+	ctx := context.Background()
+
+	expire_date := time.Now().In(time.Local).Add(6 * time.Hour)
+	expire_date_byte, err := expire_date.MarshalText()
+	if err != nil {
+		return "", fmt.Errorf("create and save token convert time to string failed: %w", err)
+	}
+	key := fmt.Sprintf("user:%d", id)
+	token := fmt.Sprintf("%x", md5.Sum([]byte(key+expire_date.String())))
+	user_tokens, err := serv.Redis.HGetAll(ctx, key).Result()
+	switch {
+	case err == redis.Nil, err == nil && len(user_tokens) < 5:
+		{
+			_, err = serv.Redis.HSet(ctx, key, token, string(expire_date_byte)).Result()
+			if err != nil {
+				return "", fmt.Errorf("create and save token set token failed: %w", err)
+			}
+		}
+	case err != nil:
+		{
+			return "", fmt.Errorf("create and save token get tokens failed: %w", err)
+		}
+	case len(user_tokens) >= 5:
+		{
+			to_delete_key := ""
+			to_delete_time := time.Now()
+			for k, v := range user_tokens {
+				expire_time, err := time.Parse(time.RFC3339, v)
+				if err != nil {
+					return "", fmt.Errorf("create and save token parse string to time failed: %w", err)
+				}
+				if expire_time.Before(to_delete_time) {
+					to_delete_key = k
+					to_delete_time = expire_time
+				}
+			}
+
+			_, err := serv.Redis.HDel(ctx, key, to_delete_key).Result()
+			if err != nil {
+				return "", fmt.Errorf("create and save token delete token failed: %w", err)
+			}
+
+			_, err = serv.Redis.HSet(ctx, key, token, string(expire_date_byte)).Result()
+			if err != nil {
+				return "", fmt.Errorf("create and save token set token failed: %w", err)
+			}
+		}
+	}
+
+	return token, nil
+}
+
 func (serv *UserService) Login(account, password string) (*ent.User, string, error) {
 	ctx := context.Background()
 
@@ -34,51 +87,9 @@ func (serv *UserService) Login(account, password string) (*ent.User, string, err
 		return nil, "", fmt.Errorf("user login check credential failed: %w", err)
 	}
 
-	expire_date := time.Now().In(time.Local)
-	expire_date_byte, err := expire_date.MarshalText()
+	token, err := serv.CreateAndSaveToken(u.ID)
 	if err != nil {
-		return nil, "", fmt.Errorf("user login convert time to string failed: %w", err)
-	}
-	key := fmt.Sprintf("user:%d", u.ID)
-	token := fmt.Sprintf("%x", md5.Sum([]byte(key+expire_date.String())))
-	user_tokens, err := serv.Redis.HGetAll(ctx, key).Result()
-	switch {
-	case err == redis.Nil, err == nil && len(user_tokens) < 5:
-		{
-			_, err = serv.Redis.HSet(ctx, key, token, string(expire_date_byte)).Result()
-			if err != nil {
-				return nil, "", fmt.Errorf("user login set token failed: %w", err)
-			}
-		}
-	case err != nil:
-		{
-			return nil, "", fmt.Errorf("user login get tokens failed: %w", err)
-		}
-	case len(user_tokens) >= 5:
-		{
-			to_delete_key := ""
-			to_delete_time := time.Now()
-			for k, v := range user_tokens {
-				expire_time, err := time.Parse(time.RFC3339, v)
-				if err != nil {
-					return nil, "", fmt.Errorf("user login parse string to time failed: %w", err)
-				}
-				if expire_time.Before(to_delete_time) {
-					to_delete_key = k
-					to_delete_time = expire_time
-				}
-			}
-
-			_, err := serv.Redis.HDel(ctx, key, to_delete_key).Result()
-			if err != nil {
-				return nil, "", fmt.Errorf("user login delete token failed: %w", err)
-			}
-
-			_, err = serv.Redis.HSet(ctx, key, token, string(expire_date_byte)).Result()
-			if err != nil {
-				return nil, "", fmt.Errorf("user login set token failed: %w", err)
-			}
-		}
+		return nil, "", fmt.Errorf("user login create and save token failed: %w", err)
 	}
 
 	return u, token, nil
@@ -101,4 +112,50 @@ func (serv *UserService) Logout(id uint32, token string) error {
 	}
 
 	return nil
+}
+
+func (serv *UserService) CheckCredential(id uint32, token string) (string, error) {
+	ctx := context.Background()
+
+	key := fmt.Sprintf("user:%d", id)
+	val, err := serv.Redis.HGet(ctx, key, token).Result()
+	switch {
+	case err == redis.Nil:
+		{
+			return "", fmt.Errorf("user check credential token does not exist failed: %w", err)
+		}
+	case err != nil:
+		{
+			return "", fmt.Errorf("user check credential get token failed: %w", err)
+		}
+	}
+	expire_time, err := time.Parse(time.RFC3339, val)
+	if err != nil {
+		return "", fmt.Errorf("user check credential parse string to time failed: %w", err)
+	}
+	if time.Now().After(expire_time) {
+		return "", fmt.Errorf("user check credential credential is expired failed: %w", err)
+	}
+	if time.Now().Before(expire_time.Add(-1 * time.Hour)) {
+		return token, nil
+	}
+
+	num, err := serv.Redis.HDel(ctx, key, token).Result()
+	switch {
+	case num == 0:
+		{
+			return "", fmt.Errorf("user check credential token does not exist failed: %w", err)
+		}
+	case err != nil:
+		{
+			return "", fmt.Errorf("user check credential delete token failed: %w", err)
+		}
+	}
+	new_token, err := serv.CreateAndSaveToken(id)
+	if err != nil {
+		return "", fmt.Errorf("user check credential create and save token failed: %w", err)
+	}
+
+	return new_token, nil
+
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/DemoonLXW/up_learning/injection"
 	"github.com/stretchr/testify/assert"
@@ -19,16 +20,17 @@ func TestLogin(t *testing.T) {
 	assert.Nil(t, err)
 	serv.Redis = rd
 
-	// for i := 0; i < 2; i++ {
-	// 	cookie, err := serv.Login("username1", "password1")
-	// 	assert.Nil(t, err)
-	// 	fmt.Println(cookie)
-	// 	time.Sleep(3 * time.Second)
-	// }
-	u, cookie, err := serv.Login("username3", "password3")
-	assert.Nil(t, err)
-	fmt.Println(cookie)
-	fmt.Println(u)
+	for i := 0; i < 3; i++ {
+		u, token, err := serv.Login("username1", "password1")
+		assert.Nil(t, err)
+		fmt.Println(token)
+		fmt.Println(u)
+		time.Sleep(3 * time.Second)
+	}
+	// u, cookie, err := serv.Login("username1", "password1")
+	// assert.Nil(t, err)
+	// fmt.Println(cookie)
+	// fmt.Println(u)
 }
 
 func TestLogout(t *testing.T) {
@@ -44,4 +46,20 @@ func TestLogout(t *testing.T) {
 	token := "cb56c3b6fa1a3322fb36180b27755428"
 	err = serv.Logout(1, token)
 	assert.Nil(t, err)
+}
+
+func TestCheckCredential(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(UserService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+	rd, err := injection.ProvideRedis()
+	assert.Nil(t, err)
+	serv.Redis = rd
+
+	token := "bccf7937994be9a77d0618376a0b282d"
+	new_token, err := serv.CheckCredential(1, token)
+	assert.Nil(t, err)
+	fmt.Println(new_token)
 }
