@@ -7,6 +7,7 @@
 package injection
 
 import (
+	"github.com/DemoonLXW/up_learning/controller"
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/service"
@@ -64,4 +65,37 @@ func ProvideService() (*service.Service, error) {
 		User:       userService,
 	}
 	return serviceService, nil
+}
+
+func ProvideController() (*controller.Controller, error) {
+	dataBaseConfig, err := database.ProvideDatabaseConfig()
+	if err != nil {
+		return nil, err
+	}
+	client, err := database.ProvideDB(dataBaseConfig)
+	if err != nil {
+		return nil, err
+	}
+	managementService := &service.ManagementService{
+		DB: client,
+	}
+	redisClient, err := database.ProvideRedis(dataBaseConfig)
+	if err != nil {
+		return nil, err
+	}
+	userService := &service.UserService{
+		DB:    client,
+		Redis: redisClient,
+	}
+	serviceService := &service.Service{
+		Management: managementService,
+		User:       userService,
+	}
+	userController := &controller.UserController{
+		service: serviceService,
+	}
+	controllerController := &controller.Controller{
+		User: userController,
+	}
+	return controllerController, nil
 }

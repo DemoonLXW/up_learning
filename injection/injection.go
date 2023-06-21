@@ -3,6 +3,7 @@
 package injection
 
 import (
+	"github.com/DemoonLXW/up_learning/controller"
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/service"
@@ -23,4 +24,9 @@ func ProvideRedis() (*redis.Client, error) {
 func ProvideService() (*service.Service, error) {
 	wire.Build(database.DataBaseProvider, service.ServiceProvider)
 	return &service.Service{}, nil
+}
+
+func ProvideController() (*controller.Controller, error) {
+	wire.Build(database.DataBaseProvider, service.ServiceProvider, controller.ControllerProvider)
+	return &controller.Controller{}, nil
 }
