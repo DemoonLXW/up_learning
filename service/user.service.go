@@ -19,7 +19,7 @@ type UserService struct {
 func (serv *UserService) CreateAndSaveToken(id uint32) (string, error) {
 	ctx := context.Background()
 
-	expire_date := time.Now().In(time.Local).Add(6 * time.Hour)
+	expire_date := time.Now().In(time.Local).Add(2 * time.Hour)
 	expire_date_byte, err := expire_date.MarshalText()
 	if err != nil {
 		return "", fmt.Errorf("create and save token convert time to string failed: %w", err)
@@ -136,7 +136,7 @@ func (serv *UserService) CheckCredential(id uint32, token string) (string, error
 	if time.Now().After(expire_time) {
 		return "", fmt.Errorf("user check credential credential is expired failed: %w", err)
 	}
-	if time.Now().Before(expire_time.Add(-1 * time.Hour)) {
+	if time.Now().Before(expire_time.Add(-30 * time.Minute)) {
 		return token, nil
 	}
 
