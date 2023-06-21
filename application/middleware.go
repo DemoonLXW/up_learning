@@ -8,6 +8,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func SetupMiddleware(app *gin.Engine) *gin.Engine {
+	app.Use(gin.Logger())
+	app.Use(gin.Recovery())
+	app.Use(CookieDomain())
+
+	return app
+}
+
 func GetDomainConfig() (map[string]interface{}, error) {
 	filepath, ok := os.LookupEnv("DOMAIN_CONFIG")
 	if !ok {
