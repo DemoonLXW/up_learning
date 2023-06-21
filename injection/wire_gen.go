@@ -7,10 +7,12 @@
 package injection
 
 import (
+	"github.com/DemoonLXW/up_learning/application"
 	"github.com/DemoonLXW/up_learning/controller"
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/service"
+	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -40,7 +42,7 @@ func ProvideRedis() (*redis.Client, error) {
 	return client, nil
 }
 
-func ProvideService() (*service.Service, error) {
+func ProvideService() (*service.Services, error) {
 	dataBaseConfig, err := database.ProvideDatabaseConfig()
 	if err != nil {
 		return nil, err
@@ -60,14 +62,14 @@ func ProvideService() (*service.Service, error) {
 		DB:    client,
 		Redis: redisClient,
 	}
-	serviceService := &service.Service{
+	services := &service.Services{
 		Management: managementService,
 		User:       userService,
 	}
-	return serviceService, nil
+	return services, nil
 }
 
-func ProvideController() (*controller.Controller, error) {
+func ProvideController() (*controller.Controllers, error) {
 	dataBaseConfig, err := database.ProvideDatabaseConfig()
 	if err != nil {
 		return nil, err
@@ -87,15 +89,49 @@ func ProvideController() (*controller.Controller, error) {
 		DB:    client,
 		Redis: redisClient,
 	}
-	serviceService := &service.Service{
+	services := &service.Services{
 		Management: managementService,
 		User:       userService,
 	}
 	userController := &controller.UserController{
-		service: serviceService,
+		Services: services,
 	}
-	controllerController := &controller.Controller{
+	controllers := &controller.Controllers{
 		User: userController,
 	}
-	return controllerController, nil
+	return controllers, nil
+}
+
+func ProvideApplication() (*gin.Engine, error) {
+	dataBaseConfig, err := database.ProvideDatabaseConfig()
+	if err != nil {
+		return nil, err
+	}
+	client, err := database.ProvideDB(dataBaseConfig)
+	if err != nil {
+		return nil, err
+	}
+	managementService := &service.ManagementService{
+		DB: client,
+	}
+	redisClient, err := database.ProvideRedis(dataBaseConfig)
+	if err != nil {
+		return nil, err
+	}
+	userService := &service.UserService{
+		DB:    client,
+		Redis: redisClient,
+	}
+	services := &service.Services{
+		Management: managementService,
+		User:       userService,
+	}
+	userController := &controller.UserController{
+		Services: services,
+	}
+	controllers := &controller.Controllers{
+		User: userController,
+	}
+	engine := application.SetupApplication(controllers)
+	return engine, nil
 }

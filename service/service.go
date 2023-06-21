@@ -8,12 +8,12 @@ import (
 )
 
 var ServiceProvider = wire.NewSet(
-	wire.Struct(new(Service), "*"),
+	wire.Struct(new(Services), "*"),
 	wire.Struct(new(ManagementService), "*"),
 	wire.Struct(new(UserService), "*"),
 )
 
-type Service struct {
+type Services struct {
 	Management *ManagementService
 	User       *UserService
 }

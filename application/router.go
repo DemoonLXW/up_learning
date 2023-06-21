@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(app *gin.Engine, controller *controller.Controller) *gin.Engine {
+func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engine {
 
-	app.POST("/login", controller.User.Login)
+	app.POST("/login", controllers.User.Login)
 
 	return app
 }

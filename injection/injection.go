@@ -3,10 +3,12 @@
 package injection
 
 import (
+	"github.com/DemoonLXW/up_learning/application"
 	"github.com/DemoonLXW/up_learning/controller"
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/service"
+	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
 )
@@ -21,12 +23,17 @@ func ProvideRedis() (*redis.Client, error) {
 	return &redis.Client{}, nil
 }
 
-func ProvideService() (*service.Service, error) {
+func ProvideService() (*service.Services, error) {
 	wire.Build(database.DataBaseProvider, service.ServiceProvider)
-	return &service.Service{}, nil
+	return &service.Services{}, nil
 }
 
-func ProvideController() (*controller.Controller, error) {
+func ProvideController() (*controller.Controllers, error) {
 	wire.Build(database.DataBaseProvider, service.ServiceProvider, controller.ControllerProvider)
-	return &controller.Controller{}, nil
+	return &controller.Controllers{}, nil
+}
+
+func ProvideApplication() (*gin.Engine, error) {
+	wire.Build(database.DataBaseProvider, service.ServiceProvider, controller.ControllerProvider, application.ApplicationProvider)
+	return &gin.Engine{}, nil
 }

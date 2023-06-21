@@ -13,7 +13,7 @@ var ApplicationProvider = wire.NewSet(
 	SetupApplication,
 )
 
-func SetupApplication(controller *controller.Controller) *gin.Engine {
+func SetupApplication(controllers *controller.Controllers) *gin.Engine {
 	filepath, ok := os.LookupEnv("GIN_LOG")
 	if !ok {
 		filepath = "./gin.log"
@@ -26,7 +26,7 @@ func SetupApplication(controller *controller.Controller) *gin.Engine {
 
 	middlewared_app := SetupMiddleware(app)
 
-	routed_app := SetupRouter(middlewared_app, controller)
+	routed_app := SetupRouter(middlewared_app, controllers)
 
 	return routed_app
 }

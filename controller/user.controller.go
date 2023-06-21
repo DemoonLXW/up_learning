@@ -10,7 +10,7 @@ import (
 )
 
 type UserController struct {
-	service *service.Service
+	Services *service.Services
 }
 
 func (cont *UserController) Login(c *gin.Context) {
@@ -20,7 +20,7 @@ func (cont *UserController) Login(c *gin.Context) {
 		return
 	}
 
-	user, token, err := cont.service.User.Login(*login.Account, *login.Password)
+	user, token, err := cont.Services.User.Login(*login.Account, *login.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
