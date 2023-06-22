@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 
@@ -19,8 +21,15 @@ func (cont *UserController) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	hex_password := []byte(*login.Password)
+	original_password := make([]byte, hex.DecodedLen(len(hex_password)))
 
-	user, token, err := cont.Services.User.Login(*login.Account, *login.Password)
+	if _, err := hex.Decode(original_password, hex_password); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	sha1_password := fmt.Sprintf("%x", sha256.Sum256(original_password))
+	user, token, err := cont.Services.User.Login(*login.Account, sha1_password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
