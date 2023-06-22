@@ -50,3 +50,26 @@ func (cont *UserController) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *UserController) Logout(c *gin.Context) {
+	uid, err := c.Cookie("uid")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	token, err := c.Cookie("token")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err = cont.Services.User.Logout(uid, token)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var res entity.Result
+	res.Message = "Logout Successfully"
+
+	c.JSON(http.StatusOK, res)
+
+}

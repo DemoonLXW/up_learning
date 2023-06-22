@@ -8,6 +8,7 @@ import (
 func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engine {
 
 	app.POST("/login", controllers.User.Login)
+	app.POST("/logout", controllers.User.Logout)
 
 	return app
 }

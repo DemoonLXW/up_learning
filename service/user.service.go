@@ -95,10 +95,10 @@ func (serv *UserService) Login(account, password string) (*ent.User, string, err
 	return u, token, nil
 }
 
-func (serv *UserService) Logout(id uint32, token string) error {
+func (serv *UserService) Logout(id, token string) error {
 	ctx := context.Background()
 
-	key := fmt.Sprintf("user:%d", id)
+	key := "user:" + id
 	num, err := serv.Redis.HDel(ctx, key, token).Result()
 	switch {
 	case num == 0:
