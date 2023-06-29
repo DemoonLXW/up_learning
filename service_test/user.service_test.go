@@ -45,7 +45,7 @@ func TestLogout(t *testing.T) {
 	serv.Redis = rd
 
 	token := "cb56c3b6fa1a3322fb36180b27755428"
-	err = serv.Logout(1, token)
+	err = serv.Logout("1", token)
 	assert.Nil(t, err)
 }
 
