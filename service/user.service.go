@@ -42,7 +42,7 @@ func (serv *UserService) CreateAndSaveToken(id uint32) (string, error) {
 	case len(user_tokens) >= 5:
 		{
 			to_delete_key := ""
-			to_delete_time := time.Now()
+			to_delete_time := time.Now().Add(3 * time.Hour)
 			for k, v := range user_tokens {
 				expire_time, err := time.Parse(time.RFC3339, v)
 				if err != nil {
