@@ -20,7 +20,6 @@ func SetupApplication(controllers *controller.Controllers) *gin.Engine {
 	}
 	f, _ := os.Create(filepath)
 	gin.DefaultWriter = io.MultiWriter(f)
-	defer f.Close()
 
 	app := gin.New()
 

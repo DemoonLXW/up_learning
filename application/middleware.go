@@ -11,6 +11,17 @@ import (
 func SetupMiddleware(app *gin.Engine) *gin.Engine {
 	app.Use(gin.Logger())
 	app.Use(gin.Recovery())
+
+	// app.Use(cors.New(cors.Config{
+	// 	AllowMethods:     []string{"POST", "GET", "OPTIONS"},
+	// 	AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+	// 	AllowCredentials: true,
+	// 	MaxAge:           12 * time.Hour,
+	// 	AllowOriginFunc: func(origin string) bool {
+	// 		return strings.Contains(origin, "localhost") || strings.Contains(origin, "127.0.0.1")
+	// 	},
+	// }))
+	// app.Use(cors.Default())
 	app.Use(CookieDomain())
 
 	return app
