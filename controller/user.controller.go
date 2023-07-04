@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/service"
@@ -72,4 +73,49 @@ func (cont *UserController) Logout(c *gin.Context) {
 
 	c.JSON(http.StatusOK, res)
 
+}
+
+func (cont *UserController) AutoLogin(c *gin.Context) {
+	uid, err := c.Cookie("uid")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	token, err := c.Cookie("token")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	id, err := strconv.ParseUint(uid, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	new_token, err := cont.Services.User.CheckCredential(uint32(id), token)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := cont.Services.User.FindOneUserById(uint32(id))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	domain := c.Value("domain").(string)
+	c.SetCookie("uid", uid, 9000, "/", domain, false, true)
+	c.SetCookie("token", new_token, 9000, "/", domain, false, true)
+
+	var res entity.Result
+	res.Message = "Auto Login Successfully"
+	roles := make([]string, len(user.Edges.Roles))
+	for i, v := range user.Edges.Roles {
+		roles[i] = *v.Name
+	}
+	res.Data = map[string][]string{"roles": roles}
+
+	c.JSON(http.StatusOK, res)
 }
