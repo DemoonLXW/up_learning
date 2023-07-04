@@ -159,3 +159,12 @@ func (serv *UserService) CheckCredential(id uint32, token string) (string, error
 	return new_token, nil
 
 }
+
+func (serv *UserService) FindOneUserById(id uint32) (*ent.User, error) {
+	ctx := context.Background()
+	user, err := serv.DB.User.Query().Where(user.IDEQ(id)).WithRoles().Only(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("user find one by id failed: %w", err)
+	}
+	return user, nil
+}

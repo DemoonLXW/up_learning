@@ -67,3 +67,19 @@ func TestCheckCredential(t *testing.T) {
 	assert.Nil(t, err)
 	fmt.Println(new_token)
 }
+
+func TestFindOneUserWihtRoles(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.UserService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+	rd, err := injection.ProvideRedis()
+	assert.Nil(t, err)
+	serv.Redis = rd
+
+	user, err := serv.FindOneUserById(uint32(1))
+	assert.Nil(t, err)
+	fmt.Println(user)
+	fmt.Println(user.Edges.Roles)
+}
