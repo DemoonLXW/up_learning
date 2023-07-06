@@ -8,21 +8,22 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"github.com/DemoonLXW/up_learning/entity"
 )
 
-// Role holds the schema definition for the Role entity.
-type Role struct {
+// Menu holds the schema definition for the Menu entity.
+type Menu struct {
 	ent.Schema
 }
 
-func (Role) Annotations() []schema.Annotation {
+func (Menu) Annotations() []schema.Annotation {
 	return []schema.Annotation{
-		entsql.Annotation{Table: "role"},
+		entsql.Annotation{Table: "menu"},
 	}
 }
 
-// Fields of the Role.
-func (Role) Fields() []ent.Field {
+// Fields of the Menu.
+func (Menu) Fields() []ent.Field {
 	return []ent.Field{
 		field.Uint8("id").
 			Unique(),
@@ -30,9 +31,9 @@ func (Role) Fields() []ent.Field {
 			Unique().
 			NotEmpty().
 			Nillable(),
-		field.String("description").
-			Optional().
-			Nillable(),
+		field.JSON("json_menu", []*entity.Menu{}).
+			Optional(),
+		field.Uint8("rid"),
 		field.Time("created_time").
 			Default(time.Now).
 			Nillable(),
@@ -45,15 +46,13 @@ func (Role) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Role.
-func (Role) Edges() []ent.Edge {
+// Edges of the Menu.
+func (Menu) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("permissions", Permission.Type).
-			Through("role_permission", RolePermission.Type),
-		edge.To("menu", Menu.Type).
-			Unique(),
-		edge.From("users", User.Type).
-			Ref("roles").
-			Through("user_role", UserRole.Type),
+		edge.From("role", Role.Type).
+			Ref("menu").
+			Unique().
+			Required().
+			Field("rid"),
 	}
 }

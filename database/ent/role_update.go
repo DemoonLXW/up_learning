@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
@@ -113,6 +114,25 @@ func (ru *RoleUpdate) AddPermissions(p ...*Permission) *RoleUpdate {
 	return ru.AddPermissionIDs(ids...)
 }
 
+// SetMenuID sets the "menu" edge to the Menu entity by ID.
+func (ru *RoleUpdate) SetMenuID(id uint8) *RoleUpdate {
+	ru.mutation.SetMenuID(id)
+	return ru
+}
+
+// SetNillableMenuID sets the "menu" edge to the Menu entity by ID if the given value is not nil.
+func (ru *RoleUpdate) SetNillableMenuID(id *uint8) *RoleUpdate {
+	if id != nil {
+		ru = ru.SetMenuID(*id)
+	}
+	return ru
+}
+
+// SetMenu sets the "menu" edge to the Menu entity.
+func (ru *RoleUpdate) SetMenu(m *Menu) *RoleUpdate {
+	return ru.SetMenuID(m.ID)
+}
+
 // AddUserIDs adds the "users" edge to the User entity by IDs.
 func (ru *RoleUpdate) AddUserIDs(ids ...uint32) *RoleUpdate {
 	ru.mutation.AddUserIDs(ids...)
@@ -152,6 +172,12 @@ func (ru *RoleUpdate) RemovePermissions(p ...*Permission) *RoleUpdate {
 		ids[i] = p[i].ID
 	}
 	return ru.RemovePermissionIDs(ids...)
+}
+
+// ClearMenu clears the "menu" edge to the Menu entity.
+func (ru *RoleUpdate) ClearMenu() *RoleUpdate {
+	ru.mutation.ClearMenu()
+	return ru
 }
 
 // ClearUsers clears all "users" edges to the User entity.
@@ -297,6 +323,35 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ru.mutation.MenuCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   role.MenuTable,
+			Columns: []string{role.MenuColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeUint8),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.MenuIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   role.MenuTable,
+			Columns: []string{role.MenuColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeUint8),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if ru.mutation.UsersCleared() {
@@ -459,6 +514,25 @@ func (ruo *RoleUpdateOne) AddPermissions(p ...*Permission) *RoleUpdateOne {
 	return ruo.AddPermissionIDs(ids...)
 }
 
+// SetMenuID sets the "menu" edge to the Menu entity by ID.
+func (ruo *RoleUpdateOne) SetMenuID(id uint8) *RoleUpdateOne {
+	ruo.mutation.SetMenuID(id)
+	return ruo
+}
+
+// SetNillableMenuID sets the "menu" edge to the Menu entity by ID if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableMenuID(id *uint8) *RoleUpdateOne {
+	if id != nil {
+		ruo = ruo.SetMenuID(*id)
+	}
+	return ruo
+}
+
+// SetMenu sets the "menu" edge to the Menu entity.
+func (ruo *RoleUpdateOne) SetMenu(m *Menu) *RoleUpdateOne {
+	return ruo.SetMenuID(m.ID)
+}
+
 // AddUserIDs adds the "users" edge to the User entity by IDs.
 func (ruo *RoleUpdateOne) AddUserIDs(ids ...uint32) *RoleUpdateOne {
 	ruo.mutation.AddUserIDs(ids...)
@@ -498,6 +572,12 @@ func (ruo *RoleUpdateOne) RemovePermissions(p ...*Permission) *RoleUpdateOne {
 		ids[i] = p[i].ID
 	}
 	return ruo.RemovePermissionIDs(ids...)
+}
+
+// ClearMenu clears the "menu" edge to the Menu entity.
+func (ruo *RoleUpdateOne) ClearMenu() *RoleUpdateOne {
+	ruo.mutation.ClearMenu()
+	return ruo
 }
 
 // ClearUsers clears all "users" edges to the User entity.
@@ -673,6 +753,35 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.MenuCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   role.MenuTable,
+			Columns: []string{role.MenuColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeUint8),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.MenuIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   role.MenuTable,
+			Columns: []string{role.MenuColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeUint8),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if ruo.mutation.UsersCleared() {

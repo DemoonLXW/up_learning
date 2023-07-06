@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 )
 
@@ -37,6 +38,8 @@ type Role struct {
 type RoleEdges struct {
 	// Permissions holds the value of the permissions edge.
 	Permissions []*Permission `json:"permissions,omitempty"`
+	// Menu holds the value of the menu edge.
+	Menu *Menu `json:"menu,omitempty"`
 	// Users holds the value of the users edge.
 	Users []*User `json:"users,omitempty"`
 	// RolePermission holds the value of the role_permission edge.
@@ -45,7 +48,7 @@ type RoleEdges struct {
 	UserRole []*UserRole `json:"user_role,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // PermissionsOrErr returns the Permissions value or an error if the edge
@@ -57,10 +60,23 @@ func (e RoleEdges) PermissionsOrErr() ([]*Permission, error) {
 	return nil, &NotLoadedError{edge: "permissions"}
 }
 
+// MenuOrErr returns the Menu value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RoleEdges) MenuOrErr() (*Menu, error) {
+	if e.loadedTypes[1] {
+		if e.Menu == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: menu.Label}
+		}
+		return e.Menu, nil
+	}
+	return nil, &NotLoadedError{edge: "menu"}
+}
+
 // UsersOrErr returns the Users value or an error if the edge
 // was not loaded in eager-loading.
 func (e RoleEdges) UsersOrErr() ([]*User, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Users, nil
 	}
 	return nil, &NotLoadedError{edge: "users"}
@@ -69,7 +85,7 @@ func (e RoleEdges) UsersOrErr() ([]*User, error) {
 // RolePermissionOrErr returns the RolePermission value or an error if the edge
 // was not loaded in eager-loading.
 func (e RoleEdges) RolePermissionOrErr() ([]*RolePermission, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.RolePermission, nil
 	}
 	return nil, &NotLoadedError{edge: "role_permission"}
@@ -78,7 +94,7 @@ func (e RoleEdges) RolePermissionOrErr() ([]*RolePermission, error) {
 // UserRoleOrErr returns the UserRole value or an error if the edge
 // was not loaded in eager-loading.
 func (e RoleEdges) UserRoleOrErr() ([]*UserRole, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.UserRole, nil
 	}
 	return nil, &NotLoadedError{edge: "user_role"}
@@ -167,6 +183,11 @@ func (r *Role) Value(name string) (ent.Value, error) {
 // QueryPermissions queries the "permissions" edge of the Role entity.
 func (r *Role) QueryPermissions() *PermissionQuery {
 	return NewRoleClient(r.config).QueryPermissions(r)
+}
+
+// QueryMenu queries the "menu" edge of the Role entity.
+func (r *Role) QueryMenu() *MenuQuery {
+	return NewRoleClient(r.config).QueryMenu(r)
 }
 
 // QueryUsers queries the "users" edge of the Role entity.

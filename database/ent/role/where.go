@@ -363,6 +363,29 @@ func HasPermissionsWith(preds ...predicate.Permission) predicate.Role {
 	})
 }
 
+// HasMenu applies the HasEdge predicate on the "menu" edge.
+func HasMenu() predicate.Role {
+	return predicate.Role(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, MenuTable, MenuColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMenuWith applies the HasEdge predicate on the "menu" edge with a given conditions (other predicates).
+func HasMenuWith(preds ...predicate.Menu) predicate.Role {
+	return predicate.Role(func(s *sql.Selector) {
+		step := newMenuStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasUsers applies the HasEdge predicate on the "users" edge.
 func HasUsers() predicate.Role {
 	return predicate.Role(func(s *sql.Selector) {

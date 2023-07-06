@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
@@ -17,6 +18,24 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	menuFields := schema.Menu{}.Fields()
+	_ = menuFields
+	// menuDescName is the schema descriptor for name field.
+	menuDescName := menuFields[1].Descriptor()
+	// menu.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	menu.NameValidator = menuDescName.Validators[0].(func(string) error)
+	// menuDescCreatedTime is the schema descriptor for created_time field.
+	menuDescCreatedTime := menuFields[4].Descriptor()
+	// menu.DefaultCreatedTime holds the default value on creation for the created_time field.
+	menu.DefaultCreatedTime = menuDescCreatedTime.Default.(func() time.Time)
+	// menuDescDeletedTime is the schema descriptor for deleted_time field.
+	menuDescDeletedTime := menuFields[5].Descriptor()
+	// menu.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	menu.DefaultDeletedTime = menuDescDeletedTime.Default.(time.Time)
+	// menuDescModifiedTime is the schema descriptor for modified_time field.
+	menuDescModifiedTime := menuFields[6].Descriptor()
+	// menu.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	menu.DefaultModifiedTime = menuDescModifiedTime.Default.(time.Time)
 	permissionFields := schema.Permission{}.Fields()
 	_ = permissionFields
 	// permissionDescAction is the schema descriptor for action field.

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
@@ -27,6 +28,7 @@ type RoleQuery struct {
 	inters             []Interceptor
 	predicates         []predicate.Role
 	withPermissions    *PermissionQuery
+	withMenu           *MenuQuery
 	withUsers          *UserQuery
 	withRolePermission *RolePermissionQuery
 	withUserRole       *UserRoleQuery
@@ -81,6 +83,28 @@ func (rq *RoleQuery) QueryPermissions() *PermissionQuery {
 			sqlgraph.From(role.Table, role.FieldID, selector),
 			sqlgraph.To(permission.Table, permission.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, role.PermissionsTable, role.PermissionsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMenu chains the current query on the "menu" edge.
+func (rq *RoleQuery) QueryMenu() *MenuQuery {
+	query := (&MenuClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(role.Table, role.FieldID, selector),
+			sqlgraph.To(menu.Table, menu.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, role.MenuTable, role.MenuColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -347,6 +371,7 @@ func (rq *RoleQuery) Clone() *RoleQuery {
 		inters:             append([]Interceptor{}, rq.inters...),
 		predicates:         append([]predicate.Role{}, rq.predicates...),
 		withPermissions:    rq.withPermissions.Clone(),
+		withMenu:           rq.withMenu.Clone(),
 		withUsers:          rq.withUsers.Clone(),
 		withRolePermission: rq.withRolePermission.Clone(),
 		withUserRole:       rq.withUserRole.Clone(),
@@ -364,6 +389,17 @@ func (rq *RoleQuery) WithPermissions(opts ...func(*PermissionQuery)) *RoleQuery 
 		opt(query)
 	}
 	rq.withPermissions = query
+	return rq
+}
+
+// WithMenu tells the query-builder to eager-load the nodes that are connected to
+// the "menu" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RoleQuery) WithMenu(opts ...func(*MenuQuery)) *RoleQuery {
+	query := (&MenuClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withMenu = query
 	return rq
 }
 
@@ -478,8 +514,9 @@ func (rq *RoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Role, e
 	var (
 		nodes       = []*Role{}
 		_spec       = rq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			rq.withPermissions != nil,
+			rq.withMenu != nil,
 			rq.withUsers != nil,
 			rq.withRolePermission != nil,
 			rq.withUserRole != nil,
@@ -507,6 +544,12 @@ func (rq *RoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Role, e
 		if err := rq.loadPermissions(ctx, query, nodes,
 			func(n *Role) { n.Edges.Permissions = []*Permission{} },
 			func(n *Role, e *Permission) { n.Edges.Permissions = append(n.Edges.Permissions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rq.withMenu; query != nil {
+		if err := rq.loadMenu(ctx, query, nodes, nil,
+			func(n *Role, e *Menu) { n.Edges.Menu = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -592,6 +635,33 @@ func (rq *RoleQuery) loadPermissions(ctx context.Context, query *PermissionQuery
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (rq *RoleQuery) loadMenu(ctx context.Context, query *MenuQuery, nodes []*Role, init func(*Role), assign func(*Role, *Menu)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint8]*Role)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(menu.FieldRid)
+	}
+	query.Where(predicate.Menu(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(role.MenuColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.Rid
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "rid" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
@@ -26,6 +27,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Menu is the client for interacting with the Menu builders.
+	Menu *MenuClient
 	// Permission is the client for interacting with the Permission builders.
 	Permission *PermissionClient
 	// Role is the client for interacting with the Role builders.
@@ -49,6 +52,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Menu = NewMenuClient(c.config)
 	c.Permission = NewPermissionClient(c.config)
 	c.Role = NewRoleClient(c.config)
 	c.RolePermission = NewRolePermissionClient(c.config)
@@ -136,6 +140,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:            ctx,
 		config:         cfg,
+		Menu:           NewMenuClient(cfg),
 		Permission:     NewPermissionClient(cfg),
 		Role:           NewRoleClient(cfg),
 		RolePermission: NewRolePermissionClient(cfg),
@@ -160,6 +165,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:            ctx,
 		config:         cfg,
+		Menu:           NewMenuClient(cfg),
 		Permission:     NewPermissionClient(cfg),
 		Role:           NewRoleClient(cfg),
 		RolePermission: NewRolePermissionClient(cfg),
@@ -171,7 +177,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Permission.
+//		Menu.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -193,26 +199,28 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Permission.Use(hooks...)
-	c.Role.Use(hooks...)
-	c.RolePermission.Use(hooks...)
-	c.User.Use(hooks...)
-	c.UserRole.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.Menu, c.Permission, c.Role, c.RolePermission, c.User, c.UserRole,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.Permission.Intercept(interceptors...)
-	c.Role.Intercept(interceptors...)
-	c.RolePermission.Intercept(interceptors...)
-	c.User.Intercept(interceptors...)
-	c.UserRole.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.Menu, c.Permission, c.Role, c.RolePermission, c.User, c.UserRole,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *MenuMutation:
+		return c.Menu.mutate(ctx, m)
 	case *PermissionMutation:
 		return c.Permission.mutate(ctx, m)
 	case *RoleMutation:
@@ -225,6 +233,140 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.UserRole.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// MenuClient is a client for the Menu schema.
+type MenuClient struct {
+	config
+}
+
+// NewMenuClient returns a client for the Menu from the given config.
+func NewMenuClient(c config) *MenuClient {
+	return &MenuClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `menu.Hooks(f(g(h())))`.
+func (c *MenuClient) Use(hooks ...Hook) {
+	c.hooks.Menu = append(c.hooks.Menu, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `menu.Intercept(f(g(h())))`.
+func (c *MenuClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Menu = append(c.inters.Menu, interceptors...)
+}
+
+// Create returns a builder for creating a Menu entity.
+func (c *MenuClient) Create() *MenuCreate {
+	mutation := newMenuMutation(c.config, OpCreate)
+	return &MenuCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Menu entities.
+func (c *MenuClient) CreateBulk(builders ...*MenuCreate) *MenuCreateBulk {
+	return &MenuCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Menu.
+func (c *MenuClient) Update() *MenuUpdate {
+	mutation := newMenuMutation(c.config, OpUpdate)
+	return &MenuUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MenuClient) UpdateOne(m *Menu) *MenuUpdateOne {
+	mutation := newMenuMutation(c.config, OpUpdateOne, withMenu(m))
+	return &MenuUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MenuClient) UpdateOneID(id uint8) *MenuUpdateOne {
+	mutation := newMenuMutation(c.config, OpUpdateOne, withMenuID(id))
+	return &MenuUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Menu.
+func (c *MenuClient) Delete() *MenuDelete {
+	mutation := newMenuMutation(c.config, OpDelete)
+	return &MenuDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MenuClient) DeleteOne(m *Menu) *MenuDeleteOne {
+	return c.DeleteOneID(m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MenuClient) DeleteOneID(id uint8) *MenuDeleteOne {
+	builder := c.Delete().Where(menu.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MenuDeleteOne{builder}
+}
+
+// Query returns a query builder for Menu.
+func (c *MenuClient) Query() *MenuQuery {
+	return &MenuQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMenu},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Menu entity by its id.
+func (c *MenuClient) Get(ctx context.Context, id uint8) (*Menu, error) {
+	return c.Query().Where(menu.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MenuClient) GetX(ctx context.Context, id uint8) *Menu {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryRole queries the role edge of a Menu.
+func (c *MenuClient) QueryRole(m *Menu) *RoleQuery {
+	query := (&RoleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(menu.Table, menu.FieldID, id),
+			sqlgraph.To(role.Table, role.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, menu.RoleTable, menu.RoleColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *MenuClient) Hooks() []Hook {
+	return c.hooks.Menu
+}
+
+// Interceptors returns the client interceptors.
+func (c *MenuClient) Interceptors() []Interceptor {
+	return c.inters.Menu
+}
+
+func (c *MenuClient) mutate(ctx context.Context, m *MenuMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MenuCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MenuUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MenuUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MenuDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Menu mutation op: %q", m.Op())
 	}
 }
 
@@ -480,6 +622,22 @@ func (c *RoleClient) QueryPermissions(r *Role) *PermissionQuery {
 			sqlgraph.From(role.Table, role.FieldID, id),
 			sqlgraph.To(permission.Table, permission.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, role.PermissionsTable, role.PermissionsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMenu queries the menu edge of a Role.
+func (c *RoleClient) QueryMenu(r *Role) *MenuQuery {
+	query := (&MenuClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(role.Table, role.FieldID, id),
+			sqlgraph.To(menu.Table, menu.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, role.MenuTable, role.MenuColumn),
 		)
 		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
 		return fromV, nil
@@ -915,9 +1073,9 @@ func (c *UserRoleClient) mutate(ctx context.Context, m *UserRoleMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Permission, Role, RolePermission, User, UserRole []ent.Hook
+		Menu, Permission, Role, RolePermission, User, UserRole []ent.Hook
 	}
 	inters struct {
-		Permission, Role, RolePermission, User, UserRole []ent.Interceptor
+		Menu, Permission, Role, RolePermission, User, UserRole []ent.Interceptor
 	}
 )

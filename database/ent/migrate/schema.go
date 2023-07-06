@@ -9,6 +9,30 @@ import (
 )
 
 var (
+	// MenuColumns holds the columns for the "menu" table.
+	MenuColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint8, Increment: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "json_menu", Type: field.TypeJSON, Nullable: true},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime},
+		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "rid", Type: field.TypeUint8, Unique: true},
+	}
+	// MenuTable holds the schema information for the "menu" table.
+	MenuTable = &schema.Table{
+		Name:       "menu",
+		Columns:    MenuColumns,
+		PrimaryKey: []*schema.Column{MenuColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "menu_role_menu",
+				Columns:    []*schema.Column{MenuColumns[6]},
+				RefColumns: []*schema.Column{RoleColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// PermissionColumns holds the columns for the "permission" table.
 	PermissionColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint16, Increment: true},
@@ -112,6 +136,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		MenuTable,
 		PermissionTable,
 		RoleTable,
 		RolePermissionTable,
@@ -121,6 +146,10 @@ var (
 )
 
 func init() {
+	MenuTable.ForeignKeys[0].RefTable = RoleTable
+	MenuTable.Annotation = &entsql.Annotation{
+		Table: "menu",
+	}
 	PermissionTable.Annotation = &entsql.Annotation{
 		Table: "permission",
 	}

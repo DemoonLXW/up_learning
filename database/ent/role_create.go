@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
@@ -105,6 +106,25 @@ func (rc *RoleCreate) AddPermissions(p ...*Permission) *RoleCreate {
 		ids[i] = p[i].ID
 	}
 	return rc.AddPermissionIDs(ids...)
+}
+
+// SetMenuID sets the "menu" edge to the Menu entity by ID.
+func (rc *RoleCreate) SetMenuID(id uint8) *RoleCreate {
+	rc.mutation.SetMenuID(id)
+	return rc
+}
+
+// SetNillableMenuID sets the "menu" edge to the Menu entity by ID if the given value is not nil.
+func (rc *RoleCreate) SetNillableMenuID(id *uint8) *RoleCreate {
+	if id != nil {
+		rc = rc.SetMenuID(*id)
+	}
+	return rc
+}
+
+// SetMenu sets the "menu" edge to the Menu entity.
+func (rc *RoleCreate) SetMenu(m *Menu) *RoleCreate {
+	return rc.SetMenuID(m.ID)
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
@@ -261,6 +281,22 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.MenuIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   role.MenuTable,
+			Columns: []string{role.MenuColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(menu.FieldID, field.TypeUint8),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rc.mutation.UsersIDs(); len(nodes) > 0 {

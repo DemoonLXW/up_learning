@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
@@ -77,6 +78,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			menu.Table:           menu.ValidColumn,
 			permission.Table:     permission.ValidColumn,
 			role.Table:           role.ValidColumn,
 			rolepermission.Table: rolepermission.ValidColumn,

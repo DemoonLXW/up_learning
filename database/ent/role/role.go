@@ -26,6 +26,8 @@ const (
 	FieldModifiedTime = "modified_time"
 	// EdgePermissions holds the string denoting the permissions edge name in mutations.
 	EdgePermissions = "permissions"
+	// EdgeMenu holds the string denoting the menu edge name in mutations.
+	EdgeMenu = "menu"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
 	// EdgeRolePermission holds the string denoting the role_permission edge name in mutations.
@@ -39,6 +41,13 @@ const (
 	// PermissionsInverseTable is the table name for the Permission entity.
 	// It exists in this package in order to avoid circular dependency with the "permission" package.
 	PermissionsInverseTable = "permission"
+	// MenuTable is the table that holds the menu relation/edge.
+	MenuTable = "menu"
+	// MenuInverseTable is the table name for the Menu entity.
+	// It exists in this package in order to avoid circular dependency with the "menu" package.
+	MenuInverseTable = "menu"
+	// MenuColumn is the table column denoting the menu relation/edge.
+	MenuColumn = "rid"
 	// UsersTable is the table that holds the users relation/edge. The primary key declared below.
 	UsersTable = "user_role"
 	// UsersInverseTable is the table name for the User entity.
@@ -147,6 +156,13 @@ func ByPermissions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByMenuField orders the results by menu field.
+func ByMenuField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMenuStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByUsersCount orders the results by users count.
 func ByUsersCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -193,6 +209,13 @@ func newPermissionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PermissionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, PermissionsTable, PermissionsPrimaryKey...),
+	)
+}
+func newMenuStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MenuInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, MenuTable, MenuColumn),
 	)
 }
 func newUsersStep() *sqlgraph.Step {
