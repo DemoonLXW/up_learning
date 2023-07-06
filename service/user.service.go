@@ -134,6 +134,17 @@ func (serv *UserService) CheckCredential(id uint32, token string) (string, error
 		return "", fmt.Errorf("user check credential parse string to time failed: %w", err)
 	}
 	if time.Now().After(expire_time) {
+		num, err := serv.Redis.HDel(ctx, key, token).Result()
+		switch {
+		case num == 0:
+			{
+				return "", fmt.Errorf("user check credential token does not exist failed: %w", err)
+			}
+		case err != nil:
+			{
+				return "", fmt.Errorf("user check credential delete token failed: %w", err)
+			}
+		}
 		return "", fmt.Errorf("user check credential credential is expired failed: %w", err)
 	}
 	if time.Now().Before(expire_time.Add(-30 * time.Minute)) {
