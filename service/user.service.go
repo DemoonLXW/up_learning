@@ -179,3 +179,14 @@ func (serv *UserService) FindOneUserById(id uint32) (*ent.User, error) {
 	}
 	return user, nil
 }
+
+func (serv *UserService) FindMenuByUserId(id uint32) ([]*ent.Menu, error) {
+	ctx := context.Background()
+
+	menu, err := serv.DB.User.Query().Where(user.IDEQ(id)).QueryRoles().QueryMenu().All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("menus find by user id failed: %w", err)
+	}
+
+	return menu, nil
+}

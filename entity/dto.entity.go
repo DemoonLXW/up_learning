@@ -1,5 +1,7 @@
 package entity
 
+import "fmt"
+
 type Result struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
@@ -15,4 +17,8 @@ type Menu struct {
 	URL      string  `json:"url"`
 	Icon     string  `json:"icon"`
 	Children []*Menu `json:"children"`
+}
+
+func (m *Menu) String() string {
+	return fmt.Sprintf("{title=%s, url=%s, icon=%s, children=%v}", m.Title, m.URL, m.Icon, m.Children)
 }

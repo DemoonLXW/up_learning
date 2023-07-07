@@ -83,3 +83,23 @@ func TestFindOneUserWihtRoles(t *testing.T) {
 	fmt.Println(user)
 	fmt.Println(user.Edges.Roles)
 }
+
+func TestFindMenusByUserId(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.UserService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+	rd, err := injection.ProvideRedis()
+	assert.Nil(t, err)
+	serv.Redis = rd
+
+	m, err := serv.FindMenuByUserId(uint32(1))
+	assert.Nil(t, err)
+	for _, menus := range m {
+		for _, v := range menus.JSONMenu {
+			fmt.Println(v)
+		}
+
+	}
+}
