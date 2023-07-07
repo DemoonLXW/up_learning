@@ -36,18 +36,24 @@ func (cont *UserController) Login(c *gin.Context) {
 		return
 	}
 
+	m, err := cont.Services.User.FindMenuByUserId(user.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	menus := make([]*entity.Menu, 0)
+	for _, menu := range m {
+		menus = append(menus, menu.JSONMenu...)
+	}
+
 	id := fmt.Sprintf("%d", user.ID)
 	domain := c.Value("domain").(string)
 	c.SetCookie("uid", id, 9000, "/", domain, false, true)
 	c.SetCookie("token", token, 9000, "/", domain, false, true)
 
 	var res entity.Result
-	roles := make([]string, len(user.Edges.Roles))
-	for i, v := range user.Edges.Roles {
-		roles[i] = *v.Name
-	}
 	res.Message = "Login Successfully"
-	res.Data = map[string]interface{}{"roles": roles}
+	res.Data = map[string]interface{}{"menus": menus}
 
 	c.JSON(http.StatusOK, res)
 }
