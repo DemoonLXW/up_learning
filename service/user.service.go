@@ -202,3 +202,14 @@ func (serv *UserService) FindMenuByRoleIds(ids []uint8) ([]*ent.Menu, error) {
 
 	return menu, nil
 }
+
+func (serv *UserService) FindRolesWithMenusByUserId(id uint32) ([]*ent.Role, error) {
+	ctx := context.Background()
+
+	roles, err := serv.DB.User.Query().Where(user.IDEQ(id)).QueryRoles().WithMenu().All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("roles with menus find by user id failed: %w", err)
+	}
+
+	return roles, nil
+}

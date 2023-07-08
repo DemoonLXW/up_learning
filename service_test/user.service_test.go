@@ -124,3 +124,25 @@ func TestFindMenusByRoleIds(t *testing.T) {
 
 	}
 }
+
+func TestFindRolesWithMenusByUserId(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.UserService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+	rd, err := injection.ProvideRedis()
+	assert.Nil(t, err)
+	serv.Redis = rd
+
+	var id uint32 = 1
+
+	rs, err := serv.FindRolesWithMenusByUserId(id)
+	assert.Nil(t, err)
+	for _, r := range rs {
+		fmt.Println(r.Name)
+		for _, m := range r.Edges.Menu.JSONMenu {
+			fmt.Println(m)
+		}
+	}
+}
