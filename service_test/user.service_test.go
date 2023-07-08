@@ -137,12 +137,6 @@ func TestFindRolesWithMenusByUserId(t *testing.T) {
 
 	var id uint32 = 1
 
-	rs, err := serv.FindRolesWithMenusByUserId(id)
+	_, err = serv.FindRolesWithMenusByUserId(id)
 	assert.Nil(t, err)
-	for _, r := range rs {
-		fmt.Println(r.Name)
-		for _, m := range r.Edges.Menu.JSONMenu {
-			fmt.Println(m)
-		}
-	}
 }
