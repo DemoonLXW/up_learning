@@ -337,7 +337,7 @@ func (c *MenuClient) QueryRole(m *Menu) *RoleQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(menu.Table, menu.FieldID, id),
 			sqlgraph.To(role.Table, role.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, menu.RoleTable, menu.RoleColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, menu.RoleTable, menu.RoleColumn),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil
@@ -637,7 +637,7 @@ func (c *RoleClient) QueryMenu(r *Role) *MenuQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(role.Table, role.FieldID, id),
 			sqlgraph.To(menu.Table, menu.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, role.MenuTable, role.MenuColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, role.MenuTable, role.MenuColumn),
 		)
 		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
 		return fromV, nil

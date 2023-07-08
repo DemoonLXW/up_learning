@@ -73,7 +73,7 @@ func (mq *MenuQuery) QueryRole() *RoleQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(menu.Table, menu.FieldID, selector),
 			sqlgraph.To(role.Table, role.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, menu.RoleTable, menu.RoleColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, menu.RoleTable, menu.RoleColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil

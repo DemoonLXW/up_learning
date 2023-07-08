@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 )
 
@@ -39,7 +38,7 @@ type RoleEdges struct {
 	// Permissions holds the value of the permissions edge.
 	Permissions []*Permission `json:"permissions,omitempty"`
 	// Menu holds the value of the menu edge.
-	Menu *Menu `json:"menu,omitempty"`
+	Menu []*Menu `json:"menu,omitempty"`
 	// Users holds the value of the users edge.
 	Users []*User `json:"users,omitempty"`
 	// RolePermission holds the value of the role_permission edge.
@@ -61,13 +60,9 @@ func (e RoleEdges) PermissionsOrErr() ([]*Permission, error) {
 }
 
 // MenuOrErr returns the Menu value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e RoleEdges) MenuOrErr() (*Menu, error) {
+// was not loaded in eager-loading.
+func (e RoleEdges) MenuOrErr() ([]*Menu, error) {
 	if e.loadedTypes[1] {
-		if e.Menu == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: menu.Label}
-		}
 		return e.Menu, nil
 	}
 	return nil, &NotLoadedError{edge: "menu"}

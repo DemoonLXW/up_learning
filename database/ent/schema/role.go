@@ -50,8 +50,7 @@ func (Role) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("permissions", Permission.Type).
 			Through("role_permission", RolePermission.Type),
-		edge.To("menu", Menu.Type).
-			Unique(),
+		edge.To("menu", Menu.Type),
 		edge.From("users", User.Type).
 			Ref("roles").
 			Through("user_role", UserRole.Type),

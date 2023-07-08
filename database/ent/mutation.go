@@ -1426,7 +1426,8 @@ type RoleMutation struct {
 	permissions        map[uint16]struct{}
 	removedpermissions map[uint16]struct{}
 	clearedpermissions bool
-	menu               *uint8
+	menu               map[uint8]struct{}
+	removedmenu        map[uint8]struct{}
 	clearedmenu        bool
 	users              map[uint32]struct{}
 	removedusers       map[uint32]struct{}
@@ -1787,9 +1788,14 @@ func (m *RoleMutation) ResetPermissions() {
 	m.removedpermissions = nil
 }
 
-// SetMenuID sets the "menu" edge to the Menu entity by id.
-func (m *RoleMutation) SetMenuID(id uint8) {
-	m.menu = &id
+// AddMenuIDs adds the "menu" edge to the Menu entity by ids.
+func (m *RoleMutation) AddMenuIDs(ids ...uint8) {
+	if m.menu == nil {
+		m.menu = make(map[uint8]struct{})
+	}
+	for i := range ids {
+		m.menu[ids[i]] = struct{}{}
+	}
 }
 
 // ClearMenu clears the "menu" edge to the Menu entity.
@@ -1802,20 +1808,29 @@ func (m *RoleMutation) MenuCleared() bool {
 	return m.clearedmenu
 }
 
-// MenuID returns the "menu" edge ID in the mutation.
-func (m *RoleMutation) MenuID() (id uint8, exists bool) {
-	if m.menu != nil {
-		return *m.menu, true
+// RemoveMenuIDs removes the "menu" edge to the Menu entity by IDs.
+func (m *RoleMutation) RemoveMenuIDs(ids ...uint8) {
+	if m.removedmenu == nil {
+		m.removedmenu = make(map[uint8]struct{})
+	}
+	for i := range ids {
+		delete(m.menu, ids[i])
+		m.removedmenu[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMenu returns the removed IDs of the "menu" edge to the Menu entity.
+func (m *RoleMutation) RemovedMenuIDs() (ids []uint8) {
+	for id := range m.removedmenu {
+		ids = append(ids, id)
 	}
 	return
 }
 
 // MenuIDs returns the "menu" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// MenuID instead. It exists only for internal usage by the builders.
 func (m *RoleMutation) MenuIDs() (ids []uint8) {
-	if id := m.menu; id != nil {
-		ids = append(ids, *id)
+	for id := range m.menu {
+		ids = append(ids, id)
 	}
 	return
 }
@@ -1824,6 +1839,7 @@ func (m *RoleMutation) MenuIDs() (ids []uint8) {
 func (m *RoleMutation) ResetMenu() {
 	m.menu = nil
 	m.clearedmenu = false
+	m.removedmenu = nil
 }
 
 // AddUserIDs adds the "users" edge to the User entity by ids.
@@ -2114,9 +2130,11 @@ func (m *RoleMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case role.EdgeMenu:
-		if id := m.menu; id != nil {
-			return []ent.Value{*id}
+		ids := make([]ent.Value, 0, len(m.menu))
+		for id := range m.menu {
+			ids = append(ids, id)
 		}
+		return ids
 	case role.EdgeUsers:
 		ids := make([]ent.Value, 0, len(m.users))
 		for id := range m.users {
@@ -2133,6 +2151,9 @@ func (m *RoleMutation) RemovedEdges() []string {
 	if m.removedpermissions != nil {
 		edges = append(edges, role.EdgePermissions)
 	}
+	if m.removedmenu != nil {
+		edges = append(edges, role.EdgeMenu)
+	}
 	if m.removedusers != nil {
 		edges = append(edges, role.EdgeUsers)
 	}
@@ -2146,6 +2167,12 @@ func (m *RoleMutation) RemovedIDs(name string) []ent.Value {
 	case role.EdgePermissions:
 		ids := make([]ent.Value, 0, len(m.removedpermissions))
 		for id := range m.removedpermissions {
+			ids = append(ids, id)
+		}
+		return ids
+	case role.EdgeMenu:
+		ids := make([]ent.Value, 0, len(m.removedmenu))
+		for id := range m.removedmenu {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2192,9 +2219,6 @@ func (m *RoleMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *RoleMutation) ClearEdge(name string) error {
 	switch name {
-	case role.EdgeMenu:
-		m.ClearMenu()
-		return nil
 	}
 	return fmt.Errorf("unknown Role unique edge %s", name)
 }

@@ -108,23 +108,19 @@ func (rc *RoleCreate) AddPermissions(p ...*Permission) *RoleCreate {
 	return rc.AddPermissionIDs(ids...)
 }
 
-// SetMenuID sets the "menu" edge to the Menu entity by ID.
-func (rc *RoleCreate) SetMenuID(id uint8) *RoleCreate {
-	rc.mutation.SetMenuID(id)
+// AddMenuIDs adds the "menu" edge to the Menu entity by IDs.
+func (rc *RoleCreate) AddMenuIDs(ids ...uint8) *RoleCreate {
+	rc.mutation.AddMenuIDs(ids...)
 	return rc
 }
 
-// SetNillableMenuID sets the "menu" edge to the Menu entity by ID if the given value is not nil.
-func (rc *RoleCreate) SetNillableMenuID(id *uint8) *RoleCreate {
-	if id != nil {
-		rc = rc.SetMenuID(*id)
+// AddMenu adds the "menu" edges to the Menu entity.
+func (rc *RoleCreate) AddMenu(m ...*Menu) *RoleCreate {
+	ids := make([]uint8, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
 	}
-	return rc
-}
-
-// SetMenu sets the "menu" edge to the Menu entity.
-func (rc *RoleCreate) SetMenu(m *Menu) *RoleCreate {
-	return rc.SetMenuID(m.ID)
+	return rc.AddMenuIDs(ids...)
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
@@ -285,7 +281,7 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 	}
 	if nodes := rc.mutation.MenuIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   role.MenuTable,
 			Columns: []string{role.MenuColumn},

@@ -300,7 +300,7 @@ func HasRole() predicate.Menu {
 	return predicate.Menu(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, RoleTable, RoleColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, RoleTable, RoleColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

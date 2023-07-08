@@ -17,7 +17,7 @@ var (
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime},
 		{Name: "modified_time", Type: field.TypeTime},
-		{Name: "rid", Type: field.TypeUint8, Unique: true},
+		{Name: "rid", Type: field.TypeUint8},
 	}
 	// MenuTable holds the schema information for the "menu" table.
 	MenuTable = &schema.Table{

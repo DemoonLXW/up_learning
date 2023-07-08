@@ -156,10 +156,17 @@ func ByPermissions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByMenuField orders the results by menu field.
-func ByMenuField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByMenuCount orders the results by menu count.
+func ByMenuCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newMenuStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newMenuStep(), opts...)
+	}
+}
+
+// ByMenu orders the results by menu terms.
+func ByMenu(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMenuStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -215,7 +222,7 @@ func newMenuStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MenuInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, MenuTable, MenuColumn),
+		sqlgraph.Edge(sqlgraph.O2M, false, MenuTable, MenuColumn),
 	)
 }
 func newUsersStep() *sqlgraph.Step {

@@ -104,7 +104,7 @@ func (rq *RoleQuery) QueryMenu() *MenuQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(role.Table, role.FieldID, selector),
 			sqlgraph.To(menu.Table, menu.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, role.MenuTable, role.MenuColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, role.MenuTable, role.MenuColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -548,8 +548,9 @@ func (rq *RoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Role, e
 		}
 	}
 	if query := rq.withMenu; query != nil {
-		if err := rq.loadMenu(ctx, query, nodes, nil,
-			func(n *Role, e *Menu) { n.Edges.Menu = e }); err != nil {
+		if err := rq.loadMenu(ctx, query, nodes,
+			func(n *Role) { n.Edges.Menu = []*Menu{} },
+			func(n *Role, e *Menu) { n.Edges.Menu = append(n.Edges.Menu, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -644,6 +645,9 @@ func (rq *RoleQuery) loadMenu(ctx context.Context, query *MenuQuery, nodes []*Ro
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
 	}
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(menu.FieldRid)
