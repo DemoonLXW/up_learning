@@ -36,7 +36,14 @@ func (cont *UserController) Login(c *gin.Context) {
 		return
 	}
 
-	m, err := cont.Services.User.FindMenuByUserId(user.ID)
+	roles_name := make([]string, len(user.Edges.Roles))
+	roles_ids := make([]uint8, len(user.Edges.Roles))
+	for i, v := range user.Edges.Roles {
+		roles_name[i] = *v.Name
+		roles_ids[i] = v.ID
+	}
+
+	m, err := cont.Services.User.FindMenuByRoleIds(roles_ids)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -53,7 +60,7 @@ func (cont *UserController) Login(c *gin.Context) {
 
 	var res entity.Result
 	res.Message = "Login Successfully"
-	res.Data = map[string]interface{}{"menus": menus}
+	res.Data = map[string]interface{}{"roles": roles_name, "menus": menus}
 
 	c.JSON(http.StatusOK, res)
 }

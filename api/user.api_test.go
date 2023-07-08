@@ -20,7 +20,7 @@ func TestLogin(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	body := bytes.NewReader([]byte(`{"account": "admin", "password": "e10adc3949ba59abbe56e057f20f883e"}`))
+	body := bytes.NewReader([]byte(`{"account": "admin", "password": "E10ADC3949BA59ABBE56E057F20F883E"}`))
 	req, _ := http.NewRequest("POST", "/login", body)
 	app.ServeHTTP(recorder, req)
 
