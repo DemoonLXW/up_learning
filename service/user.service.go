@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/redis/go-redis/v9"
 )
@@ -186,6 +187,17 @@ func (serv *UserService) FindMenuByUserId(id uint32) ([]*ent.Menu, error) {
 	menu, err := serv.DB.User.Query().Where(user.IDEQ(id)).QueryRoles().QueryMenu().All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("menus find by user id failed: %w", err)
+	}
+
+	return menu, nil
+}
+
+func (serv *UserService) FindMenuByRoleIds(ids []uint8) ([]*ent.Menu, error) {
+	ctx := context.Background()
+
+	menu, err := serv.DB.Menu.Query().Where(menu.RidIn(ids...)).All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("menus find by role ids failed: %w", err)
 	}
 
 	return menu, nil
