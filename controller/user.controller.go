@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/service"
@@ -32,8 +33,20 @@ func (cont *UserController) Login(c *gin.Context) {
 	sha1_password := fmt.Sprintf("%x", sha256.Sum256(original_password))
 	user, token, err := cont.Services.User.Login(*login.Account, sha1_password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		err_string := err.Error()
+		switch {
+		case strings.Contains(err_string, "user not found"):
+			{
+				c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			}
+		default:
+			{
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+		}
+
 	}
 
 	roles_name := make([]string, len(user.Edges.Roles))
