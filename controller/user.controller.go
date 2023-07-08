@@ -121,8 +121,19 @@ func (cont *UserController) AutoLogin(c *gin.Context) {
 
 	new_token, err := cont.Services.User.CheckCredential(uint32(id), token)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		err_string := err.Error()
+		switch {
+		case strings.Contains(err_string, "token does not exist") || strings.Contains(err_string, "credential is expired"):
+			{
+				c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			}
+		default:
+			{
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+		}
 	}
 
 	roles, err := cont.Services.User.FindRolesWithMenusByUserId(uint32(id))
