@@ -12,5 +12,5 @@ func main() {
 		fmt.Println("Application Setup Error...")
 		return
 	}
-	app.Run(":8080")
+	app.Run("127.0.0.1:8080")
 }
