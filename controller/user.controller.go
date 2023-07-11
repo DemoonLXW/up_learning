@@ -107,33 +107,11 @@ func (cont *UserController) AutoLogin(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	token, err := c.Cookie("token")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 
 	id, err := strconv.ParseUint(uid, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
-	}
-
-	new_token, err := cont.Services.User.CheckCredential(uint32(id), token)
-	if err != nil {
-		err_string := err.Error()
-		switch {
-		case strings.Contains(err_string, "token does not exist") || strings.Contains(err_string, "credential is expired"):
-			{
-				c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-				return
-			}
-		default:
-			{
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-		}
 	}
 
 	roles, err := cont.Services.User.FindRolesWithMenusByUserId(uint32(id))
@@ -150,10 +128,6 @@ func (cont *UserController) AutoLogin(c *gin.Context) {
 			menus = append(menus, menu.JSONMenu...)
 		}
 	}
-
-	domain := c.Value("domain").(string)
-	c.SetCookie("uid", uid, 9000, "/", domain, false, true)
-	c.SetCookie("token", new_token, 9000, "/", domain, false, true)
 
 	var res entity.Result
 	res.Message = "Auto Login Successfully"

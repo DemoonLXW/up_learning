@@ -22,3 +22,11 @@ type Menu struct {
 func (m *Menu) String() string {
 	return fmt.Sprintf("{title=%s, url=%s, icon=%s, children=%v}", m.Title, m.URL, m.Icon, m.Children)
 }
+
+type Search struct {
+	Current  int    `json:"current"`
+	PageSize int    `json:"page_size"`
+	Like     string `json:"like"`
+	Sort     string `json:"sort"`
+	Order    string `json:"order"`
+}
