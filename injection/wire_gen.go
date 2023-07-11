@@ -96,8 +96,12 @@ func ProvideController() (*controller.Controllers, error) {
 	userController := &controller.UserController{
 		Services: services,
 	}
+	managementController := &controller.ManagementController{
+		Services: services,
+	}
 	controllers := &controller.Controllers{
-		User: userController,
+		User:       userController,
+		Management: managementController,
 	}
 	return controllers, nil
 }
@@ -129,8 +133,12 @@ func ProvideApplication() (*gin.Engine, error) {
 	userController := &controller.UserController{
 		Services: services,
 	}
+	managementController := &controller.ManagementController{
+		Services: services,
+	}
 	controllers := &controller.Controllers{
-		User: userController,
+		User:       userController,
+		Management: managementController,
 	}
 	engine := application.SetupApplication(controllers)
 	return engine, nil
