@@ -3,8 +3,12 @@ package application
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
+	"github.com/DemoonLXW/up_learning/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -56,6 +60,51 @@ func CookieDomain() gin.HandlerFunc {
 			panic("read domain in config failed")
 		}
 		c.Set("domain", domain.(string))
+
+		c.Next()
+
+	}
+}
+
+func Auth(serv *service.UserService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uid, err := c.Cookie("uid")
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+		token, err := c.Cookie("token")
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		id, err := strconv.ParseUint(uid, 10, 32)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		new_token, err := serv.CheckCredential(uint32(id), token)
+		if err != nil {
+			err_string := err.Error()
+			switch {
+			case strings.Contains(err_string, "token does not exist") || strings.Contains(err_string, "credential is expired"):
+				{
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+					return
+				}
+			default:
+				{
+					c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+					return
+				}
+			}
+		}
+
+		domain := c.Value("domain").(string)
+		c.SetCookie("uid", uid, 9000, "/", domain, false, true)
+		c.SetCookie("token", new_token, 9000, "/", domain, false, true)
 
 		c.Next()
 
