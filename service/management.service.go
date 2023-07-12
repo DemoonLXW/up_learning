@@ -251,22 +251,31 @@ func (serv *ManagementService) UpdateRole(toUpdate *ent.Role) error {
 	return nil
 }
 
-func (serv *ManagementService) RetrieveRole(current, pageSize int, like, sort, order string) ([]*ent.Role, error) {
+func (serv *ManagementService) RetrieveRole(current, pageSize int, like, sort string, order, isDeleted bool) ([]*ent.Role, error) {
 	ctx := context.Background()
 
 	offset := (current - 1) * pageSize
 
 	roles, err := serv.DB.Role.Query().
 		Where(
-			role.Or(
-				role.NameContains(like),
-				role.DescriptionContains(like),
+			role.And(
+				role.Or(
+					role.NameContains(like),
+					role.DescriptionContains(like),
+				),
+				func(s *sql.Selector) {
+					if isDeleted {
+						s.Where(sql.NEQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
+					} else {
+						s.Where(sql.EQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
+					}
+				},
 			),
 		).
 		Limit(pageSize).
 		Offset(offset).
 		Order(func(s *sql.Selector) {
-			if order == "desc" {
+			if order {
 				s.OrderBy(sql.Desc(sort))
 			} else {
 				s.OrderBy(sql.Asc(sort))
