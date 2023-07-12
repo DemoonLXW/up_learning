@@ -275,10 +275,12 @@ func (serv *ManagementService) RetrieveRole(current, pageSize int, like, sort st
 		Limit(pageSize).
 		Offset(offset).
 		Order(func(s *sql.Selector) {
-			if order {
-				s.OrderBy(sql.Desc(sort))
-			} else {
-				s.OrderBy(sql.Asc(sort))
+			if sort != "" && (sort == role.FieldName || sort == role.FieldDescription) {
+				if order {
+					s.OrderBy(sql.Desc(sort))
+				} else {
+					s.OrderBy(sql.Asc(sort))
+				}
 			}
 		}).
 		All(ctx)

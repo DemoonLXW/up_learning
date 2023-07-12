@@ -136,12 +136,12 @@ func TestRetrieveRole(t *testing.T) {
 	assert.Nil(t, err)
 	dao.DB = db
 
-	roles, err := dao.RetrieveRole(1, 10, "role", "id", false, true)
+	roles, err := dao.RetrieveRole(1, 10, "", "description", false, false)
 	assert.Nil(t, err)
 	for _, v := range roles {
 		fmt.Println(v)
 	}
-	assert.Len(t, roles, 1)
+	assert.Len(t, roles, 3)
 }
 
 func TestDeleteRole(t *testing.T) {
