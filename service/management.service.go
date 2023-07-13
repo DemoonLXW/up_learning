@@ -295,7 +295,7 @@ func (serv *ManagementService) RetrieveRole(current, pageSize int, like, sort st
 
 }
 
-func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDeleted bool) (int, error) {
+func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDeleted *bool) (int, error) {
 	ctx := context.Background()
 
 	total, err := serv.DB.Role.Query().
@@ -306,10 +306,12 @@ func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDeleted boo
 					role.DescriptionContains(like),
 				),
 				func(s *sql.Selector) {
-					if isDeleted {
-						s.Where(sql.NEQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
-					} else {
-						s.Where(sql.EQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
+					if isDeleted != nil {
+						if *isDeleted {
+							s.Where(sql.NEQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
+						} else {
+							s.Where(sql.EQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
+						}
 					}
 				},
 			),
