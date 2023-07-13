@@ -13,8 +13,15 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 
 	auth := app.Group("/")
 	auth.Use(Auth(controllers.User.Services.User))
+	{
+		auth.POST("/autologin", controllers.User.AutoLogin)
 
-	auth.POST("/autologin", controllers.User.AutoLogin)
+		role := auth.Group("/role")
+		{
+			role.GET("/getlist", controllers.Management.GetRoleList)
+		}
+
+	}
 
 	return app
 }
