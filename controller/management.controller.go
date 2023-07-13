@@ -17,7 +17,11 @@ type ManagementController struct {
 func (cont *ManagementController) GetRoleList(c *gin.Context) {
 
 	var search entity.Search
-	if err := c.ShouldBindJSON(&search); err != nil {
+	// if err := c.ShouldBindJSON(&search); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	if err := c.ShouldBindQuery(&search); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

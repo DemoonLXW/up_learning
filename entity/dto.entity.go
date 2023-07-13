@@ -24,12 +24,12 @@ func (m *Menu) String() string {
 }
 
 type Search struct {
-	Current   int    `json:"current" binding:"required" `
-	PageSize  int    `json:"pageSize" binding:"required"`
-	Like      string `json:"like"`
-	Sort      string `json:"sort"`
-	Order     *bool  `json:"order"`
-	IsDeleted *bool  `json:"isDeleted"`
+	Current   int    `form:"current" binding:"required" `
+	PageSize  int    `form:"pagesize" binding:"required"`
+	Like      string `form:"like"`
+	Sort      string `form:"sort"`
+	Order     *bool  `form:"order"`
+	IsDeleted *bool  `form:"isdeleted"`
 }
 
 type RetrievedRoles struct {
