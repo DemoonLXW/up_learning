@@ -292,6 +292,33 @@ func (serv *ManagementService) RetrieveRole(current, pageSize int, like, sort st
 
 }
 
+func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDeleted bool) (int, error) {
+	ctx := context.Background()
+
+	total, err := serv.DB.Role.Query().
+		Where(
+			role.And(
+				role.Or(
+					role.NameContains(like),
+					role.DescriptionContains(like),
+				),
+				func(s *sql.Selector) {
+					if isDeleted {
+						s.Where(sql.NEQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
+					} else {
+						s.Where(sql.EQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
+					}
+				},
+			),
+		).Count(ctx)
+
+	if err != nil {
+		return -1, fmt.Errorf("get retrieved total roles query failed: %w", err)
+	}
+
+	return total, nil
+}
+
 func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 	ctx := context.Background()
 

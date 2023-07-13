@@ -144,6 +144,18 @@ func TestRetrieveRole(t *testing.T) {
 	assert.Len(t, roles, 3)
 }
 
+func TestGetTotalRetrievedRoles(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+
+	total, err := serv.GetTotalRetrievedRoles("change", true)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, total)
+}
+
 func TestDeleteRole(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
 	dao := new(service.ManagementService)
