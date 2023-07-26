@@ -241,23 +241,23 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := rc.mutation.Name(); ok {
 		_spec.SetField(role.FieldName, field.TypeString, value)
-		_node.Name = &value
+		_node.Name = value
 	}
 	if value, ok := rc.mutation.Description(); ok {
 		_spec.SetField(role.FieldDescription, field.TypeString, value)
-		_node.Description = &value
+		_node.Description = value
 	}
 	if value, ok := rc.mutation.CreatedTime(); ok {
 		_spec.SetField(role.FieldCreatedTime, field.TypeTime, value)
-		_node.CreatedTime = &value
+		_node.CreatedTime = value
 	}
 	if value, ok := rc.mutation.DeletedTime(); ok {
 		_spec.SetField(role.FieldDeletedTime, field.TypeTime, value)
-		_node.DeletedTime = &value
+		_node.DeletedTime = value
 	}
 	if value, ok := rc.mutation.ModifiedTime(); ok {
 		_spec.SetField(role.FieldModifiedTime, field.TypeTime, value)
-		_node.ModifiedTime = &value
+		_node.ModifiedTime = value
 	}
 	if nodes := rc.mutation.PermissionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

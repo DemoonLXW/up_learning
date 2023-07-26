@@ -39,8 +39,8 @@ func (cont *ManagementController) GetRoleList(c *gin.Context) {
 	roles := make([]entity.RetrievedRoles, len(rs))
 	for i, v := range rs {
 		roles[i].ID = v.ID
-		roles[i].Name = *v.Name
-		roles[i].Description = *v.Description
+		roles[i].Name = v.Name
+		roles[i].Description = v.Description
 		roles[i].IsDeleted = !v.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))
 	}
 
@@ -85,7 +85,7 @@ func (cont *ManagementController) AddARole(c *gin.Context) {
 		return
 	}
 
-	addRole := ent.Role{Name: role.Name, Description: role.Description}
+	addRole := ent.Role{Name: *role.Name, Description: *role.Description}
 	err = cont.Services.Management.CreateRole([]*ent.Role{&addRole})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

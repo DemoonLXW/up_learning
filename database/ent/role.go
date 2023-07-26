@@ -18,15 +18,15 @@ type Role struct {
 	// ID of the ent.
 	ID uint8 `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
+	Description string `json:"description,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
-	CreatedTime *time.Time `json:"created_time,omitempty"`
+	CreatedTime time.Time `json:"created_time,omitempty"`
 	// DeletedTime holds the value of the "deleted_time" field.
-	DeletedTime *time.Time `json:"deleted_time,omitempty"`
+	DeletedTime time.Time `json:"deleted_time,omitempty"`
 	// ModifiedTime holds the value of the "modified_time" field.
-	ModifiedTime *time.Time `json:"modified_time,omitempty"`
+	ModifiedTime time.Time `json:"modified_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoleQuery when eager-loading is set.
 	Edges        RoleEdges `json:"edges"`
@@ -131,36 +131,31 @@ func (r *Role) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				r.Name = new(string)
-				*r.Name = value.String
+				r.Name = value.String
 			}
 		case role.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				r.Description = new(string)
-				*r.Description = value.String
+				r.Description = value.String
 			}
 		case role.FieldCreatedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_time", values[i])
 			} else if value.Valid {
-				r.CreatedTime = new(time.Time)
-				*r.CreatedTime = value.Time
+				r.CreatedTime = value.Time
 			}
 		case role.FieldDeletedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_time", values[i])
 			} else if value.Valid {
-				r.DeletedTime = new(time.Time)
-				*r.DeletedTime = value.Time
+				r.DeletedTime = value.Time
 			}
 		case role.FieldModifiedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field modified_time", values[i])
 			} else if value.Valid {
-				r.ModifiedTime = new(time.Time)
-				*r.ModifiedTime = value.Time
+				r.ModifiedTime = value.Time
 			}
 		default:
 			r.selectValues.Set(columns[i], values[i])
@@ -223,30 +218,20 @@ func (r *Role) String() string {
 	var builder strings.Builder
 	builder.WriteString("Role(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
-	if v := r.Name; v != nil {
-		builder.WriteString("name=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("name=")
+	builder.WriteString(r.Name)
 	builder.WriteString(", ")
-	if v := r.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("description=")
+	builder.WriteString(r.Description)
 	builder.WriteString(", ")
-	if v := r.CreatedTime; v != nil {
-		builder.WriteString("created_time=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("created_time=")
+	builder.WriteString(r.CreatedTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := r.DeletedTime; v != nil {
-		builder.WriteString("deleted_time=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("deleted_time=")
+	builder.WriteString(r.DeletedTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := r.ModifiedTime; v != nil {
-		builder.WriteString("modified_time=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("modified_time=")
+	builder.WriteString(r.ModifiedTime.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

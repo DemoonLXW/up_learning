@@ -102,8 +102,8 @@ func TestCreateRole(t *testing.T) {
 	name2 := "role3"
 	description2 := "role3 description"
 	role2 := ent.Role{
-		Name:        &name2,
-		Description: &description2,
+		Name:        name2,
+		Description: description2,
 	}
 	err = serv.CreateRole([]*ent.Role{&role2})
 	assert.Nil(t, err)
@@ -121,8 +121,8 @@ func TestUpdateRole(t *testing.T) {
 	description := "role2change description"
 	role := ent.Role{
 		ID:          2,
-		Name:        &name,
-		Description: &description,
+		Name:        name,
+		Description: description,
 	}
 	err = serv.UpdateRole(&role)
 	assert.Nil(t, err)

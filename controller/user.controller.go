@@ -52,7 +52,7 @@ func (cont *UserController) Login(c *gin.Context) {
 	roles_name := make([]string, len(user.Edges.Roles))
 	roles_ids := make([]uint8, len(user.Edges.Roles))
 	for i, v := range user.Edges.Roles {
-		roles_name[i] = *v.Name
+		roles_name[i] = v.Name
 		roles_ids[i] = v.ID
 	}
 
@@ -123,7 +123,7 @@ func (cont *UserController) AutoLogin(c *gin.Context) {
 	roles_name := make([]string, len(roles))
 	menus := make([]*entity.Menu, 0)
 	for i, r := range roles {
-		roles_name[i] = *r.Name
+		roles_name[i] = r.Name
 		for _, menu := range r.Edges.Menu {
 			menus = append(menus, menu.JSONMenu...)
 		}
