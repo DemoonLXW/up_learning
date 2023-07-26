@@ -8,6 +8,7 @@ import (
 
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
+	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/redis/go-redis/v9"
 )
@@ -212,4 +213,20 @@ func (serv *UserService) FindRolesWithMenusByUserId(id uint32) ([]*ent.Role, err
 	}
 
 	return roles, nil
+}
+
+func (serv *UserService) CheckPermissions(id uint32, permissions []string) (bool, error) {
+	ctx := context.Background()
+
+	check, err := serv.DB.User.Query().
+		Where(user.IDEQ(id)).QueryRoles().QueryPermissions().
+		Where(permission.And(
+			permission.ActionIn(permissions...),
+			permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		)).
+		Exist(ctx)
+	if err != nil {
+		return false, fmt.Errorf("check permissions failed: %w", err)
+	}
+	return check, nil
 }

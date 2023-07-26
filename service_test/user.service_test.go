@@ -140,3 +140,21 @@ func TestFindRolesWithMenusByUserId(t *testing.T) {
 	_, err = serv.FindRolesWithMenusByUserId(id)
 	assert.Nil(t, err)
 }
+
+func TestCheckPermissions(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.UserService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+	rd, err := injection.ProvideRedis()
+	assert.Nil(t, err)
+	serv.Redis = rd
+
+	var id uint32 = 1
+	var ps []string = []string{"test insert actions for new"}
+
+	has, err := serv.CheckPermissions(id, ps)
+	assert.Nil(t, err)
+	assert.Equal(t, true, has)
+}
