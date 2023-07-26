@@ -45,3 +45,8 @@ type RetrievedListData struct {
 	IsPrevious bool        `json:"isPrevious"`
 	Record     interface{} `json:"record"`
 }
+
+type ToAddRole struct {
+	Name        *string `json:"name" binding:"required"`
+	Description *string `json:"description" binding:"required"`
+}
