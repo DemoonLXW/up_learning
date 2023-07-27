@@ -408,3 +408,12 @@ func (serv *ManagementService) CreateUser(toCreates []*ent.User) error {
 	return nil
 
 }
+
+func (serv *ManagementService) FindOneRoleById(id uint8) (*ent.Role, error) {
+	ctx := context.Background()
+	role, err := serv.DB.Role.Query().Where(role.IDEQ(id)).First(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("role find one by id failed: %w", err)
+	}
+	return role, nil
+}

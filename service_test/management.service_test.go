@@ -196,3 +196,16 @@ func TestCreateUser(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
+func TestFindOneRoleById(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+
+	role, err := serv.FindOneRoleById(1)
+	assert.Nil(t, err)
+	fmt.Println(role)
+
+}
