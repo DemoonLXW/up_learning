@@ -21,10 +21,10 @@ type Role struct {
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
+	// IsDisabled holds the value of the "is_disabled" field.
+	IsDisabled bool `json:"is_disabled,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
 	CreatedTime time.Time `json:"created_time,omitempty"`
-	// DeletedTime holds the value of the "deleted_time" field.
-	DeletedTime time.Time `json:"deleted_time,omitempty"`
 	// ModifiedTime holds the value of the "modified_time" field.
 	ModifiedTime time.Time `json:"modified_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -100,11 +100,13 @@ func (*Role) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case role.FieldIsDisabled:
+			values[i] = new(sql.NullBool)
 		case role.FieldID:
 			values[i] = new(sql.NullInt64)
 		case role.FieldName, role.FieldDescription:
 			values[i] = new(sql.NullString)
-		case role.FieldCreatedTime, role.FieldDeletedTime, role.FieldModifiedTime:
+		case role.FieldCreatedTime, role.FieldModifiedTime:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -139,17 +141,17 @@ func (r *Role) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				r.Description = value.String
 			}
+		case role.FieldIsDisabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_disabled", values[i])
+			} else if value.Valid {
+				r.IsDisabled = value.Bool
+			}
 		case role.FieldCreatedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_time", values[i])
 			} else if value.Valid {
 				r.CreatedTime = value.Time
-			}
-		case role.FieldDeletedTime:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field deleted_time", values[i])
-			} else if value.Valid {
-				r.DeletedTime = value.Time
 			}
 		case role.FieldModifiedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -224,11 +226,11 @@ func (r *Role) String() string {
 	builder.WriteString("description=")
 	builder.WriteString(r.Description)
 	builder.WriteString(", ")
+	builder.WriteString("is_disabled=")
+	builder.WriteString(fmt.Sprintf("%v", r.IsDisabled))
+	builder.WriteString(", ")
 	builder.WriteString("created_time=")
 	builder.WriteString(r.CreatedTime.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("deleted_time=")
-	builder.WriteString(r.DeletedTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("modified_time=")
 	builder.WriteString(r.ModifiedTime.Format(time.ANSIC))

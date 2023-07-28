@@ -45,6 +45,20 @@ func (rc *RoleCreate) SetNillableDescription(s *string) *RoleCreate {
 	return rc
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (rc *RoleCreate) SetIsDisabled(b bool) *RoleCreate {
+	rc.mutation.SetIsDisabled(b)
+	return rc
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (rc *RoleCreate) SetNillableIsDisabled(b *bool) *RoleCreate {
+	if b != nil {
+		rc.SetIsDisabled(*b)
+	}
+	return rc
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (rc *RoleCreate) SetCreatedTime(t time.Time) *RoleCreate {
 	rc.mutation.SetCreatedTime(t)
@@ -55,20 +69,6 @@ func (rc *RoleCreate) SetCreatedTime(t time.Time) *RoleCreate {
 func (rc *RoleCreate) SetNillableCreatedTime(t *time.Time) *RoleCreate {
 	if t != nil {
 		rc.SetCreatedTime(*t)
-	}
-	return rc
-}
-
-// SetDeletedTime sets the "deleted_time" field.
-func (rc *RoleCreate) SetDeletedTime(t time.Time) *RoleCreate {
-	rc.mutation.SetDeletedTime(t)
-	return rc
-}
-
-// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
-func (rc *RoleCreate) SetNillableDeletedTime(t *time.Time) *RoleCreate {
-	if t != nil {
-		rc.SetDeletedTime(*t)
 	}
 	return rc
 }
@@ -173,13 +173,13 @@ func (rc *RoleCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (rc *RoleCreate) defaults() {
+	if _, ok := rc.mutation.IsDisabled(); !ok {
+		v := role.DefaultIsDisabled
+		rc.mutation.SetIsDisabled(v)
+	}
 	if _, ok := rc.mutation.CreatedTime(); !ok {
 		v := role.DefaultCreatedTime()
 		rc.mutation.SetCreatedTime(v)
-	}
-	if _, ok := rc.mutation.DeletedTime(); !ok {
-		v := role.DefaultDeletedTime
-		rc.mutation.SetDeletedTime(v)
 	}
 	if _, ok := rc.mutation.ModifiedTime(); !ok {
 		v := role.DefaultModifiedTime
@@ -197,11 +197,11 @@ func (rc *RoleCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Role.name": %w`, err)}
 		}
 	}
+	if _, ok := rc.mutation.IsDisabled(); !ok {
+		return &ValidationError{Name: "is_disabled", err: errors.New(`ent: missing required field "Role.is_disabled"`)}
+	}
 	if _, ok := rc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "Role.created_time"`)}
-	}
-	if _, ok := rc.mutation.DeletedTime(); !ok {
-		return &ValidationError{Name: "deleted_time", err: errors.New(`ent: missing required field "Role.deleted_time"`)}
 	}
 	if _, ok := rc.mutation.ModifiedTime(); !ok {
 		return &ValidationError{Name: "modified_time", err: errors.New(`ent: missing required field "Role.modified_time"`)}
@@ -247,13 +247,13 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 		_spec.SetField(role.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
+	if value, ok := rc.mutation.IsDisabled(); ok {
+		_spec.SetField(role.FieldIsDisabled, field.TypeBool, value)
+		_node.IsDisabled = value
+	}
 	if value, ok := rc.mutation.CreatedTime(); ok {
 		_spec.SetField(role.FieldCreatedTime, field.TypeTime, value)
 		_node.CreatedTime = value
-	}
-	if value, ok := rc.mutation.DeletedTime(); ok {
-		_spec.SetField(role.FieldDeletedTime, field.TypeTime, value)
-		_node.DeletedTime = value
 	}
 	if value, ok := rc.mutation.ModifiedTime(); ok {
 		_spec.SetField(role.FieldModifiedTime, field.TypeTime, value)
@@ -397,6 +397,18 @@ func (u *RoleUpsert) ClearDescription() *RoleUpsert {
 	return u
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (u *RoleUpsert) SetIsDisabled(v bool) *RoleUpsert {
+	u.Set(role.FieldIsDisabled, v)
+	return u
+}
+
+// UpdateIsDisabled sets the "is_disabled" field to the value that was provided on create.
+func (u *RoleUpsert) UpdateIsDisabled() *RoleUpsert {
+	u.SetExcluded(role.FieldIsDisabled)
+	return u
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (u *RoleUpsert) SetCreatedTime(v time.Time) *RoleUpsert {
 	u.Set(role.FieldCreatedTime, v)
@@ -406,18 +418,6 @@ func (u *RoleUpsert) SetCreatedTime(v time.Time) *RoleUpsert {
 // UpdateCreatedTime sets the "created_time" field to the value that was provided on create.
 func (u *RoleUpsert) UpdateCreatedTime() *RoleUpsert {
 	u.SetExcluded(role.FieldCreatedTime)
-	return u
-}
-
-// SetDeletedTime sets the "deleted_time" field.
-func (u *RoleUpsert) SetDeletedTime(v time.Time) *RoleUpsert {
-	u.Set(role.FieldDeletedTime, v)
-	return u
-}
-
-// UpdateDeletedTime sets the "deleted_time" field to the value that was provided on create.
-func (u *RoleUpsert) UpdateDeletedTime() *RoleUpsert {
-	u.SetExcluded(role.FieldDeletedTime)
 	return u
 }
 
@@ -516,6 +516,20 @@ func (u *RoleUpsertOne) ClearDescription() *RoleUpsertOne {
 	})
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (u *RoleUpsertOne) SetIsDisabled(v bool) *RoleUpsertOne {
+	return u.Update(func(s *RoleUpsert) {
+		s.SetIsDisabled(v)
+	})
+}
+
+// UpdateIsDisabled sets the "is_disabled" field to the value that was provided on create.
+func (u *RoleUpsertOne) UpdateIsDisabled() *RoleUpsertOne {
+	return u.Update(func(s *RoleUpsert) {
+		s.UpdateIsDisabled()
+	})
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (u *RoleUpsertOne) SetCreatedTime(v time.Time) *RoleUpsertOne {
 	return u.Update(func(s *RoleUpsert) {
@@ -527,20 +541,6 @@ func (u *RoleUpsertOne) SetCreatedTime(v time.Time) *RoleUpsertOne {
 func (u *RoleUpsertOne) UpdateCreatedTime() *RoleUpsertOne {
 	return u.Update(func(s *RoleUpsert) {
 		s.UpdateCreatedTime()
-	})
-}
-
-// SetDeletedTime sets the "deleted_time" field.
-func (u *RoleUpsertOne) SetDeletedTime(v time.Time) *RoleUpsertOne {
-	return u.Update(func(s *RoleUpsert) {
-		s.SetDeletedTime(v)
-	})
-}
-
-// UpdateDeletedTime sets the "deleted_time" field to the value that was provided on create.
-func (u *RoleUpsertOne) UpdateDeletedTime() *RoleUpsertOne {
-	return u.Update(func(s *RoleUpsert) {
-		s.UpdateDeletedTime()
 	})
 }
 
@@ -803,6 +803,20 @@ func (u *RoleUpsertBulk) ClearDescription() *RoleUpsertBulk {
 	})
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (u *RoleUpsertBulk) SetIsDisabled(v bool) *RoleUpsertBulk {
+	return u.Update(func(s *RoleUpsert) {
+		s.SetIsDisabled(v)
+	})
+}
+
+// UpdateIsDisabled sets the "is_disabled" field to the value that was provided on create.
+func (u *RoleUpsertBulk) UpdateIsDisabled() *RoleUpsertBulk {
+	return u.Update(func(s *RoleUpsert) {
+		s.UpdateIsDisabled()
+	})
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (u *RoleUpsertBulk) SetCreatedTime(v time.Time) *RoleUpsertBulk {
 	return u.Update(func(s *RoleUpsert) {
@@ -814,20 +828,6 @@ func (u *RoleUpsertBulk) SetCreatedTime(v time.Time) *RoleUpsertBulk {
 func (u *RoleUpsertBulk) UpdateCreatedTime() *RoleUpsertBulk {
 	return u.Update(func(s *RoleUpsert) {
 		s.UpdateCreatedTime()
-	})
-}
-
-// SetDeletedTime sets the "deleted_time" field.
-func (u *RoleUpsertBulk) SetDeletedTime(v time.Time) *RoleUpsertBulk {
-	return u.Update(func(s *RoleUpsert) {
-		s.SetDeletedTime(v)
-	})
-}
-
-// UpdateDeletedTime sets the "deleted_time" field to the value that was provided on create.
-func (u *RoleUpsertBulk) UpdateDeletedTime() *RoleUpsertBulk {
-	return u.Update(func(s *RoleUpsert) {
-		s.UpdateDeletedTime()
 	})
 }
 

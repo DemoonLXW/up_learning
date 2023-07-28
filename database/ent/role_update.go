@@ -57,6 +57,20 @@ func (ru *RoleUpdate) ClearDescription() *RoleUpdate {
 	return ru
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (ru *RoleUpdate) SetIsDisabled(b bool) *RoleUpdate {
+	ru.mutation.SetIsDisabled(b)
+	return ru
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableIsDisabled(b *bool) *RoleUpdate {
+	if b != nil {
+		ru.SetIsDisabled(*b)
+	}
+	return ru
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (ru *RoleUpdate) SetCreatedTime(t time.Time) *RoleUpdate {
 	ru.mutation.SetCreatedTime(t)
@@ -67,20 +81,6 @@ func (ru *RoleUpdate) SetCreatedTime(t time.Time) *RoleUpdate {
 func (ru *RoleUpdate) SetNillableCreatedTime(t *time.Time) *RoleUpdate {
 	if t != nil {
 		ru.SetCreatedTime(*t)
-	}
-	return ru
-}
-
-// SetDeletedTime sets the "deleted_time" field.
-func (ru *RoleUpdate) SetDeletedTime(t time.Time) *RoleUpdate {
-	ru.mutation.SetDeletedTime(t)
-	return ru
-}
-
-// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
-func (ru *RoleUpdate) SetNillableDeletedTime(t *time.Time) *RoleUpdate {
-	if t != nil {
-		ru.SetDeletedTime(*t)
 	}
 	return ru
 }
@@ -270,11 +270,11 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if ru.mutation.DescriptionCleared() {
 		_spec.ClearField(role.FieldDescription, field.TypeString)
 	}
+	if value, ok := ru.mutation.IsDisabled(); ok {
+		_spec.SetField(role.FieldIsDisabled, field.TypeBool, value)
+	}
 	if value, ok := ru.mutation.CreatedTime(); ok {
 		_spec.SetField(role.FieldCreatedTime, field.TypeTime, value)
-	}
-	if value, ok := ru.mutation.DeletedTime(); ok {
-		_spec.SetField(role.FieldDeletedTime, field.TypeTime, value)
 	}
 	if value, ok := ru.mutation.ModifiedTime(); ok {
 		_spec.SetField(role.FieldModifiedTime, field.TypeTime, value)
@@ -484,6 +484,20 @@ func (ruo *RoleUpdateOne) ClearDescription() *RoleUpdateOne {
 	return ruo
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (ruo *RoleUpdateOne) SetIsDisabled(b bool) *RoleUpdateOne {
+	ruo.mutation.SetIsDisabled(b)
+	return ruo
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableIsDisabled(b *bool) *RoleUpdateOne {
+	if b != nil {
+		ruo.SetIsDisabled(*b)
+	}
+	return ruo
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (ruo *RoleUpdateOne) SetCreatedTime(t time.Time) *RoleUpdateOne {
 	ruo.mutation.SetCreatedTime(t)
@@ -494,20 +508,6 @@ func (ruo *RoleUpdateOne) SetCreatedTime(t time.Time) *RoleUpdateOne {
 func (ruo *RoleUpdateOne) SetNillableCreatedTime(t *time.Time) *RoleUpdateOne {
 	if t != nil {
 		ruo.SetCreatedTime(*t)
-	}
-	return ruo
-}
-
-// SetDeletedTime sets the "deleted_time" field.
-func (ruo *RoleUpdateOne) SetDeletedTime(t time.Time) *RoleUpdateOne {
-	ruo.mutation.SetDeletedTime(t)
-	return ruo
-}
-
-// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
-func (ruo *RoleUpdateOne) SetNillableDeletedTime(t *time.Time) *RoleUpdateOne {
-	if t != nil {
-		ruo.SetDeletedTime(*t)
 	}
 	return ruo
 }
@@ -727,11 +727,11 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 	if ruo.mutation.DescriptionCleared() {
 		_spec.ClearField(role.FieldDescription, field.TypeString)
 	}
+	if value, ok := ruo.mutation.IsDisabled(); ok {
+		_spec.SetField(role.FieldIsDisabled, field.TypeBool, value)
+	}
 	if value, ok := ruo.mutation.CreatedTime(); ok {
 		_spec.SetField(role.FieldCreatedTime, field.TypeTime, value)
-	}
-	if value, ok := ruo.mutation.DeletedTime(); ok {
-		_spec.SetField(role.FieldDeletedTime, field.TypeTime, value)
 	}
 	if value, ok := ruo.mutation.ModifiedTime(); ok {
 		_spec.SetField(role.FieldModifiedTime, field.TypeTime, value)

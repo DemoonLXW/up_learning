@@ -60,14 +60,14 @@ func init() {
 	roleDescName := roleFields[1].Descriptor()
 	// role.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	role.NameValidator = roleDescName.Validators[0].(func(string) error)
+	// roleDescIsDisabled is the schema descriptor for is_disabled field.
+	roleDescIsDisabled := roleFields[3].Descriptor()
+	// role.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	role.DefaultIsDisabled = roleDescIsDisabled.Default.(bool)
 	// roleDescCreatedTime is the schema descriptor for created_time field.
-	roleDescCreatedTime := roleFields[3].Descriptor()
+	roleDescCreatedTime := roleFields[4].Descriptor()
 	// role.DefaultCreatedTime holds the default value on creation for the created_time field.
 	role.DefaultCreatedTime = roleDescCreatedTime.Default.(func() time.Time)
-	// roleDescDeletedTime is the schema descriptor for deleted_time field.
-	roleDescDeletedTime := roleFields[4].Descriptor()
-	// role.DefaultDeletedTime holds the default value on creation for the deleted_time field.
-	role.DefaultDeletedTime = roleDescDeletedTime.Default.(time.Time)
 	// roleDescModifiedTime is the schema descriptor for modified_time field.
 	roleDescModifiedTime := roleFields[5].Descriptor()
 	// role.DefaultModifiedTime holds the default value on creation for the modified_time field.

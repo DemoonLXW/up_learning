@@ -53,8 +53,8 @@ var (
 		{Name: "id", Type: field.TypeUint8, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime},
 		{Name: "modified_time", Type: field.TypeTime},
 	}
 	// RoleTable holds the schema information for the "role" table.
