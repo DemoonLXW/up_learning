@@ -3,7 +3,6 @@ package controller
 import (
 	"math"
 	"net/http"
-	"strconv"
 
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/entity"
@@ -56,27 +55,6 @@ func (cont *ManagementController) GetRoleList(c *gin.Context) {
 }
 
 func (cont *ManagementController) AddARole(c *gin.Context) {
-	uid, err := c.Cookie("uid")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	id, err := strconv.ParseUint(uid, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	check, err := cont.Services.User.CheckPermissions(uint32(id), []string{entity.AddRole})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if !check {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "permission denied: " + entity.AddRole})
-		return
-	}
 
 	var role entity.ToAddRole
 	if err := c.ShouldBindJSON(&role); err != nil {
@@ -85,7 +63,7 @@ func (cont *ManagementController) AddARole(c *gin.Context) {
 	}
 
 	addRole := ent.Role{Name: *role.Name, Description: *role.Description}
-	err = cont.Services.Management.CreateRole([]*ent.Role{&addRole})
+	err := cont.Services.Management.CreateRole([]*ent.Role{&addRole})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

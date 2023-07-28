@@ -20,7 +20,7 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 		role := auth.Group("/role")
 		{
 			role.GET("/getlist", Check(controllers.User.Services.User, []string{entity.RetrieveRole}), controllers.Management.GetRoleList)
-			role.POST("/add", controllers.Management.AddARole)
+			role.POST("/add", Check(controllers.User.Services.User, []string{entity.AddRole}), controllers.Management.AddARole)
 		}
 
 	}
