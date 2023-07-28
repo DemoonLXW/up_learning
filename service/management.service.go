@@ -215,13 +215,13 @@ func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 	ctx := context.Background()
 
 	// originalRole, err := serv.DB.Role.Query().Where(role.ID(toUpdate.ID)).WithPermissions().WithUsers().First(ctx)
-	originalRole, err := serv.DB.Role.Query().Where(role.ID(toUpdate.ID)).First(ctx)
-	if err != nil {
-		return fmt.Errorf("update role find original failed: %w", err)
-	}
-	if !originalRole.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
-		return fmt.Errorf("role is already deleted")
-	}
+	// originalRole, err := serv.DB.Role.Query().Where(role.ID(toUpdate.ID)).First(ctx)
+	// if err != nil {
+	// 	return fmt.Errorf("update role find original failed: %w", err)
+	// }
+	// if !originalRole.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
+	// 	return fmt.Errorf("role is already deleted")
+	// }
 	// if len(originalRole.Edges.Permissions) != 0 || len(originalRole.Edges.Users) != 0 {
 	// 	return fmt.Errorf("role is already used")
 	// }
@@ -239,12 +239,8 @@ func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 	if toUpdate.Description != nil {
 		mutation.SetDescription(*toUpdate.Description)
 	}
-	if toUpdate.IsDeleted != nil {
-		if *toUpdate.IsDeleted == true {
-			mutation.SetDeletedTime(time.Now())
-		} else {
-			mutation.SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))
-		}
+	if toUpdate.IsDisabled != nil {
+		mutation.SetIsDisabled(*toUpdate.IsDisabled)
 	}
 	mutation.SetModifiedTime(time.Now())
 
@@ -271,7 +267,7 @@ func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 	return nil
 }
 
-func (serv *ManagementService) RetrieveRole(current, pageSize int, like, sort string, order, isDeleted *bool) ([]*ent.Role, error) {
+func (serv *ManagementService) RetrieveRole(current, pageSize int, like, sort string, order, isDisabled *bool) ([]*ent.Role, error) {
 	ctx := context.Background()
 
 	offset := (current - 1) * pageSize
@@ -284,12 +280,8 @@ func (serv *ManagementService) RetrieveRole(current, pageSize int, like, sort st
 					role.DescriptionContains(like),
 				),
 				func(s *sql.Selector) {
-					if isDeleted != nil {
-						if *isDeleted {
-							s.Where(sql.NEQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
-						} else {
-							s.Where(sql.EQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
-						}
+					if isDisabled != nil {
+						s.Where(sql.EQ(role.FieldIsDisabled, *isDisabled))
 					}
 				},
 			),
@@ -315,7 +307,7 @@ func (serv *ManagementService) RetrieveRole(current, pageSize int, like, sort st
 
 }
 
-func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDeleted *bool) (int, error) {
+func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDisabled *bool) (int, error) {
 	ctx := context.Background()
 
 	total, err := serv.DB.Role.Query().
@@ -326,12 +318,8 @@ func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDeleted *bo
 					role.DescriptionContains(like),
 				),
 				func(s *sql.Selector) {
-					if isDeleted != nil {
-						if *isDeleted {
-							s.Where(sql.NEQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
-						} else {
-							s.Where(sql.EQ(role.FieldDeletedTime, time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
-						}
+					if isDisabled != nil {
+						s.Where(sql.EQ(role.FieldIsDisabled, *isDisabled))
 					}
 				},
 			),
@@ -355,9 +343,9 @@ func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 		return fmt.Errorf("delete roles are not found")
 	}
 	for _, v := range originalRoles {
-		if !v.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
-			return fmt.Errorf("role (id:%d) is already deleted", v.ID)
-		}
+		// if !v.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
+		// 	return fmt.Errorf("role (id:%d) is already deleted", v.ID)
+		// }
 		if len(v.Edges.Permissions) != 0 || len(v.Edges.Users) != 0 {
 			return fmt.Errorf("role (id:%d) is already used", v.ID)
 		}
@@ -369,7 +357,7 @@ func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 	}
 
 	err = tx.Role.Update().
-		SetDeletedTime(time.Now()).
+		// SetDeletedTime(time.Now()).
 		Where(role.IDIn(toDeleteIDs...)).
 		Exec(ctx)
 	if err != nil {

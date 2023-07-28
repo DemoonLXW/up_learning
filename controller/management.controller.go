@@ -4,7 +4,6 @@ import (
 	"math"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/entity"
@@ -24,13 +23,13 @@ func (cont *ManagementController) GetRoleList(c *gin.Context) {
 		return
 	}
 
-	rs, err := cont.Services.Management.RetrieveRole(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDeleted)
+	rs, err := cont.Services.Management.RetrieveRole(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	total, err := cont.Services.Management.GetTotalRetrievedRoles(search.Like, search.IsDeleted)
+	total, err := cont.Services.Management.GetTotalRetrievedRoles(search.Like, search.IsDisabled)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -41,7 +40,7 @@ func (cont *ManagementController) GetRoleList(c *gin.Context) {
 		roles[i].ID = v.ID
 		roles[i].Name = v.Name
 		roles[i].Description = v.Description
-		roles[i].IsDeleted = !v.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))
+		roles[i].IsDisabled = v.IsDisabled
 	}
 
 	var data entity.RetrievedListData

@@ -24,19 +24,19 @@ func (m *Menu) String() string {
 }
 
 type Search struct {
-	Current   int    `form:"current" binding:"required" `
-	PageSize  int    `form:"pagesize" binding:"required"`
-	Like      string `form:"like"`
-	Sort      string `form:"sort"`
-	Order     *bool  `form:"order"`
-	IsDeleted *bool  `form:"isdeleted"`
+	Current    int    `form:"current" binding:"required" `
+	PageSize   int    `form:"pagesize" binding:"required"`
+	Like       string `form:"like"`
+	Sort       string `form:"sort"`
+	Order      *bool  `form:"order"`
+	IsDisabled *bool  `form:"isdisabled"`
 }
 
 type RetrievedRoles struct {
 	ID          uint8  `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	IsDeleted   bool   `json:"isDeleted"`
+	IsDisabled  bool   `json:"isDisabled"`
 }
 
 type RetrievedListData struct {
@@ -55,5 +55,5 @@ type ToModifyRole struct {
 	ID          uint8   `json:"id" binding:"required"`
 	Name        *string `json:"name"`
 	Description *string `json:"description"`
-	IsDeleted   *bool   `json:"isDeleted"`
+	IsDisabled  *bool   `json:"isDisabled"`
 }

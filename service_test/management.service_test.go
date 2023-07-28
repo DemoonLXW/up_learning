@@ -120,12 +120,12 @@ func TestUpdateRole(t *testing.T) {
 
 	name := "role2change3333"
 	description := ""
-	isDeleted := false
+	isDisabled := false
 	role := entity.ToModifyRole{
 		ID:          2,
 		Name:        &name,
 		Description: &description,
-		IsDeleted:   &isDeleted,
+		IsDisabled:  &isDisabled,
 	}
 	err = serv.UpdateRole(&role)
 	assert.Nil(t, err)
@@ -140,13 +140,13 @@ func TestRetrieveRole(t *testing.T) {
 	dao.DB = db
 
 	order := true
-	delete := true
-	roles, err := dao.RetrieveRole(1, 5, "", "description", &order, &delete)
+	disabled := true
+	roles, err := dao.RetrieveRole(1, 5, "", "description", &order, &disabled)
 	assert.Nil(t, err)
 	for _, v := range roles {
 		fmt.Println(v)
 	}
-	assert.Len(t, roles, 3)
+	assert.Len(t, roles, 1)
 }
 
 func TestGetTotalRetrievedRoles(t *testing.T) {
