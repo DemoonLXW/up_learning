@@ -1,5 +1,6 @@
 package entity
 
 const (
-	AddRole = "role addition"
+	AddRole      = "role addition"
+	RetrieveRole = "role retrieval"
 )

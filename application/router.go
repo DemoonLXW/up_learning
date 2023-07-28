@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/DemoonLXW/up_learning/controller"
+	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +19,7 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 
 		role := auth.Group("/role")
 		{
-			role.GET("/getlist", controllers.Management.GetRoleList)
+			role.GET("/getlist", Check(controllers.User.Services.User, []string{entity.RetrieveRole}), controllers.Management.GetRoleList)
 			role.POST("/add", controllers.Management.AddARole)
 		}
 
