@@ -110,3 +110,32 @@ func Auth(serv *service.UserService) gin.HandlerFunc {
 
 	}
 }
+
+func Check(serv *service.UserService, permissions []string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uid, err := c.Cookie("uid")
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		id, err := strconv.ParseUint(uid, 10, 32)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+
+		check, err := serv.CheckPermissions(uint32(id), permissions)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+		if !check {
+			message := fmt.Sprintf("permission denied: %v", permissions)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": message})
+			return
+		}
+
+		c.Next()
+	}
+}
