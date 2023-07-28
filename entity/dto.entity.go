@@ -50,3 +50,10 @@ type ToAddRole struct {
 	Name        *string `json:"name" binding:"required"`
 	Description *string `json:"description" binding:"required"`
 }
+
+type ToModifyRole struct {
+	ID          uint8   `json:"id" binding:"required"`
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
+	IsDeleted   *bool   `json:"isDeleted"`
+}

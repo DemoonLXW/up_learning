@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/injection"
 	"github.com/DemoonLXW/up_learning/service"
 	"github.com/stretchr/testify/assert"
@@ -117,12 +118,14 @@ func TestUpdateRole(t *testing.T) {
 	assert.Nil(t, err)
 	serv.DB = db
 
-	name := "role2change"
-	description := "role2change description"
-	role := ent.Role{
+	name := "role2change3333"
+	description := ""
+	isDeleted := false
+	role := entity.ToModifyRole{
 		ID:          2,
-		Name:        name,
-		Description: description,
+		Name:        &name,
+		Description: &description,
+		IsDeleted:   &isDeleted,
 	}
 	err = serv.UpdateRole(&role)
 	assert.Nil(t, err)

@@ -10,6 +10,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
+	"github.com/DemoonLXW/up_learning/entity"
 )
 
 type ManagementService struct {
@@ -210,35 +211,54 @@ func (serv *ManagementService) CreateRole(toCreates []*ent.Role) error {
 	return nil
 }
 
-func (serv *ManagementService) UpdateRole(toUpdate *ent.Role) error {
+func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 	ctx := context.Background()
 
-	originalRole, err := serv.DB.Role.Query().Where(role.ID(toUpdate.ID)).WithPermissions().WithUsers().First(ctx)
+	// originalRole, err := serv.DB.Role.Query().Where(role.ID(toUpdate.ID)).WithPermissions().WithUsers().First(ctx)
+	originalRole, err := serv.DB.Role.Query().Where(role.ID(toUpdate.ID)).First(ctx)
 	if err != nil {
 		return fmt.Errorf("update role find original failed: %w", err)
 	}
 	if !originalRole.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
 		return fmt.Errorf("role is already deleted")
 	}
-	if len(originalRole.Edges.Permissions) != 0 || len(originalRole.Edges.Users) != 0 {
-		return fmt.Errorf("role is already used")
-	}
+	// if len(originalRole.Edges.Permissions) != 0 || len(originalRole.Edges.Users) != 0 {
+	// 	return fmt.Errorf("role is already used")
+	// }
 
 	tx, err := serv.DB.Tx(ctx)
 	if err != nil {
 		return fmt.Errorf("update role start a transaction failed: %w", err)
 	}
 
-	err = tx.Role.Create().
-		SetID(toUpdate.ID).
-		SetName(toUpdate.Name).
-		SetDescription(toUpdate.Description).
-		SetModifiedTime(time.Now()).
-		OnConflict().
-		UpdateName().
-		UpdateDescription().
-		UpdateModifiedTime().
-		Exec(ctx)
+	updater := tx.Role.Update().Where(role.IDEQ(toUpdate.ID))
+	mutation := updater.Mutation()
+	if toUpdate.Name != nil {
+		mutation.SetName(*toUpdate.Name)
+	}
+	if toUpdate.Description != nil {
+		mutation.SetDescription(*toUpdate.Description)
+	}
+	if toUpdate.IsDeleted != nil {
+		if *toUpdate.IsDeleted == true {
+			mutation.SetDeletedTime(time.Now())
+		} else {
+			mutation.SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))
+		}
+	}
+	mutation.SetModifiedTime(time.Now())
+
+	_, err = updater.Save(ctx)
+	// err = tx.Role.Create().
+	// 	SetID(toUpdate.ID).
+	// 	SetName(toUpdate.Name).
+	// 	SetDescription(toUpdate.Description).
+	// 	SetModifiedTime(time.Now()).
+	// 	OnConflict().
+	// 	UpdateName().
+	// 	UpdateDescription().
+	// 	UpdateModifiedTime().
+	// 	Exec(ctx)
 	if err != nil {
 		return rollback(tx, "update role", err)
 	}
