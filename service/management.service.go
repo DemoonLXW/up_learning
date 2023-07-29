@@ -214,18 +214,6 @@ func (serv *ManagementService) CreateRole(toCreates []*entity.ToAddRole) error {
 func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 	ctx := context.Background()
 
-	// originalRole, err := serv.DB.Role.Query().Where(role.ID(toUpdate.ID)).WithPermissions().WithUsers().First(ctx)
-	// originalRole, err := serv.DB.Role.Query().Where(role.ID(toUpdate.ID)).First(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("update role find original failed: %w", err)
-	// }
-	// if !originalRole.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
-	// 	return fmt.Errorf("role is already deleted")
-	// }
-	// if len(originalRole.Edges.Permissions) != 0 || len(originalRole.Edges.Users) != 0 {
-	// 	return fmt.Errorf("role is already used")
-	// }
-
 	tx, err := serv.DB.Tx(ctx)
 	if err != nil {
 		return fmt.Errorf("update role start a transaction failed: %w", err)
@@ -244,17 +232,7 @@ func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 	}
 	mutation.SetModifiedTime(time.Now())
 
-	_, err = updater.Save(ctx)
-	// err = tx.Role.Create().
-	// 	SetID(toUpdate.ID).
-	// 	SetName(toUpdate.Name).
-	// 	SetDescription(toUpdate.Description).
-	// 	SetModifiedTime(time.Now()).
-	// 	OnConflict().
-	// 	UpdateName().
-	// 	UpdateDescription().
-	// 	UpdateModifiedTime().
-	// 	Exec(ctx)
+	num, err := updater.Save(ctx)
 	if err != nil {
 		return rollback(tx, "update role", err)
 	}
@@ -262,6 +240,10 @@ func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 	err = tx.Commit()
 	if err != nil {
 		return fmt.Errorf("update role transaction commit failed: %w", err)
+	}
+
+	if num == 0 {
+		return fmt.Errorf("update role affect 0 row")
 	}
 
 	return nil

@@ -118,11 +118,11 @@ func TestUpdateRole(t *testing.T) {
 	assert.Nil(t, err)
 	serv.DB = db
 
-	name := "role2change3333"
-	description := ""
-	isDisabled := false
+	name := "test change role service name1"
+	description := "test change role service description1"
+	isDisabled := true
 	role := entity.ToModifyRole{
-		ID:          2,
+		ID:          7,
 		Name:        &name,
 		Description: &description,
 		IsDisabled:  &isDisabled,
