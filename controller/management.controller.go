@@ -4,7 +4,6 @@ import (
 	"math"
 	"net/http"
 
-	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/service"
 	"github.com/gin-gonic/gin"
@@ -62,8 +61,7 @@ func (cont *ManagementController) AddARole(c *gin.Context) {
 		return
 	}
 
-	addRole := ent.Role{Name: *role.Name, Description: *role.Description}
-	err := cont.Services.Management.CreateRole([]*ent.Role{&addRole})
+	err := cont.Services.Management.CreateRole([]*entity.ToAddRole{&role})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

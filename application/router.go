@@ -8,6 +8,8 @@ import (
 
 func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engine {
 
+	userService := controllers.User.Services.User
+
 	app.POST("/login", controllers.User.Login)
 	// app.POST("/autologin", controllers.User.AutoLogin)
 	app.POST("/logout", controllers.User.Logout)
@@ -19,8 +21,8 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 
 		role := auth.Group("/role")
 		{
-			role.GET("/getlist", Check(controllers.User.Services.User, []string{entity.RetrieveRole}), controllers.Management.GetRoleList)
-			role.POST("/add", Check(controllers.User.Services.User, []string{entity.AddRole}), controllers.Management.AddARole)
+			role.GET("/getlist", Check(userService, []string{entity.RetrieveRole}), controllers.Management.GetRoleList)
+			role.POST("/add", Check(userService, []string{entity.AddRole}), controllers.Management.AddARole)
 		}
 
 	}
