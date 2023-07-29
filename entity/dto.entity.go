@@ -32,8 +32,8 @@ type Search struct {
 	IsDisabled *bool  `form:"isdisabled"`
 }
 
-type RetrievedRoles struct {
-	ID          uint8  `json:"id"`
+type RetrievedRole struct {
+	ID          uint8  `json:"id" uri:"id" binding:"required"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	IsDisabled  bool   `json:"isDisabled"`

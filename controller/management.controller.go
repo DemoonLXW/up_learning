@@ -33,7 +33,7 @@ func (cont *ManagementController) GetRoleList(c *gin.Context) {
 		return
 	}
 
-	roles := make([]entity.RetrievedRoles, len(rs))
+	roles := make([]entity.RetrievedRole, len(rs))
 	for i, v := range rs {
 		roles[i].ID = v.ID
 		roles[i].Name = v.Name
@@ -87,5 +87,25 @@ func (cont *ManagementController) ModifyARole(c *gin.Context) {
 
 	var res entity.Result
 	res.Message = "Modify a Role Successfully"
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *ManagementController) GetARoleById(c *gin.Context) {
+	var roleParam entity.RetrievedRole
+	if err := c.ShouldBindUri(&roleParam); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	r, err := cont.Services.Management.FindOneRoleById(roleParam.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	role := entity.RetrievedRole{ID: r.ID, Name: r.Name, Description: r.Description, IsDisabled: r.IsDisabled}
+	var res entity.Result
+	res.Message = "Get a Role By Id Successfully"
+	res.Data = role
 	c.JSON(http.StatusOK, res)
 }
