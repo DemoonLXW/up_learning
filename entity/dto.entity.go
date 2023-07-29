@@ -53,7 +53,7 @@ type ToAddRole struct {
 
 type ToModifyRole struct {
 	ID          uint8   `json:"id" binding:"required"`
-	Name        *string `json:"name"`
-	Description *string `json:"description"`
-	IsDisabled  *bool   `json:"isDisabled"`
+	Name        *string `json:"name" binding:"required_without_all=Description IsDisabled"`
+	Description *string `json:"description" binding:"required_without_all=Name IsDisabled"`
+	IsDisabled  *bool   `json:"isDisabled" binding:"required_without_all=Name Description"`
 }

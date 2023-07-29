@@ -71,3 +71,21 @@ func (cont *ManagementController) AddARole(c *gin.Context) {
 	res.Message = "Add a Role Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) ModifyARole(c *gin.Context) {
+	var role entity.ToModifyRole
+	if err := c.ShouldBindJSON(&role); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := cont.Services.Management.UpdateRole(&role)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Modify a Role Successfully"
+	c.JSON(http.StatusOK, res)
+}
