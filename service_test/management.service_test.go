@@ -100,13 +100,13 @@ func TestCreateRole(t *testing.T) {
 	// 	Description: &description1,
 	// }
 
-	name2 := "role3"
-	description2 := "role3 description"
-	role2 := ent.Role{
-		Name:        name2,
-		Description: description2,
+	name2 := "role5"
+	description2 := "role5 description"
+	role2 := entity.ToAddRole{
+		Name:        &name2,
+		Description: &description2,
 	}
-	err = serv.CreateRole([]*ent.Role{&role2})
+	err = serv.CreateRole([]*entity.ToAddRole{&role2})
 	assert.Nil(t, err)
 
 }

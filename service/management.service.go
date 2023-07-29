@@ -170,7 +170,7 @@ func (serv *ManagementService) DeletePermission(toDeleteIDs []uint16) error {
 	return nil
 }
 
-func (serv *ManagementService) CreateRole(toCreates []*ent.Role) error {
+func (serv *ManagementService) CreateRole(toCreates []*entity.ToAddRole) error {
 	ctx := context.Background()
 
 	num, err := serv.DB.Role.Query().Aggregate(ent.Count()).Int(ctx)
@@ -181,8 +181,8 @@ func (serv *ManagementService) CreateRole(toCreates []*ent.Role) error {
 	names := make([]string, len(toCreates))
 	bulk := make([]*ent.RoleCreate, len(toCreates))
 	for i, v := range toCreates {
-		names[i] = v.Name
-		bulk[i] = serv.DB.Role.Create().SetID(uint8(num + i + 1)).SetName(v.Name).SetDescription(v.Description)
+		names[i] = *v.Name
+		bulk[i] = serv.DB.Role.Create().SetID(uint8(num + i + 1)).SetName(*v.Name).SetDescription(*v.Description)
 	}
 
 	checkRepeatName, err := serv.DB.Role.Query().Where(role.NameIn(names...)).Exist(ctx)
