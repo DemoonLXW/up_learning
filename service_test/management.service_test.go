@@ -212,3 +212,23 @@ func TestFindOneRoleById(t *testing.T) {
 	fmt.Println(role)
 
 }
+
+func TestUpdateDeletedRole(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+
+	name := "role7"
+	description := "test change deleted role description"
+	isDisabled := true
+	role := &entity.ToModifyRole{
+		ID:          7,
+		Name:        &name,
+		Description: &description,
+		IsDisabled:  &isDisabled,
+	}
+	err = serv.UpdateDeletedRole(role)
+	assert.Nil(t, err)
+}

@@ -409,3 +409,37 @@ func (serv *ManagementService) FindOneRoleById(id uint8) (*ent.Role, error) {
 	}
 	return role, nil
 }
+
+func (serv *ManagementService) UpdateDeletedRole(toUpdate *entity.ToModifyRole) error {
+	ctx := context.Background()
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("update deleted role start a transaction failed: %w", err)
+	}
+
+	num, err := tx.Role.Update().Where(role.And(
+		role.IDEQ(toUpdate.ID),
+		role.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	)).
+		SetCreatedTime(time.Now()).
+		SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+		SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+		SetName(*toUpdate.Name).
+		SetDescription(*toUpdate.Description).
+		SetIsDisabled(*toUpdate.IsDisabled).
+		Save(ctx)
+	if err != nil {
+		return rollback(tx, "update deleted role", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("update deleted role transaction commit failed: %w", err)
+	}
+	if num == 0 {
+		return fmt.Errorf("update deleted role affect 0 row")
+	}
+
+	return nil
+}
