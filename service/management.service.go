@@ -305,6 +305,7 @@ func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDisabled *b
 						s.Where(sql.EQ(role.FieldIsDisabled, *isDisabled))
 					}
 				},
+				role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 			),
 		).Count(ctx)
 

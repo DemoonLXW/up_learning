@@ -157,9 +157,9 @@ func TestGetTotalRetrievedRoles(t *testing.T) {
 	serv.DB = db
 
 	// delete := false
-	total, err := serv.GetTotalRetrievedRoles("", nil)
+	total, err := serv.GetTotalRetrievedRoles("role", nil)
 	assert.Nil(t, err)
-	assert.Equal(t, 4, total)
+	assert.Equal(t, 6, total)
 }
 
 func TestDeleteRole(t *testing.T) {

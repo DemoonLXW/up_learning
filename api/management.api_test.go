@@ -20,10 +20,10 @@ func TestGetRoleList(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	query := "?current=1&pagesize=15"
+	query := "?current=1&pagesize=15&like=role"
 	req, _ := http.NewRequest(http.MethodGet, "/role/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "7c151ff2e7ff18a42136a221e171a3df"}
+	token_cookie := &http.Cookie{Name: "token", Value: "fa2cbe9b9d547ef14ad1d6fc5301e208"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
