@@ -27,6 +27,8 @@ type Role struct {
 	CreatedTime time.Time `json:"created_time,omitempty"`
 	// ModifiedTime holds the value of the "modified_time" field.
 	ModifiedTime time.Time `json:"modified_time,omitempty"`
+	// DeletedTime holds the value of the "deleted_time" field.
+	DeletedTime time.Time `json:"deleted_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoleQuery when eager-loading is set.
 	Edges        RoleEdges `json:"edges"`
@@ -106,7 +108,7 @@ func (*Role) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case role.FieldName, role.FieldDescription:
 			values[i] = new(sql.NullString)
-		case role.FieldCreatedTime, role.FieldModifiedTime:
+		case role.FieldCreatedTime, role.FieldModifiedTime, role.FieldDeletedTime:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -158,6 +160,12 @@ func (r *Role) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field modified_time", values[i])
 			} else if value.Valid {
 				r.ModifiedTime = value.Time
+			}
+		case role.FieldDeletedTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted_time", values[i])
+			} else if value.Valid {
+				r.DeletedTime = value.Time
 			}
 		default:
 			r.selectValues.Set(columns[i], values[i])
@@ -234,6 +242,9 @@ func (r *Role) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("modified_time=")
 	builder.WriteString(r.ModifiedTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("deleted_time=")
+	builder.WriteString(r.DeletedTime.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

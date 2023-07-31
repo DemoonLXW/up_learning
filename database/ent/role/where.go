@@ -80,6 +80,11 @@ func ModifiedTime(v time.Time) predicate.Role {
 	return predicate.Role(sql.FieldEQ(FieldModifiedTime, v))
 }
 
+// DeletedTime applies equality check predicate on the "deleted_time" field. It's identical to DeletedTimeEQ.
+func DeletedTime(v time.Time) predicate.Role {
+	return predicate.Role(sql.FieldEQ(FieldDeletedTime, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Role {
 	return predicate.Role(sql.FieldEQ(FieldName, v))
@@ -308,6 +313,46 @@ func ModifiedTimeLT(v time.Time) predicate.Role {
 // ModifiedTimeLTE applies the LTE predicate on the "modified_time" field.
 func ModifiedTimeLTE(v time.Time) predicate.Role {
 	return predicate.Role(sql.FieldLTE(FieldModifiedTime, v))
+}
+
+// DeletedTimeEQ applies the EQ predicate on the "deleted_time" field.
+func DeletedTimeEQ(v time.Time) predicate.Role {
+	return predicate.Role(sql.FieldEQ(FieldDeletedTime, v))
+}
+
+// DeletedTimeNEQ applies the NEQ predicate on the "deleted_time" field.
+func DeletedTimeNEQ(v time.Time) predicate.Role {
+	return predicate.Role(sql.FieldNEQ(FieldDeletedTime, v))
+}
+
+// DeletedTimeIn applies the In predicate on the "deleted_time" field.
+func DeletedTimeIn(vs ...time.Time) predicate.Role {
+	return predicate.Role(sql.FieldIn(FieldDeletedTime, vs...))
+}
+
+// DeletedTimeNotIn applies the NotIn predicate on the "deleted_time" field.
+func DeletedTimeNotIn(vs ...time.Time) predicate.Role {
+	return predicate.Role(sql.FieldNotIn(FieldDeletedTime, vs...))
+}
+
+// DeletedTimeGT applies the GT predicate on the "deleted_time" field.
+func DeletedTimeGT(v time.Time) predicate.Role {
+	return predicate.Role(sql.FieldGT(FieldDeletedTime, v))
+}
+
+// DeletedTimeGTE applies the GTE predicate on the "deleted_time" field.
+func DeletedTimeGTE(v time.Time) predicate.Role {
+	return predicate.Role(sql.FieldGTE(FieldDeletedTime, v))
+}
+
+// DeletedTimeLT applies the LT predicate on the "deleted_time" field.
+func DeletedTimeLT(v time.Time) predicate.Role {
+	return predicate.Role(sql.FieldLT(FieldDeletedTime, v))
+}
+
+// DeletedTimeLTE applies the LTE predicate on the "deleted_time" field.
+func DeletedTimeLTE(v time.Time) predicate.Role {
+	return predicate.Role(sql.FieldLTE(FieldDeletedTime, v))
 }
 
 // HasPermissions applies the HasEdge predicate on the "permissions" edge.

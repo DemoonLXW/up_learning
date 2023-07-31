@@ -99,6 +99,20 @@ func (ru *RoleUpdate) SetNillableModifiedTime(t *time.Time) *RoleUpdate {
 	return ru
 }
 
+// SetDeletedTime sets the "deleted_time" field.
+func (ru *RoleUpdate) SetDeletedTime(t time.Time) *RoleUpdate {
+	ru.mutation.SetDeletedTime(t)
+	return ru
+}
+
+// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
+func (ru *RoleUpdate) SetNillableDeletedTime(t *time.Time) *RoleUpdate {
+	if t != nil {
+		ru.SetDeletedTime(*t)
+	}
+	return ru
+}
+
 // AddPermissionIDs adds the "permissions" edge to the Permission entity by IDs.
 func (ru *RoleUpdate) AddPermissionIDs(ids ...uint16) *RoleUpdate {
 	ru.mutation.AddPermissionIDs(ids...)
@@ -278,6 +292,9 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := ru.mutation.ModifiedTime(); ok {
 		_spec.SetField(role.FieldModifiedTime, field.TypeTime, value)
+	}
+	if value, ok := ru.mutation.DeletedTime(); ok {
+		_spec.SetField(role.FieldDeletedTime, field.TypeTime, value)
 	}
 	if ru.mutation.PermissionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -526,6 +543,20 @@ func (ruo *RoleUpdateOne) SetNillableModifiedTime(t *time.Time) *RoleUpdateOne {
 	return ruo
 }
 
+// SetDeletedTime sets the "deleted_time" field.
+func (ruo *RoleUpdateOne) SetDeletedTime(t time.Time) *RoleUpdateOne {
+	ruo.mutation.SetDeletedTime(t)
+	return ruo
+}
+
+// SetNillableDeletedTime sets the "deleted_time" field if the given value is not nil.
+func (ruo *RoleUpdateOne) SetNillableDeletedTime(t *time.Time) *RoleUpdateOne {
+	if t != nil {
+		ruo.SetDeletedTime(*t)
+	}
+	return ruo
+}
+
 // AddPermissionIDs adds the "permissions" edge to the Permission entity by IDs.
 func (ruo *RoleUpdateOne) AddPermissionIDs(ids ...uint16) *RoleUpdateOne {
 	ruo.mutation.AddPermissionIDs(ids...)
@@ -735,6 +766,9 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 	}
 	if value, ok := ruo.mutation.ModifiedTime(); ok {
 		_spec.SetField(role.FieldModifiedTime, field.TypeTime, value)
+	}
+	if value, ok := ruo.mutation.DeletedTime(); ok {
+		_spec.SetField(role.FieldDeletedTime, field.TypeTime, value)
 	}
 	if ruo.mutation.PermissionsCleared() {
 		edge := &sqlgraph.EdgeSpec{

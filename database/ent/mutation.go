@@ -1422,6 +1422,7 @@ type RoleMutation struct {
 	is_disabled        *bool
 	created_time       *time.Time
 	modified_time      *time.Time
+	deleted_time       *time.Time
 	clearedFields      map[string]struct{}
 	permissions        map[uint16]struct{}
 	removedpermissions map[uint16]struct{}
@@ -1734,6 +1735,42 @@ func (m *RoleMutation) ResetModifiedTime() {
 	m.modified_time = nil
 }
 
+// SetDeletedTime sets the "deleted_time" field.
+func (m *RoleMutation) SetDeletedTime(t time.Time) {
+	m.deleted_time = &t
+}
+
+// DeletedTime returns the value of the "deleted_time" field in the mutation.
+func (m *RoleMutation) DeletedTime() (r time.Time, exists bool) {
+	v := m.deleted_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedTime returns the old "deleted_time" field's value of the Role entity.
+// If the Role object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RoleMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedTime: %w", err)
+	}
+	return oldValue.DeletedTime, nil
+}
+
+// ResetDeletedTime resets all changes to the "deleted_time" field.
+func (m *RoleMutation) ResetDeletedTime() {
+	m.deleted_time = nil
+}
+
 // AddPermissionIDs adds the "permissions" edge to the Permission entity by ids.
 func (m *RoleMutation) AddPermissionIDs(ids ...uint16) {
 	if m.permissions == nil {
@@ -1930,7 +1967,7 @@ func (m *RoleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RoleMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, role.FieldName)
 	}
@@ -1945,6 +1982,9 @@ func (m *RoleMutation) Fields() []string {
 	}
 	if m.modified_time != nil {
 		fields = append(fields, role.FieldModifiedTime)
+	}
+	if m.deleted_time != nil {
+		fields = append(fields, role.FieldDeletedTime)
 	}
 	return fields
 }
@@ -1964,6 +2004,8 @@ func (m *RoleMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedTime()
 	case role.FieldModifiedTime:
 		return m.ModifiedTime()
+	case role.FieldDeletedTime:
+		return m.DeletedTime()
 	}
 	return nil, false
 }
@@ -1983,6 +2025,8 @@ func (m *RoleMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreatedTime(ctx)
 	case role.FieldModifiedTime:
 		return m.OldModifiedTime(ctx)
+	case role.FieldDeletedTime:
+		return m.OldDeletedTime(ctx)
 	}
 	return nil, fmt.Errorf("unknown Role field %s", name)
 }
@@ -2026,6 +2070,13 @@ func (m *RoleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetModifiedTime(v)
+		return nil
+	case role.FieldDeletedTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedTime(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Role field %s", name)
@@ -2099,6 +2150,9 @@ func (m *RoleMutation) ResetField(name string) error {
 		return nil
 	case role.FieldModifiedTime:
 		m.ResetModifiedTime()
+		return nil
+	case role.FieldDeletedTime:
+		m.ResetDeletedTime()
 		return nil
 	}
 	return fmt.Errorf("unknown Role field %s", name)

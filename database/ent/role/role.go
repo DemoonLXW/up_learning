@@ -24,6 +24,8 @@ const (
 	FieldCreatedTime = "created_time"
 	// FieldModifiedTime holds the string denoting the modified_time field in the database.
 	FieldModifiedTime = "modified_time"
+	// FieldDeletedTime holds the string denoting the deleted_time field in the database.
+	FieldDeletedTime = "deleted_time"
 	// EdgePermissions holds the string denoting the permissions edge name in mutations.
 	EdgePermissions = "permissions"
 	// EdgeMenu holds the string denoting the menu edge name in mutations.
@@ -77,6 +79,7 @@ var Columns = []string{
 	FieldIsDisabled,
 	FieldCreatedTime,
 	FieldModifiedTime,
+	FieldDeletedTime,
 }
 
 var (
@@ -107,6 +110,8 @@ var (
 	DefaultCreatedTime func() time.Time
 	// DefaultModifiedTime holds the default value on creation for the "modified_time" field.
 	DefaultModifiedTime time.Time
+	// DefaultDeletedTime holds the default value on creation for the "deleted_time" field.
+	DefaultDeletedTime time.Time
 )
 
 // OrderOption defines the ordering options for the Role queries.
@@ -140,6 +145,11 @@ func ByCreatedTime(opts ...sql.OrderTermOption) OrderOption {
 // ByModifiedTime orders the results by the modified_time field.
 func ByModifiedTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModifiedTime, opts...).ToFunc()
+}
+
+// ByDeletedTime orders the results by the deleted_time field.
+func ByDeletedTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDeletedTime, opts...).ToFunc()
 }
 
 // ByPermissionsCount orders the results by permissions count.

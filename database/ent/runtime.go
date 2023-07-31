@@ -72,6 +72,10 @@ func init() {
 	roleDescModifiedTime := roleFields[5].Descriptor()
 	// role.DefaultModifiedTime holds the default value on creation for the modified_time field.
 	role.DefaultModifiedTime = roleDescModifiedTime.Default.(time.Time)
+	// roleDescDeletedTime is the schema descriptor for deleted_time field.
+	roleDescDeletedTime := roleFields[6].Descriptor()
+	// role.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	role.DefaultDeletedTime = roleDescDeletedTime.Default.(time.Time)
 	rolepermissionFields := schema.RolePermission{}.Fields()
 	_ = rolepermissionFields
 	// rolepermissionDescCreatedTime is the schema descriptor for created_time field.
