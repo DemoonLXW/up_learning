@@ -232,3 +232,15 @@ func TestUpdateDeletedRole(t *testing.T) {
 	err = serv.UpdateDeletedRole(role)
 	assert.Nil(t, err)
 }
+
+func TestFindADeletedRoleID(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+
+	id, err := serv.FindADeletedRoleID()
+	assert.Nil(t, err)
+	fmt.Println(id)
+}

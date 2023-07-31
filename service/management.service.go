@@ -443,3 +443,13 @@ func (serv *ManagementService) UpdateDeletedRole(toUpdate *entity.ToModifyRole) 
 
 	return nil
 }
+
+func (serv *ManagementService) FindADeletedRoleID() (uint8, error) {
+	ctx := context.Background()
+
+	id, err := serv.DB.Role.Query().Where(role.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("find a deleted role id query failed: %w", err)
+	}
+	return id, nil
+}
