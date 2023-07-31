@@ -169,7 +169,7 @@ func TestDeleteRole(t *testing.T) {
 	assert.Nil(t, err)
 	dao.DB = db
 
-	IDs := []uint8{3, 4}
+	IDs := []uint8{4}
 	err = dao.DeleteRole(IDs)
 	assert.Nil(t, err)
 

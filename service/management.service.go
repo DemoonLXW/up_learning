@@ -241,7 +241,6 @@ func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 	if err != nil {
 		return fmt.Errorf("update role transaction commit failed: %w", err)
 	}
-
 	if num == 0 {
 		return fmt.Errorf("update role affect 0 row")
 	}
@@ -319,31 +318,19 @@ func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDisabled *b
 func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 	ctx := context.Background()
 
-	originalRoles, err := serv.DB.Role.Query().Where(role.IDIn(toDeleteIDs...)).WithPermissions().WithUsers().All(ctx)
-	if err != nil {
-		return fmt.Errorf("delete roles find original failed: %w", err)
-	}
-	if len(originalRoles) == 0 || len(originalRoles) != len(toDeleteIDs) {
-		return fmt.Errorf("delete roles are not found")
-	}
-	for _, v := range originalRoles {
-		// if !v.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
-		// 	return fmt.Errorf("role (id:%d) is already deleted", v.ID)
-		// }
-		if len(v.Edges.Permissions) != 0 || len(v.Edges.Users) != 0 {
-			return fmt.Errorf("role (id:%d) is already used", v.ID)
-		}
-	}
-
 	tx, err := serv.DB.Tx(ctx)
 	if err != nil {
 		return fmt.Errorf("delete roles start a transaction failed: %w", err)
 	}
 
-	err = tx.Role.Update().
-		// SetDeletedTime(time.Now()).
-		Where(role.IDIn(toDeleteIDs...)).
-		Exec(ctx)
+	num, err := tx.Role.Update().
+		Where(role.And(
+			role.IDIn(toDeleteIDs...),
+			role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		)).
+		SetDeletedTime(time.Now()).
+		ClearMenu().ClearUsers().ClearPermissions().
+		Save(ctx)
 	if err != nil {
 		return rollback(tx, "delete roles", err)
 	}
@@ -351,6 +338,9 @@ func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 	err = tx.Commit()
 	if err != nil {
 		return fmt.Errorf("delete roles transaction commit failed: %w", err)
+	}
+	if num == 0 {
+		return fmt.Errorf("delete roles affect 0 row")
 	}
 
 	return nil
