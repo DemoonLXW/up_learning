@@ -219,7 +219,7 @@ func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 		return fmt.Errorf("update role start a transaction failed: %w", err)
 	}
 
-	updater := tx.Role.Update().Where(role.IDEQ(toUpdate.ID))
+	updater := tx.Role.Update().Where(role.IDEQ(toUpdate.ID), role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
 	mutation := updater.Mutation()
 	if toUpdate.Name != nil {
 		mutation.SetName(*toUpdate.Name)
