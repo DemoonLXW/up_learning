@@ -207,7 +207,7 @@ func TestFindOneRoleById(t *testing.T) {
 	assert.Nil(t, err)
 	serv.DB = db
 
-	role, err := serv.FindOneRoleById(1)
+	role, err := serv.FindOneRoleById(5)
 	assert.Nil(t, err)
 	fmt.Println(role)
 

@@ -403,7 +403,7 @@ func (serv *ManagementService) CreateUser(toCreates []*ent.User) error {
 
 func (serv *ManagementService) FindOneRoleById(id uint8) (*ent.Role, error) {
 	ctx := context.Background()
-	role, err := serv.DB.Role.Query().Where(role.IDEQ(id)).First(ctx)
+	role, err := serv.DB.Role.Query().Where(role.IDEQ(id), role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).First(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("role find one by id failed: %w", err)
 	}
