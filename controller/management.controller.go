@@ -4,6 +4,7 @@ import (
 	"math"
 	"net/http"
 
+	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/service"
 	"github.com/gin-gonic/gin"
@@ -61,10 +62,26 @@ func (cont *ManagementController) AddARole(c *gin.Context) {
 		return
 	}
 
-	err := cont.Services.Management.CreateRole([]*entity.ToAddRole{&role})
+	id, err := cont.Services.Management.FindADeletedRoleID()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		if !ent.IsNotFound(err) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		err := cont.Services.Management.CreateRole([]*entity.ToAddRole{&role})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	} else {
+		isDisabled := false
+		toCreateRole := &entity.ToModifyRole{ID: id, Name: role.Name, Description: role.Description, IsDisabled: &isDisabled}
+		err := cont.Services.Management.UpdateDeletedRole(toCreateRole)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	var res entity.Result

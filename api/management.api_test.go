@@ -41,11 +41,11 @@ func TestAddARole(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	body := bytes.NewReader([]byte(`{"name": "test add role name4", "description": "Who am I"}`))
+	body := bytes.NewReader([]byte(`{"name": "test role10", "description": "come on go go go"}`))
 	// body := bytes.NewReader([]byte(`{"name": ""}`))
 	req, _ := http.NewRequest(http.MethodPost, "/role/add", body)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "0b3ae0f9c2a633260c8e80b2c180e70a"}
+	token_cookie := &http.Cookie{Name: "token", Value: "d8d519f1c826411bee4cb8e9eedb9734"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
