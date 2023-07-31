@@ -126,3 +126,21 @@ func (cont *ManagementController) GetARoleById(c *gin.Context) {
 	res.Data = role
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) RemoveRolesByIds(c *gin.Context) {
+	var ids entity.ToRemoveRoleIDs
+	if err := c.ShouldBindJSON(&ids); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := cont.Services.Management.DeleteRole(ids.IDs)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Remove Roles By Ids Successfully"
+	c.JSON(http.StatusOK, res)
+}

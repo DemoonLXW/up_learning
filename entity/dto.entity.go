@@ -57,3 +57,7 @@ type ToModifyRole struct {
 	Description *string `json:"description" binding:"required_without_all=Name IsDisabled"`
 	IsDisabled  *bool   `json:"isDisabled" binding:"required_without_all=Name Description"`
 }
+
+type ToRemoveRoleIDs struct {
+	IDs []uint8 `json:"ids" binding:"required"`
+}
