@@ -480,3 +480,37 @@ func (serv *ManagementService) GetTotalRetrievedPermissions(like string, isDisab
 
 	return total, nil
 }
+
+func (serv *ManagementService) UpdateDeletedPermission(toUpdate *entity.ToModifyPermission) error {
+	ctx := context.Background()
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("update deleted permission start a transaction failed: %w", err)
+	}
+
+	num, err := tx.Permission.Update().Where(permission.And(
+		permission.IDEQ(toUpdate.ID),
+		permission.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	)).
+		SetCreatedTime(time.Now()).
+		SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+		SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+		SetAction(*toUpdate.Action).
+		SetDescription(*toUpdate.Description).
+		SetIsDisabled(*toUpdate.IsDisabled).
+		Save(ctx)
+	if err != nil {
+		return rollback(tx, "update deleted permission", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("update deleted permission transaction commit failed: %w", err)
+	}
+	if num == 0 {
+		return fmt.Errorf("update deleted permission affect 0 row")
+	}
+
+	return nil
+}

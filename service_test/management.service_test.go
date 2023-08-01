@@ -259,3 +259,23 @@ func TestGetTotalRetrievedPermissions(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, total)
 }
+
+func TestUpdateDeletedPermission(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+
+	action := "test1 modify deleted permission"
+	description := "deleted permission description"
+	isDisabled := false
+	p := &entity.ToModifyPermission{
+		ID:          8,
+		Action:      &action,
+		Description: &description,
+		IsDisabled:  &isDisabled,
+	}
+	err = serv.UpdateDeletedPermission(p)
+	assert.Nil(t, err)
+}

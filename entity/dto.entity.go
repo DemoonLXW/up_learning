@@ -73,3 +73,10 @@ type ToAddPermission struct {
 	Action      *string `json:"action" binding:"required"`
 	Description *string `json:"description" binding:"required"`
 }
+
+type ToModifyPermission struct {
+	ID          uint16  `json:"id" binding:"required"`
+	Action      *string `json:"action" binding:"required_without_all=Description IsDisabled"`
+	Description *string `json:"description" binding:"required_without_all=Action IsDisabled"`
+	IsDisabled  *bool   `json:"isDisabled" binding:"required_without_all=Action Description"`
+}
