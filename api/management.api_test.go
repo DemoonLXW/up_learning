@@ -180,3 +180,23 @@ func TestModifyAPermission(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestGetAPermissionById(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	os.Setenv("DOMAIN_CONFIG", "../domain.config.json")
+	os.Setenv("GIN_LOG", "../gin.log")
+	app, err := injection.ProvideApplication()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/permission/get/9", nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "549f909f1108f1694e00e46d5ca514b1"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
