@@ -293,3 +293,16 @@ func TestFindADeletedPermissionID(t *testing.T) {
 	assert.Nil(t, err)
 	fmt.Println(id)
 }
+
+func TestFindOnePermissionById(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+
+	role, err := serv.FindOnePermissionById(3)
+	assert.Nil(t, err)
+	fmt.Println(role)
+
+}

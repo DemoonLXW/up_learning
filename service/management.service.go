@@ -520,3 +520,12 @@ func (serv *ManagementService) FindADeletedPermissionID() (uint16, error) {
 	}
 	return id, nil
 }
+
+func (serv *ManagementService) FindOnePermissionById(id uint16) (*ent.Permission, error) {
+	ctx := context.Background()
+	permission, err := serv.DB.Permission.Query().Where(permission.IDEQ(id), permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).First(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("permission find one by id failed: %w", err)
+	}
+	return permission, nil
+}
