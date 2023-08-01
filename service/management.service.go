@@ -514,3 +514,13 @@ func (serv *ManagementService) UpdateDeletedPermission(toUpdate *entity.ToModify
 
 	return nil
 }
+
+func (serv *ManagementService) FindADeletedPermissionID() (uint16, error) {
+	ctx := context.Background()
+
+	id, err := serv.DB.Permission.Query().Where(permission.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("find a deleted permission id query failed: %w", err)
+	}
+	return id, nil
+}
