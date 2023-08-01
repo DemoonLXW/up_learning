@@ -84,7 +84,7 @@ func TestDeletePermission(t *testing.T) {
 	assert.Nil(t, err)
 	dao.DB = db
 
-	IDs := []uint16{8, 9, 10}
+	IDs := []uint16{9, 10, 11}
 	err = dao.DeletePermission(IDs)
 	assert.Nil(t, err)
 

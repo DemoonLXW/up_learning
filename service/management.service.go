@@ -140,31 +140,19 @@ func (serv *ManagementService) RetrievePermission(current, pageSize int, like, s
 func (serv *ManagementService) DeletePermission(toDeleteIDs []uint16) error {
 	ctx := context.Background()
 
-	originalPermissions, err := serv.DB.Permission.Query().Where(permission.IDIn(toDeleteIDs...)).WithRoles().All(ctx)
-	if err != nil {
-		return fmt.Errorf("delete permissions find original failed: %w", err)
-	}
-	if len(originalPermissions) == 0 || len(originalPermissions) != len(toDeleteIDs) {
-		return fmt.Errorf("delete permissions are not found")
-	}
-	for _, v := range originalPermissions {
-		if !v.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
-			return fmt.Errorf("permission (id:%d) is already deleted", v.ID)
-		}
-		if len(v.Edges.Roles) != 0 {
-			return fmt.Errorf("permission (id:%d) is already used", v.ID)
-		}
-	}
-
 	tx, err := serv.DB.Tx(ctx)
 	if err != nil {
 		return fmt.Errorf("delete permissions start a transaction failed: %w", err)
 	}
 
-	err = tx.Permission.Update().
+	num, err := tx.Permission.Update().
+		Where(permission.And(
+			permission.IDIn(toDeleteIDs...),
+			permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		)).
 		SetDeletedTime(time.Now()).
-		Where(permission.IDIn(toDeleteIDs...)).
-		Exec(ctx)
+		ClearRoles().
+		Save(ctx)
 	if err != nil {
 		return rollback(tx, "delete permissions", err)
 	}
@@ -172,6 +160,9 @@ func (serv *ManagementService) DeletePermission(toDeleteIDs []uint16) error {
 	err = tx.Commit()
 	if err != nil {
 		return fmt.Errorf("delete permissions transaction commit failed: %w", err)
+	}
+	if num == 0 {
+		return fmt.Errorf("delete permissions affect 0 row")
 	}
 
 	return nil
