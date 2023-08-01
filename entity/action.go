@@ -8,4 +8,5 @@ const (
 	AddPermission      = "permission addition"
 	RetrievePermission = "permission retrieval"
 	ModifyPermission   = "permission modification"
+	RemovePermission   = "permission removal"
 )

@@ -80,3 +80,7 @@ type ToModifyPermission struct {
 	Description *string `json:"description" binding:"required_without_all=Action IsDisabled"`
 	IsDisabled  *bool   `json:"isDisabled" binding:"required_without_all=Action Description"`
 }
+
+type ToRemovePermissionIDs struct {
+	IDs []uint16 `json:"ids" binding:"required"`
+}
