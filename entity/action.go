@@ -5,5 +5,6 @@ const (
 	RetrieveRole       = "role retrieval"
 	ModifyRole         = "role modification"
 	RemoveRole         = "role removal"
+	AddPermission      = "permission addition"
 	RetrievePermission = "permission retrieval"
 )

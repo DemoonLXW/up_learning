@@ -183,3 +183,38 @@ func (cont *ManagementController) GetPermissionList(c *gin.Context) {
 	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) AddAPermission(c *gin.Context) {
+
+	var permission entity.ToAddPermission
+	if err := c.ShouldBindJSON(&permission); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	id, err := cont.Services.Management.FindADeletedPermissionID()
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		err := cont.Services.Management.CreatePermission([]*entity.ToAddPermission{&permission})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	} else {
+		isDisabled := false
+		toCreatePermission := &entity.ToModifyPermission{ID: id, Action: permission.Action, Description: permission.Description, IsDisabled: &isDisabled}
+		err := cont.Services.Management.UpdateDeletedPermission(toCreatePermission)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	var res entity.Result
+	res.Message = "Add a Permission Successfully"
+	c.JSON(http.StatusOK, res)
+}
