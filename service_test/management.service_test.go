@@ -19,20 +19,20 @@ func TestCreatePermission(t *testing.T) {
 	assert.Nil(t, err)
 	serv.DB = db
 
-	action1 := "test update actions for service2"
-	description1 := "test description for service2"
-	permission1 := ent.Permission{
-		Action:      action1,
-		Description: description1,
+	action1 := "action11"
+	description1 := "action11 description"
+	permission1 := entity.ToAddPermission{
+		Action:      &action1,
+		Description: &description1,
 	}
 
-	action2 := "test insert actions for new2"
-	description2 := "test description for create2"
-	permission2 := ent.Permission{
-		Action:      action2,
-		Description: description2,
+	action2 := "action12"
+	description2 := "action12 description"
+	permission2 := entity.ToAddPermission{
+		Action:      &action2,
+		Description: &description2,
 	}
-	err = serv.CreatePermission([]*ent.Permission{&permission1, &permission2})
+	err = serv.CreatePermission([]*entity.ToAddPermission{&permission1, &permission2})
 	// err = serv.CreatePermission([]*ent.Permission{&permission1})
 	assert.Nil(t, err)
 

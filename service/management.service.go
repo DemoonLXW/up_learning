@@ -17,20 +17,20 @@ type ManagementService struct {
 	DB *ent.Client
 }
 
-func (serv *ManagementService) CreatePermission(toCreates []*ent.Permission) error {
-	// ctx := context.Background()
+func (serv *ManagementService) CreatePermission(toCreates []*entity.ToAddPermission) error {
+	ctx := context.Background()
 
-	// num, err := serv.DB.Permission.Query().Aggregate(ent.Count()).Int(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("create permissions count failed: %w", err)
-	// }
+	num, err := serv.DB.Permission.Query().Aggregate(ent.Count()).Int(ctx)
+	if err != nil {
+		return fmt.Errorf("create permissions count failed: %w", err)
+	}
 
-	// actions := make([]string, len(toCreates))
-	// bulk := make([]*ent.PermissionCreate, len(toCreates))
-	// for i, v := range toCreates {
-	// 	actions[i] = *v.Action
-	// 	bulk[i] = serv.DB.Permission.Create().SetID(uint16(num + i + 1)).SetAction(*v.Action).SetDescription(*v.Description)
-	// }
+	actions := make([]string, len(toCreates))
+	bulk := make([]*ent.PermissionCreate, len(toCreates))
+	for i, v := range toCreates {
+		actions[i] = *v.Action
+		bulk[i] = serv.DB.Permission.Create().SetID(uint16(num + i + 1)).SetAction(*v.Action).SetDescription(*v.Description)
+	}
 
 	// checkRepeatAction, err := serv.DB.Permission.Query().Where(permission.ActionIn(actions...)).Exist(ctx)
 	// if err != nil {
@@ -40,20 +40,20 @@ func (serv *ManagementService) CreatePermission(toCreates []*ent.Permission) err
 	// 	return fmt.Errorf("repeat action")
 	// }
 
-	// tx, err := serv.DB.Tx(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("create permission start a transaction failed: %w", err)
-	// }
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("create permission start a transaction failed: %w", err)
+	}
 
-	// err = tx.Permission.CreateBulk(bulk...).Exec(ctx)
-	// if err != nil {
-	// 	return rollback(tx, "create permissions", err)
-	// }
+	err = tx.Permission.CreateBulk(bulk...).Exec(ctx)
+	if err != nil {
+		return rollback(tx, "create permissions", err)
+	}
 
-	// err = tx.Commit()
-	// if err != nil {
-	// 	return fmt.Errorf("create permissions transaction commit failed: %w", err)
-	// }
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("create permissions transaction commit failed: %w", err)
+	}
 
 	return nil
 

@@ -68,3 +68,8 @@ type RetrievedPermission struct {
 	Description string `json:"description"`
 	IsDisabled  bool   `json:"isDisabled"`
 }
+
+type ToAddPermission struct {
+	Action      *string `json:"action" binding:"required"`
+	Description *string `json:"description" binding:"required"`
+}
