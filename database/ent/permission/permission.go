@@ -18,6 +18,8 @@ const (
 	FieldAction = "action"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// FieldIsDisabled holds the string denoting the is_disabled field in the database.
+	FieldIsDisabled = "is_disabled"
 	// FieldCreatedTime holds the string denoting the created_time field in the database.
 	FieldCreatedTime = "created_time"
 	// FieldDeletedTime holds the string denoting the deleted_time field in the database.
@@ -49,6 +51,7 @@ var Columns = []string{
 	FieldID,
 	FieldAction,
 	FieldDescription,
+	FieldIsDisabled,
 	FieldCreatedTime,
 	FieldDeletedTime,
 	FieldModifiedTime,
@@ -73,6 +76,8 @@ func ValidColumn(column string) bool {
 var (
 	// ActionValidator is a validator for the "action" field. It is called by the builders before save.
 	ActionValidator func(string) error
+	// DefaultIsDisabled holds the default value on creation for the "is_disabled" field.
+	DefaultIsDisabled bool
 	// DefaultCreatedTime holds the default value on creation for the "created_time" field.
 	DefaultCreatedTime func() time.Time
 	// DefaultDeletedTime holds the default value on creation for the "deleted_time" field.
@@ -97,6 +102,11 @@ func ByAction(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByIsDisabled orders the results by the is_disabled field.
+func ByIsDisabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsDisabled, opts...).ToFunc()
 }
 
 // ByCreatedTime orders the results by the created_time field.

@@ -756,6 +756,7 @@ type PermissionMutation struct {
 	id            *uint16
 	action        *string
 	description   *string
+	is_disabled   *bool
 	created_time  *time.Time
 	deleted_time  *time.Time
 	modified_time *time.Time
@@ -889,7 +890,7 @@ func (m *PermissionMutation) Action() (r string, exists bool) {
 // OldAction returns the old "action" field's value of the Permission entity.
 // If the Permission object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldAction(ctx context.Context) (v *string, err error) {
+func (m *PermissionMutation) OldAction(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAction is only allowed on UpdateOne operations")
 	}
@@ -925,7 +926,7 @@ func (m *PermissionMutation) Description() (r string, exists bool) {
 // OldDescription returns the old "description" field's value of the Permission entity.
 // If the Permission object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldDescription(ctx context.Context) (v *string, err error) {
+func (m *PermissionMutation) OldDescription(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
@@ -957,6 +958,42 @@ func (m *PermissionMutation) ResetDescription() {
 	delete(m.clearedFields, permission.FieldDescription)
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (m *PermissionMutation) SetIsDisabled(b bool) {
+	m.is_disabled = &b
+}
+
+// IsDisabled returns the value of the "is_disabled" field in the mutation.
+func (m *PermissionMutation) IsDisabled() (r bool, exists bool) {
+	v := m.is_disabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsDisabled returns the old "is_disabled" field's value of the Permission entity.
+// If the Permission object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PermissionMutation) OldIsDisabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsDisabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsDisabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsDisabled: %w", err)
+	}
+	return oldValue.IsDisabled, nil
+}
+
+// ResetIsDisabled resets all changes to the "is_disabled" field.
+func (m *PermissionMutation) ResetIsDisabled() {
+	m.is_disabled = nil
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (m *PermissionMutation) SetCreatedTime(t time.Time) {
 	m.created_time = &t
@@ -974,7 +1011,7 @@ func (m *PermissionMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the Permission entity.
 // If the Permission object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
+func (m *PermissionMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -1010,7 +1047,7 @@ func (m *PermissionMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the Permission entity.
 // If the Permission object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
+func (m *PermissionMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -1046,7 +1083,7 @@ func (m *PermissionMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the Permission entity.
 // If the Permission object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
+func (m *PermissionMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -1153,12 +1190,15 @@ func (m *PermissionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PermissionMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.action != nil {
 		fields = append(fields, permission.FieldAction)
 	}
 	if m.description != nil {
 		fields = append(fields, permission.FieldDescription)
+	}
+	if m.is_disabled != nil {
+		fields = append(fields, permission.FieldIsDisabled)
 	}
 	if m.created_time != nil {
 		fields = append(fields, permission.FieldCreatedTime)
@@ -1181,6 +1221,8 @@ func (m *PermissionMutation) Field(name string) (ent.Value, bool) {
 		return m.Action()
 	case permission.FieldDescription:
 		return m.Description()
+	case permission.FieldIsDisabled:
+		return m.IsDisabled()
 	case permission.FieldCreatedTime:
 		return m.CreatedTime()
 	case permission.FieldDeletedTime:
@@ -1200,6 +1242,8 @@ func (m *PermissionMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldAction(ctx)
 	case permission.FieldDescription:
 		return m.OldDescription(ctx)
+	case permission.FieldIsDisabled:
+		return m.OldIsDisabled(ctx)
 	case permission.FieldCreatedTime:
 		return m.OldCreatedTime(ctx)
 	case permission.FieldDeletedTime:
@@ -1228,6 +1272,13 @@ func (m *PermissionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
+		return nil
+	case permission.FieldIsDisabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsDisabled(v)
 		return nil
 	case permission.FieldCreatedTime:
 		v, ok := value.(time.Time)
@@ -1313,6 +1364,9 @@ func (m *PermissionMutation) ResetField(name string) error {
 		return nil
 	case permission.FieldDescription:
 		m.ResetDescription()
+		return nil
+	case permission.FieldIsDisabled:
+		m.ResetIsDisabled()
 		return nil
 	case permission.FieldCreatedTime:
 		m.ResetCreatedTime()

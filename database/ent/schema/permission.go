@@ -28,20 +28,17 @@ func (Permission) Fields() []ent.Field {
 			Unique(),
 		field.String("action").
 			Unique().
-			NotEmpty().
-			Nillable(),
+			NotEmpty(),
 		field.String("description").
-			Optional().
-			Nillable(),
+			Optional(),
+		field.Bool("is_disabled").
+			Default(false),
 		field.Time("created_time").
-			Default(time.Now).
-			Nillable(),
+			Default(time.Now),
 		field.Time("deleted_time").
-			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			Nillable(),
+			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 		field.Time("modified_time").
-			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			Nillable(),
+			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 	}
 }
 

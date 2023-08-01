@@ -18,15 +18,17 @@ type Permission struct {
 	// ID of the ent.
 	ID uint16 `json:"id,omitempty"`
 	// Action holds the value of the "action" field.
-	Action *string `json:"action,omitempty"`
+	Action string `json:"action,omitempty"`
 	// Description holds the value of the "description" field.
-	Description *string `json:"description,omitempty"`
+	Description string `json:"description,omitempty"`
+	// IsDisabled holds the value of the "is_disabled" field.
+	IsDisabled bool `json:"is_disabled,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
-	CreatedTime *time.Time `json:"created_time,omitempty"`
+	CreatedTime time.Time `json:"created_time,omitempty"`
 	// DeletedTime holds the value of the "deleted_time" field.
-	DeletedTime *time.Time `json:"deleted_time,omitempty"`
+	DeletedTime time.Time `json:"deleted_time,omitempty"`
 	// ModifiedTime holds the value of the "modified_time" field.
-	ModifiedTime *time.Time `json:"modified_time,omitempty"`
+	ModifiedTime time.Time `json:"modified_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PermissionQuery when eager-loading is set.
 	Edges        PermissionEdges `json:"edges"`
@@ -67,6 +69,8 @@ func (*Permission) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case permission.FieldIsDisabled:
+			values[i] = new(sql.NullBool)
 		case permission.FieldID:
 			values[i] = new(sql.NullInt64)
 		case permission.FieldAction, permission.FieldDescription:
@@ -98,36 +102,37 @@ func (pe *Permission) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field action", values[i])
 			} else if value.Valid {
-				pe.Action = new(string)
-				*pe.Action = value.String
+				pe.Action = value.String
 			}
 		case permission.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				pe.Description = new(string)
-				*pe.Description = value.String
+				pe.Description = value.String
+			}
+		case permission.FieldIsDisabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_disabled", values[i])
+			} else if value.Valid {
+				pe.IsDisabled = value.Bool
 			}
 		case permission.FieldCreatedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_time", values[i])
 			} else if value.Valid {
-				pe.CreatedTime = new(time.Time)
-				*pe.CreatedTime = value.Time
+				pe.CreatedTime = value.Time
 			}
 		case permission.FieldDeletedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_time", values[i])
 			} else if value.Valid {
-				pe.DeletedTime = new(time.Time)
-				*pe.DeletedTime = value.Time
+				pe.DeletedTime = value.Time
 			}
 		case permission.FieldModifiedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field modified_time", values[i])
 			} else if value.Valid {
-				pe.ModifiedTime = new(time.Time)
-				*pe.ModifiedTime = value.Time
+				pe.ModifiedTime = value.Time
 			}
 		default:
 			pe.selectValues.Set(columns[i], values[i])
@@ -175,30 +180,23 @@ func (pe *Permission) String() string {
 	var builder strings.Builder
 	builder.WriteString("Permission(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pe.ID))
-	if v := pe.Action; v != nil {
-		builder.WriteString("action=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("action=")
+	builder.WriteString(pe.Action)
 	builder.WriteString(", ")
-	if v := pe.Description; v != nil {
-		builder.WriteString("description=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("description=")
+	builder.WriteString(pe.Description)
 	builder.WriteString(", ")
-	if v := pe.CreatedTime; v != nil {
-		builder.WriteString("created_time=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("is_disabled=")
+	builder.WriteString(fmt.Sprintf("%v", pe.IsDisabled))
 	builder.WriteString(", ")
-	if v := pe.DeletedTime; v != nil {
-		builder.WriteString("deleted_time=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("created_time=")
+	builder.WriteString(pe.CreatedTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := pe.ModifiedTime; v != nil {
-		builder.WriteString("modified_time=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("deleted_time=")
+	builder.WriteString(pe.DeletedTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("modified_time=")
+	builder.WriteString(pe.ModifiedTime.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

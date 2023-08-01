@@ -65,6 +65,11 @@ func Description(v string) predicate.Permission {
 	return predicate.Permission(sql.FieldEQ(FieldDescription, v))
 }
 
+// IsDisabled applies equality check predicate on the "is_disabled" field. It's identical to IsDisabledEQ.
+func IsDisabled(v bool) predicate.Permission {
+	return predicate.Permission(sql.FieldEQ(FieldIsDisabled, v))
+}
+
 // CreatedTime applies equality check predicate on the "created_time" field. It's identical to CreatedTimeEQ.
 func CreatedTime(v time.Time) predicate.Permission {
 	return predicate.Permission(sql.FieldEQ(FieldCreatedTime, v))
@@ -218,6 +223,16 @@ func DescriptionEqualFold(v string) predicate.Permission {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.Permission {
 	return predicate.Permission(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// IsDisabledEQ applies the EQ predicate on the "is_disabled" field.
+func IsDisabledEQ(v bool) predicate.Permission {
+	return predicate.Permission(sql.FieldEQ(FieldIsDisabled, v))
+}
+
+// IsDisabledNEQ applies the NEQ predicate on the "is_disabled" field.
+func IsDisabledNEQ(v bool) predicate.Permission {
+	return predicate.Permission(sql.FieldNEQ(FieldIsDisabled, v))
 }
 
 // CreatedTimeEQ applies the EQ predicate on the "created_time" field.

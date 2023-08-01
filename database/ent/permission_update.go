@@ -55,6 +55,20 @@ func (pu *PermissionUpdate) ClearDescription() *PermissionUpdate {
 	return pu
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (pu *PermissionUpdate) SetIsDisabled(b bool) *PermissionUpdate {
+	pu.mutation.SetIsDisabled(b)
+	return pu
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (pu *PermissionUpdate) SetNillableIsDisabled(b *bool) *PermissionUpdate {
+	if b != nil {
+		pu.SetIsDisabled(*b)
+	}
+	return pu
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (pu *PermissionUpdate) SetCreatedTime(t time.Time) *PermissionUpdate {
 	pu.mutation.SetCreatedTime(t)
@@ -196,6 +210,9 @@ func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if pu.mutation.DescriptionCleared() {
 		_spec.ClearField(permission.FieldDescription, field.TypeString)
 	}
+	if value, ok := pu.mutation.IsDisabled(); ok {
+		_spec.SetField(permission.FieldIsDisabled, field.TypeBool, value)
+	}
 	if value, ok := pu.mutation.CreatedTime(); ok {
 		_spec.SetField(permission.FieldCreatedTime, field.TypeTime, value)
 	}
@@ -305,6 +322,20 @@ func (puo *PermissionUpdateOne) SetNillableDescription(s *string) *PermissionUpd
 // ClearDescription clears the value of the "description" field.
 func (puo *PermissionUpdateOne) ClearDescription() *PermissionUpdateOne {
 	puo.mutation.ClearDescription()
+	return puo
+}
+
+// SetIsDisabled sets the "is_disabled" field.
+func (puo *PermissionUpdateOne) SetIsDisabled(b bool) *PermissionUpdateOne {
+	puo.mutation.SetIsDisabled(b)
+	return puo
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (puo *PermissionUpdateOne) SetNillableIsDisabled(b *bool) *PermissionUpdateOne {
+	if b != nil {
+		puo.SetIsDisabled(*b)
+	}
 	return puo
 }
 
@@ -478,6 +509,9 @@ func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission,
 	}
 	if puo.mutation.DescriptionCleared() {
 		_spec.ClearField(permission.FieldDescription, field.TypeString)
+	}
+	if value, ok := puo.mutation.IsDisabled(); ok {
+		_spec.SetField(permission.FieldIsDisabled, field.TypeBool, value)
 	}
 	if value, ok := puo.mutation.CreatedTime(); ok {
 		_spec.SetField(permission.FieldCreatedTime, field.TypeTime, value)

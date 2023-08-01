@@ -42,16 +42,20 @@ func init() {
 	permissionDescAction := permissionFields[1].Descriptor()
 	// permission.ActionValidator is a validator for the "action" field. It is called by the builders before save.
 	permission.ActionValidator = permissionDescAction.Validators[0].(func(string) error)
+	// permissionDescIsDisabled is the schema descriptor for is_disabled field.
+	permissionDescIsDisabled := permissionFields[3].Descriptor()
+	// permission.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	permission.DefaultIsDisabled = permissionDescIsDisabled.Default.(bool)
 	// permissionDescCreatedTime is the schema descriptor for created_time field.
-	permissionDescCreatedTime := permissionFields[3].Descriptor()
+	permissionDescCreatedTime := permissionFields[4].Descriptor()
 	// permission.DefaultCreatedTime holds the default value on creation for the created_time field.
 	permission.DefaultCreatedTime = permissionDescCreatedTime.Default.(func() time.Time)
 	// permissionDescDeletedTime is the schema descriptor for deleted_time field.
-	permissionDescDeletedTime := permissionFields[4].Descriptor()
+	permissionDescDeletedTime := permissionFields[5].Descriptor()
 	// permission.DefaultDeletedTime holds the default value on creation for the deleted_time field.
 	permission.DefaultDeletedTime = permissionDescDeletedTime.Default.(time.Time)
 	// permissionDescModifiedTime is the schema descriptor for modified_time field.
-	permissionDescModifiedTime := permissionFields[5].Descriptor()
+	permissionDescModifiedTime := permissionFields[6].Descriptor()
 	// permission.DefaultModifiedTime holds the default value on creation for the modified_time field.
 	permission.DefaultModifiedTime = permissionDescModifiedTime.Default.(time.Time)
 	roleFields := schema.Role{}.Fields()

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
@@ -21,7 +20,6 @@ type UserRoleCreate struct {
 	config
 	mutation *UserRoleMutation
 	hooks    []Hook
-	conflict []sql.ConflictOption
 }
 
 // SetUID sets the "uid" field.
@@ -152,7 +150,6 @@ func (urc *UserRoleCreate) createSpec() (*UserRole, *sqlgraph.CreateSpec) {
 		_node = &UserRole{config: urc.config}
 		_spec = sqlgraph.NewCreateSpec(userrole.Table, nil)
 	)
-	_spec.OnConflict = urc.conflict
 	if value, ok := urc.mutation.CreatedTime(); ok {
 		_spec.SetField(userrole.FieldCreatedTime, field.TypeTime, value)
 		_node.CreatedTime = value
@@ -194,193 +191,10 @@ func (urc *UserRoleCreate) createSpec() (*UserRole, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
-// of the `INSERT` statement. For example:
-//
-//	client.UserRole.Create().
-//		SetUID(v).
-//		OnConflict(
-//			// Update the row with the new values
-//			// the was proposed for insertion.
-//			sql.ResolveWithNewValues(),
-//		).
-//		// Override some of the fields with custom
-//		// update values.
-//		Update(func(u *ent.UserRoleUpsert) {
-//			SetUID(v+v).
-//		}).
-//		Exec(ctx)
-func (urc *UserRoleCreate) OnConflict(opts ...sql.ConflictOption) *UserRoleUpsertOne {
-	urc.conflict = opts
-	return &UserRoleUpsertOne{
-		create: urc,
-	}
-}
-
-// OnConflictColumns calls `OnConflict` and configures the columns
-// as conflict target. Using this option is equivalent to using:
-//
-//	client.UserRole.Create().
-//		OnConflict(sql.ConflictColumns(columns...)).
-//		Exec(ctx)
-func (urc *UserRoleCreate) OnConflictColumns(columns ...string) *UserRoleUpsertOne {
-	urc.conflict = append(urc.conflict, sql.ConflictColumns(columns...))
-	return &UserRoleUpsertOne{
-		create: urc,
-	}
-}
-
-type (
-	// UserRoleUpsertOne is the builder for "upsert"-ing
-	//  one UserRole node.
-	UserRoleUpsertOne struct {
-		create *UserRoleCreate
-	}
-
-	// UserRoleUpsert is the "OnConflict" setter.
-	UserRoleUpsert struct {
-		*sql.UpdateSet
-	}
-)
-
-// SetUID sets the "uid" field.
-func (u *UserRoleUpsert) SetUID(v uint32) *UserRoleUpsert {
-	u.Set(userrole.FieldUID, v)
-	return u
-}
-
-// UpdateUID sets the "uid" field to the value that was provided on create.
-func (u *UserRoleUpsert) UpdateUID() *UserRoleUpsert {
-	u.SetExcluded(userrole.FieldUID)
-	return u
-}
-
-// SetRid sets the "rid" field.
-func (u *UserRoleUpsert) SetRid(v uint8) *UserRoleUpsert {
-	u.Set(userrole.FieldRid, v)
-	return u
-}
-
-// UpdateRid sets the "rid" field to the value that was provided on create.
-func (u *UserRoleUpsert) UpdateRid() *UserRoleUpsert {
-	u.SetExcluded(userrole.FieldRid)
-	return u
-}
-
-// SetCreatedTime sets the "created_time" field.
-func (u *UserRoleUpsert) SetCreatedTime(v time.Time) *UserRoleUpsert {
-	u.Set(userrole.FieldCreatedTime, v)
-	return u
-}
-
-// UpdateCreatedTime sets the "created_time" field to the value that was provided on create.
-func (u *UserRoleUpsert) UpdateCreatedTime() *UserRoleUpsert {
-	u.SetExcluded(userrole.FieldCreatedTime)
-	return u
-}
-
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
-// Using this option is equivalent to using:
-//
-//	client.UserRole.Create().
-//		OnConflict(
-//			sql.ResolveWithNewValues(),
-//		).
-//		Exec(ctx)
-func (u *UserRoleUpsertOne) UpdateNewValues() *UserRoleUpsertOne {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
-	return u
-}
-
-// Ignore sets each column to itself in case of conflict.
-// Using this option is equivalent to using:
-//
-//	client.UserRole.Create().
-//	    OnConflict(sql.ResolveWithIgnore()).
-//	    Exec(ctx)
-func (u *UserRoleUpsertOne) Ignore() *UserRoleUpsertOne {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
-	return u
-}
-
-// DoNothing configures the conflict_action to `DO NOTHING`.
-// Supported only by SQLite and PostgreSQL.
-func (u *UserRoleUpsertOne) DoNothing() *UserRoleUpsertOne {
-	u.create.conflict = append(u.create.conflict, sql.DoNothing())
-	return u
-}
-
-// Update allows overriding fields `UPDATE` values. See the UserRoleCreate.OnConflict
-// documentation for more info.
-func (u *UserRoleUpsertOne) Update(set func(*UserRoleUpsert)) *UserRoleUpsertOne {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&UserRoleUpsert{UpdateSet: update})
-	}))
-	return u
-}
-
-// SetUID sets the "uid" field.
-func (u *UserRoleUpsertOne) SetUID(v uint32) *UserRoleUpsertOne {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.SetUID(v)
-	})
-}
-
-// UpdateUID sets the "uid" field to the value that was provided on create.
-func (u *UserRoleUpsertOne) UpdateUID() *UserRoleUpsertOne {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.UpdateUID()
-	})
-}
-
-// SetRid sets the "rid" field.
-func (u *UserRoleUpsertOne) SetRid(v uint8) *UserRoleUpsertOne {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.SetRid(v)
-	})
-}
-
-// UpdateRid sets the "rid" field to the value that was provided on create.
-func (u *UserRoleUpsertOne) UpdateRid() *UserRoleUpsertOne {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.UpdateRid()
-	})
-}
-
-// SetCreatedTime sets the "created_time" field.
-func (u *UserRoleUpsertOne) SetCreatedTime(v time.Time) *UserRoleUpsertOne {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.SetCreatedTime(v)
-	})
-}
-
-// UpdateCreatedTime sets the "created_time" field to the value that was provided on create.
-func (u *UserRoleUpsertOne) UpdateCreatedTime() *UserRoleUpsertOne {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.UpdateCreatedTime()
-	})
-}
-
-// Exec executes the query.
-func (u *UserRoleUpsertOne) Exec(ctx context.Context) error {
-	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for UserRoleCreate.OnConflict")
-	}
-	return u.create.Exec(ctx)
-}
-
-// ExecX is like Exec, but panics if an error occurs.
-func (u *UserRoleUpsertOne) ExecX(ctx context.Context) {
-	if err := u.create.Exec(ctx); err != nil {
-		panic(err)
-	}
-}
-
 // UserRoleCreateBulk is the builder for creating many UserRole entities in bulk.
 type UserRoleCreateBulk struct {
 	config
 	builders []*UserRoleCreate
-	conflict []sql.ConflictOption
 }
 
 // Save creates the UserRole entities in the database.
@@ -407,7 +221,6 @@ func (urcb *UserRoleCreateBulk) Save(ctx context.Context) ([]*UserRole, error) {
 					_, err = mutators[i+1].Mutate(root, urcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = urcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, urcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -453,149 +266,6 @@ func (urcb *UserRoleCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (urcb *UserRoleCreateBulk) ExecX(ctx context.Context) {
 	if err := urcb.Exec(ctx); err != nil {
-		panic(err)
-	}
-}
-
-// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
-// of the `INSERT` statement. For example:
-//
-//	client.UserRole.CreateBulk(builders...).
-//		OnConflict(
-//			// Update the row with the new values
-//			// the was proposed for insertion.
-//			sql.ResolveWithNewValues(),
-//		).
-//		// Override some of the fields with custom
-//		// update values.
-//		Update(func(u *ent.UserRoleUpsert) {
-//			SetUID(v+v).
-//		}).
-//		Exec(ctx)
-func (urcb *UserRoleCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserRoleUpsertBulk {
-	urcb.conflict = opts
-	return &UserRoleUpsertBulk{
-		create: urcb,
-	}
-}
-
-// OnConflictColumns calls `OnConflict` and configures the columns
-// as conflict target. Using this option is equivalent to using:
-//
-//	client.UserRole.Create().
-//		OnConflict(sql.ConflictColumns(columns...)).
-//		Exec(ctx)
-func (urcb *UserRoleCreateBulk) OnConflictColumns(columns ...string) *UserRoleUpsertBulk {
-	urcb.conflict = append(urcb.conflict, sql.ConflictColumns(columns...))
-	return &UserRoleUpsertBulk{
-		create: urcb,
-	}
-}
-
-// UserRoleUpsertBulk is the builder for "upsert"-ing
-// a bulk of UserRole nodes.
-type UserRoleUpsertBulk struct {
-	create *UserRoleCreateBulk
-}
-
-// UpdateNewValues updates the mutable fields using the new values that
-// were set on create. Using this option is equivalent to using:
-//
-//	client.UserRole.Create().
-//		OnConflict(
-//			sql.ResolveWithNewValues(),
-//		).
-//		Exec(ctx)
-func (u *UserRoleUpsertBulk) UpdateNewValues() *UserRoleUpsertBulk {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
-	return u
-}
-
-// Ignore sets each column to itself in case of conflict.
-// Using this option is equivalent to using:
-//
-//	client.UserRole.Create().
-//		OnConflict(sql.ResolveWithIgnore()).
-//		Exec(ctx)
-func (u *UserRoleUpsertBulk) Ignore() *UserRoleUpsertBulk {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
-	return u
-}
-
-// DoNothing configures the conflict_action to `DO NOTHING`.
-// Supported only by SQLite and PostgreSQL.
-func (u *UserRoleUpsertBulk) DoNothing() *UserRoleUpsertBulk {
-	u.create.conflict = append(u.create.conflict, sql.DoNothing())
-	return u
-}
-
-// Update allows overriding fields `UPDATE` values. See the UserRoleCreateBulk.OnConflict
-// documentation for more info.
-func (u *UserRoleUpsertBulk) Update(set func(*UserRoleUpsert)) *UserRoleUpsertBulk {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&UserRoleUpsert{UpdateSet: update})
-	}))
-	return u
-}
-
-// SetUID sets the "uid" field.
-func (u *UserRoleUpsertBulk) SetUID(v uint32) *UserRoleUpsertBulk {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.SetUID(v)
-	})
-}
-
-// UpdateUID sets the "uid" field to the value that was provided on create.
-func (u *UserRoleUpsertBulk) UpdateUID() *UserRoleUpsertBulk {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.UpdateUID()
-	})
-}
-
-// SetRid sets the "rid" field.
-func (u *UserRoleUpsertBulk) SetRid(v uint8) *UserRoleUpsertBulk {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.SetRid(v)
-	})
-}
-
-// UpdateRid sets the "rid" field to the value that was provided on create.
-func (u *UserRoleUpsertBulk) UpdateRid() *UserRoleUpsertBulk {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.UpdateRid()
-	})
-}
-
-// SetCreatedTime sets the "created_time" field.
-func (u *UserRoleUpsertBulk) SetCreatedTime(v time.Time) *UserRoleUpsertBulk {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.SetCreatedTime(v)
-	})
-}
-
-// UpdateCreatedTime sets the "created_time" field to the value that was provided on create.
-func (u *UserRoleUpsertBulk) UpdateCreatedTime() *UserRoleUpsertBulk {
-	return u.Update(func(s *UserRoleUpsert) {
-		s.UpdateCreatedTime()
-	})
-}
-
-// Exec executes the query.
-func (u *UserRoleUpsertBulk) Exec(ctx context.Context) error {
-	for i, b := range u.create.builders {
-		if len(b.conflict) != 0 {
-			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the UserRoleCreateBulk instead", i)
-		}
-	}
-	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for UserRoleCreateBulk.OnConflict")
-	}
-	return u.create.Exec(ctx)
-}
-
-// ExecX is like Exec, but panics if an error occurs.
-func (u *UserRoleUpsertBulk) ExecX(ctx context.Context) {
-	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

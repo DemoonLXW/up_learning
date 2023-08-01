@@ -38,6 +38,7 @@ var (
 		{Name: "id", Type: field.TypeUint16, Increment: true},
 		{Name: "action", Type: field.TypeString, Unique: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime},
 		{Name: "modified_time", Type: field.TypeTime},
