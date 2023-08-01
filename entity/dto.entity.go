@@ -24,8 +24,8 @@ func (m *Menu) String() string {
 }
 
 type Search struct {
-	Current    int    `form:"current" binding:"required" `
-	PageSize   int    `form:"pagesize" binding:"required"`
+	Current    int    `form:"current" binding:"required,gte=1"`
+	PageSize   int    `form:"pagesize" binding:"required,gte=1"`
 	Like       string `form:"like"`
 	Sort       string `form:"sort"`
 	Order      *bool  `form:"order"`
@@ -60,4 +60,11 @@ type ToModifyRole struct {
 
 type ToRemoveRoleIDs struct {
 	IDs []uint8 `json:"ids" binding:"required"`
+}
+
+type RetrievedPermission struct {
+	ID          uint16 `json:"id" uri:"id" binding:"required"`
+	Action      string `json:"action"`
+	Description string `json:"description"`
+	IsDisabled  bool   `json:"isDisabled"`
 }

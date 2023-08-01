@@ -144,3 +144,42 @@ func (cont *ManagementController) RemoveRolesByIds(c *gin.Context) {
 	res.Message = "Remove Roles By Ids Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) GetPermissionList(c *gin.Context) {
+	var search entity.Search
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ps, err := cont.Services.Management.RetrievePermission(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	total, err := cont.Services.Management.GetTotalRetrievedPermissions(search.Like, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	permissions := make([]entity.RetrievedPermission, len(ps))
+	for i, v := range ps {
+		permissions[i].ID = v.ID
+		permissions[i].Action = v.Action
+		permissions[i].Description = v.Description
+		permissions[i].IsDisabled = v.IsDisabled
+	}
+
+	var data entity.RetrievedListData
+	data.Record = permissions
+	data.Total = total
+	data.IsPrevious = search.Current > 1
+	data.IsNext = search.Current < int(math.Ceil(float64(total)/float64(search.PageSize)))
+
+	var res entity.Result
+	res.Message = "Get List of Permissions Successfully"
+	res.Data = data
+	c.JSON(http.StatusOK, res)
+}

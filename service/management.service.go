@@ -125,9 +125,11 @@ func (serv *ManagementService) RetrievePermission(current, pageSize int, like, s
 		Order(func(s *sql.Selector) {
 			isSorted := sort != "" && (sort == permission.FieldID || sort == permission.FieldAction || sort == permission.FieldDescription || sort == permission.FieldIsDisabled)
 			if isSorted && order != nil {
-				s.OrderBy(sql.Desc(sort))
-			} else {
-				s.OrderBy(sql.Asc(sort))
+				if *order {
+					s.OrderBy(sql.Desc(sort))
+				} else {
+					s.OrderBy(sql.Asc(sort))
+				}
 			}
 		}).
 		All(ctx)
