@@ -223,6 +223,7 @@ func (serv *UserService) CheckPermissions(id uint32, permissions []string) (bool
 		Where(permission.And(
 			permission.ActionIn(permissions...),
 			permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			permission.IsDisabled(false),
 		)).
 		Exist(ctx)
 	if err != nil {

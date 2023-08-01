@@ -209,7 +209,7 @@ func TestRemovePermissionsByIds(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	body := bytes.NewReader([]byte(`{"ids":[9, 10]}`))
+	body := bytes.NewReader([]byte(`{"ids":[11, 12]}`))
 	req, _ := http.NewRequest(http.MethodPost, "/permission/remove", body)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
 	token_cookie := &http.Cookie{Name: "token", Value: "549f909f1108f1694e00e46d5ca514b1"}
