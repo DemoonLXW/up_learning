@@ -22,15 +22,15 @@ func TestCreatePermission(t *testing.T) {
 	action1 := "test update actions for service2"
 	description1 := "test description for service2"
 	permission1 := ent.Permission{
-		Action:      &action1,
-		Description: &description1,
+		Action:      action1,
+		Description: description1,
 	}
 
 	action2 := "test insert actions for new2"
 	description2 := "test description for create2"
 	permission2 := ent.Permission{
-		Action:      &action2,
-		Description: &description2,
+		Action:      action2,
+		Description: description2,
 	}
 	err = serv.CreatePermission([]*ent.Permission{&permission1, &permission2})
 	// err = serv.CreatePermission([]*ent.Permission{&permission1})
@@ -49,8 +49,8 @@ func TestUpdatePermission(t *testing.T) {
 	description := "test update description in service"
 	permission := ent.Permission{
 		ID:          9,
-		Action:      &action,
-		Description: &description,
+		Action:      action,
+		Description: description,
 	}
 	err = serv.UpdatePermission(&permission)
 	assert.Nil(t, err)
@@ -64,13 +64,15 @@ func TestRetrievePermission(t *testing.T) {
 	assert.Nil(t, err)
 	dao.DB = db
 
-	permissons, err := dao.RetrievePermission(3, 3, "", "created_time", "desc")
+	order := true
+	disabled := false
+	permissons, err := dao.RetrievePermission(1, 10, "", "action", &order, &disabled)
 	assert.Nil(t, err)
 	for _, v := range permissons {
 
 		fmt.Println(v)
 	}
-	assert.Len(t, permissons, 3)
+	assert.Len(t, permissons, 5)
 }
 
 func TestDeletePermission(t *testing.T) {
