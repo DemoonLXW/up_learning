@@ -59,43 +59,39 @@ func (serv *ManagementService) CreatePermission(toCreates []*entity.ToAddPermiss
 
 }
 
-func (serv *ManagementService) UpdatePermission(toUpdate *ent.Permission) error {
-	// ctx := context.Background()
+func (serv *ManagementService) UpdatePermission(toUpdate *entity.ToModifyPermission) error {
+	ctx := context.Background()
 
-	// originalPermission, err := serv.DB.Permission.Query().Where(permission.ID(toUpdate.ID)).WithRoles().First(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("update permission find original failed: %w", err)
-	// }
-	// if !originalPermission.DeletedTime.Equal(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)) {
-	// 	return fmt.Errorf("permission is already deleted")
-	// }
-	// if len(originalPermission.Edges.Roles) != 0 {
-	// 	return fmt.Errorf("permission is already used")
-	// }
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("update permission start a transaction failed: %w", err)
+	}
 
-	// tx, err := serv.DB.Tx(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("update permission start a transaction failed: %w", err)
-	// }
+	updater := tx.Permission.Update().Where(permission.IDEQ(toUpdate.ID), permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
+	mutation := updater.Mutation()
+	if toUpdate.Action != nil {
+		mutation.SetAction(*toUpdate.Action)
+	}
+	if toUpdate.Description != nil {
+		mutation.SetDescription(*toUpdate.Description)
+	}
+	if toUpdate.IsDisabled != nil {
+		mutation.SetIsDisabled(*toUpdate.IsDisabled)
+	}
+	mutation.SetModifiedTime(time.Now())
 
-	// err = tx.Permission.Create().
-	// 	SetID(toUpdate.ID).
-	// 	SetAction(*toUpdate.Action).
-	// 	SetDescription(*toUpdate.Description).
-	// 	SetModifiedTime(time.Now()).
-	// 	OnConflict().
-	// 	UpdateAction().
-	// 	UpdateDescription().
-	// 	UpdateModifiedTime().
-	// 	Exec(ctx)
-	// if err != nil {
-	// 	return rollback(tx, "update permission", err)
-	// }
+	num, err := updater.Save(ctx)
+	if err != nil {
+		return rollback(tx, "update permission", err)
+	}
 
-	// err = tx.Commit()
-	// if err != nil {
-	// 	return fmt.Errorf("update permission transaction commit failed: %w", err)
-	// }
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("update permission transaction commit failed: %w", err)
+	}
+	if num == 0 {
+		return fmt.Errorf("update permission affect 0 row")
+	}
 
 	return nil
 }
