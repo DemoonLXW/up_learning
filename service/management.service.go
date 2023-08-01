@@ -452,3 +452,29 @@ func (serv *ManagementService) FindADeletedRoleID() (uint8, error) {
 	}
 	return id, nil
 }
+
+func (serv *ManagementService) GetTotalRetrievedPermissions(like string, isDisabled *bool) (int, error) {
+	ctx := context.Background()
+
+	total, err := serv.DB.Permission.Query().
+		Where(
+			permission.And(
+				permission.Or(
+					permission.ActionContains(like),
+					permission.DescriptionContains(like),
+				),
+				func(s *sql.Selector) {
+					if isDisabled != nil {
+						s.Where(sql.EQ(permission.FieldIsDisabled, *isDisabled))
+					}
+				},
+				permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			),
+		).Count(ctx)
+
+	if err != nil {
+		return -1, fmt.Errorf("get retrieved total permissions query failed: %w", err)
+	}
+
+	return total, nil
+}

@@ -246,3 +246,16 @@ func TestFindADeletedRoleID(t *testing.T) {
 	assert.Nil(t, err)
 	fmt.Println(id)
 }
+
+func TestGetTotalRetrievedPermissions(t *testing.T) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.ManagementService)
+	db, err := injection.ProvideDataBase()
+	assert.Nil(t, err)
+	serv.DB = db
+
+	delete := false
+	total, err := serv.GetTotalRetrievedPermissions("created", &delete)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, total)
+}
