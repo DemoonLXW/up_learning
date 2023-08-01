@@ -218,3 +218,21 @@ func (cont *ManagementController) AddAPermission(c *gin.Context) {
 	res.Message = "Add a Permission Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) ModifyAPermission(c *gin.Context) {
+	var permission entity.ToModifyPermission
+	if err := c.ShouldBindJSON(&permission); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := cont.Services.Management.UpdatePermission(&permission)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Modify a Permission Successfully"
+	c.JSON(http.StatusOK, res)
+}
