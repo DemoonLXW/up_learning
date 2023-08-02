@@ -9,6 +9,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
+	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/redis/go-redis/v9"
 )
@@ -219,7 +220,13 @@ func (serv *UserService) CheckPermissions(id uint32, permissions []string) (bool
 	ctx := context.Background()
 
 	check, err := serv.DB.User.Query().
-		Where(user.IDEQ(id)).QueryRoles().QueryPermissions().
+		Where(user.IDEQ(id)).
+		QueryRoles().
+		Where(role.And(
+			role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			role.IsDisabledEQ(false),
+		)).
+		QueryPermissions().
 		Where(permission.And(
 			permission.ActionIn(permissions...),
 			permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),

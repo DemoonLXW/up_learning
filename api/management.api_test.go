@@ -189,9 +189,9 @@ func TestGetAPermissionById(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/permission/get/9", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/permission/get/5", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "549f909f1108f1694e00e46d5ca514b1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "2a64fc8b79715466470b920afb1b987e"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
