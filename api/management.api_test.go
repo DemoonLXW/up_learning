@@ -250,3 +250,21 @@ func TestGetPermissionsByRoleId(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestModifyPermissionsForRoles(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	body := bytes.NewReader([]byte(`{"isDeleted": true, "rids": [2], "pids": [1]}`))
+	req, _ := http.NewRequest(http.MethodPost, "/role/modify/permissions", body)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "607da025ff5e83ddc8c25dbd664f3bcb"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}

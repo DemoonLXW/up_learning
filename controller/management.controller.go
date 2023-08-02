@@ -303,3 +303,21 @@ func (cont *ManagementController) GetPermissionsByRoleId(c *gin.Context) {
 	res.Data = permissions
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) ModifyPermissionsForRoles(c *gin.Context) {
+	var params entity.ToModifyPermissionsOfRoles
+	if err := c.ShouldBindJSON(&params); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := cont.Services.Management.UpdatePermissionForRole(params.RIDs, params.PIDs, *params.IsDeleted)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Modify Permissions For Roles Successfully"
+	c.JSON(http.StatusOK, res)
+}

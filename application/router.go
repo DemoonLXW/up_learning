@@ -27,6 +27,7 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 			role.GET("/get/:id", Check(userService, []string{entity.RetrieveRole}), controllers.Management.GetARoleById)
 			role.POST("/remove", Check(userService, []string{entity.RemoveRole}), controllers.Management.RemoveRolesByIds)
 			role.GET("/get/permissions/:id", Check(userService, []string{entity.RetrieveRole, entity.RetrievePermission}), controllers.Management.GetPermissionsByRoleId)
+			role.POST("/modify/permissions", Check(userService, []string{entity.ModifyRole, entity.RetrievePermission}), controllers.Management.ModifyPermissionsForRoles)
 		}
 
 		permission := auth.Group("/permission")
