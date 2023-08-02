@@ -239,9 +239,9 @@ func TestGetPermissionsByRoleId(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/role/get/permissions/1", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/role/3/get/permissions", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "2a64fc8b79715466470b920afb1b987e"}
+	token_cookie := &http.Cookie{Name: "token", Value: "607da025ff5e83ddc8c25dbd664f3bcb"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
