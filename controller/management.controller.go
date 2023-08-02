@@ -276,3 +276,30 @@ func (cont *ManagementController) RemovePermissionsByIds(c *gin.Context) {
 	res.Message = "Remove Permissions By Ids Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) GetPermissionsByRoleId(c *gin.Context) {
+	var role entity.RetrievedRole
+	if err := c.ShouldBindUri(&role); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ps, err := cont.Services.Management.FindPermissionsByRoleId(role.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	permissions := make([]entity.RetrievedPermission, len(ps))
+	for i, v := range ps {
+		permissions[i].ID = v.ID
+		permissions[i].Action = v.Action
+		permissions[i].Description = v.Description
+		permissions[i].IsDisabled = v.IsDisabled
+	}
+
+	var res entity.Result
+	res.Message = "Get Permissions By Role Id Successfully"
+	res.Data = permissions
+	c.JSON(http.StatusOK, res)
+}

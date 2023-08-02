@@ -9,8 +9,20 @@ import (
 	"testing"
 
 	"github.com/DemoonLXW/up_learning/injection"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
+
+func CreateTestApp() (*gin.Engine, error) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	os.Setenv("DOMAIN_CONFIG", "../domain.config.json")
+	os.Setenv("GIN_LOG", "../gin.log")
+	app, err := injection.ProvideApplication()
+	if err != nil {
+		return nil, err
+	}
+	return app, nil
+}
 
 func TestGetRoleList(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
@@ -213,6 +225,23 @@ func TestRemovePermissionsByIds(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodPost, "/permission/remove", body)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
 	token_cookie := &http.Cookie{Name: "token", Value: "549f909f1108f1694e00e46d5ca514b1"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
+
+func TestGetPermissionsByRoleId(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/role/get/permissions/1", nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "2a64fc8b79715466470b920afb1b987e"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
