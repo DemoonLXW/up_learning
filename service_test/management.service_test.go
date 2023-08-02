@@ -12,6 +12,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func CreateTestManagementService() (*service.ManagementService, error) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.ManagementService)
+	db, err := injection.ProvideDataBase()
+	if err != nil {
+		return nil, err
+	}
+	serv.DB = db
+	return serv, nil
+}
+
 func TestCreatePermission(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
 	serv := new(service.ManagementService)
@@ -180,11 +191,8 @@ func TestDeleteRole(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	serv.DB = db
 
 	account1 := "username3"
 	password1 := "password3"
@@ -205,11 +213,8 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestFindOneRoleById(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	serv.DB = db
 
 	role, err := serv.FindOneRoleById(5)
 	assert.Nil(t, err)
@@ -218,11 +223,8 @@ func TestFindOneRoleById(t *testing.T) {
 }
 
 func TestUpdateDeletedRole(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	serv.DB = db
 
 	name := "role7"
 	description := "test change deleted role description"
@@ -238,11 +240,8 @@ func TestUpdateDeletedRole(t *testing.T) {
 }
 
 func TestFindADeletedRoleID(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	serv.DB = db
 
 	id, err := serv.FindADeletedRoleID()
 	assert.Nil(t, err)
@@ -250,11 +249,8 @@ func TestFindADeletedRoleID(t *testing.T) {
 }
 
 func TestGetTotalRetrievedPermissions(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	serv.DB = db
 
 	delete := false
 	total, err := serv.GetTotalRetrievedPermissions("created", &delete)
@@ -263,11 +259,8 @@ func TestGetTotalRetrievedPermissions(t *testing.T) {
 }
 
 func TestUpdateDeletedPermission(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	serv.DB = db
 
 	action := "test1 modify deleted permission"
 	description := "deleted permission description"
@@ -283,11 +276,8 @@ func TestUpdateDeletedPermission(t *testing.T) {
 }
 
 func TestFindADeletedPermissionID(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	serv.DB = db
 
 	id, err := serv.FindADeletedPermissionID()
 	assert.Nil(t, err)
@@ -295,14 +285,22 @@ func TestFindADeletedPermissionID(t *testing.T) {
 }
 
 func TestFindOnePermissionById(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	serv.DB = db
 
 	role, err := serv.FindOnePermissionById(3)
 	assert.Nil(t, err)
 	fmt.Println(role)
 
+}
+
+func TestFindPermissionsByRoleId(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	ps, err := serv.FindPermissionsByRoleId(2)
+	assert.Nil(t, err)
+	for _, v := range ps {
+		fmt.Println(v)
+	}
 }

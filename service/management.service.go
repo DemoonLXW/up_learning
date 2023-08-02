@@ -514,9 +514,27 @@ func (serv *ManagementService) FindADeletedPermissionID() (uint16, error) {
 
 func (serv *ManagementService) FindOnePermissionById(id uint16) (*ent.Permission, error) {
 	ctx := context.Background()
-	permission, err := serv.DB.Permission.Query().Where(permission.IDEQ(id), permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).First(ctx)
+	p, err := serv.DB.Permission.Query().Where(
+		permission.IDEQ(id),
+		permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	).First(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("permission find one by id failed: %w", err)
 	}
-	return permission, nil
+	return p, nil
+}
+
+func (serv *ManagementService) FindPermissionsByRoleId(id uint8) ([]*ent.Permission, error) {
+	ctx := context.Background()
+	ps, err := serv.DB.Role.Query().Where(role.And(
+		role.IDEQ(id),
+		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	)).QueryPermissions().Where(permission.And(
+		permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		permission.IsDisabledEQ(false),
+	)).All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("permission find many by role id failed: %w", err)
+	}
+	return ps, nil
 }
