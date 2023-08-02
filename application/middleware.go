@@ -131,7 +131,7 @@ func Check(serv *service.UserService, permissions []string) gin.HandlerFunc {
 			return
 		}
 		if !check {
-			message := fmt.Sprintf("permission denied: %v", permissions)
+			message := fmt.Sprintf("permission denied: [%s]", strings.Join(permissions, ", "))
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": message})
 			return
 		}

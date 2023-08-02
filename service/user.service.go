@@ -232,9 +232,9 @@ func (serv *UserService) CheckPermissions(id uint32, permissions []string) (bool
 			permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 			permission.IsDisabled(false),
 		)).
-		Exist(ctx)
+		Count(ctx)
 	if err != nil {
 		return false, fmt.Errorf("check permissions failed: %w", err)
 	}
-	return check, nil
+	return check == len(permissions), nil
 }
