@@ -538,3 +538,52 @@ func (serv *ManagementService) FindPermissionsByRoleId(id uint8) ([]*ent.Permiss
 	}
 	return ps, nil
 }
+
+func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint16, isDeleted bool) error {
+	ctx := context.Background()
+
+	ps, err := serv.DB.Permission.Query().Where(
+		permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		permission.IsDisabledEQ(false),
+		permission.IDIn(pids...),
+	).All(ctx)
+	if err != nil {
+		return fmt.Errorf("update permissions for role failed: %w", err)
+	}
+	if len(ps) != len(pids) {
+		return fmt.Errorf("update permissions for role failed: not enough matching permissions")
+	}
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("update permissions for role start a transaction failed: %w", err)
+	}
+
+	updater := tx.Role.Update().Where(
+		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		role.IsDisabledEQ(false),
+		role.IDIn(rids...),
+	)
+	mutation := updater.Mutation()
+	if isDeleted {
+		mutation.RemovePermissionIDs(pids...)
+	} else {
+		mutation.AddPermissionIDs(pids...)
+	}
+
+	num, err := updater.Save(ctx)
+	if err != nil {
+		return rollback(tx, "update permission for role", err)
+	}
+	if num == 0 || num != len(rids) {
+		return rollback(tx, "update permission for role", fmt.Errorf("not enough updated roles"))
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("update permissions for role transaction commit failed: %w", err)
+	}
+
+	return nil
+
+}

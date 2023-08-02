@@ -304,3 +304,15 @@ func TestFindPermissionsByRoleId(t *testing.T) {
 		fmt.Println(v)
 	}
 }
+
+func TestUpdatePermissionForRole(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	rids := []uint8{2, 3}
+	pids := []uint16{1, 2}
+	isDeleted := true
+
+	err = serv.UpdatePermissionForRole(rids, pids, isDeleted)
+	assert.Nil(t, err)
+}
