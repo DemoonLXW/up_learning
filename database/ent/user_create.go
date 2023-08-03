@@ -89,6 +89,20 @@ func (uc *UserCreate) SetNillableIntroduction(s *string) *UserCreate {
 	return uc
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (uc *UserCreate) SetIsDisabled(b bool) *UserCreate {
+	uc.mutation.SetIsDisabled(b)
+	return uc
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (uc *UserCreate) SetNillableIsDisabled(b *bool) *UserCreate {
+	if b != nil {
+		uc.SetIsDisabled(*b)
+	}
+	return uc
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (uc *UserCreate) SetCreatedTime(t time.Time) *UserCreate {
 	uc.mutation.SetCreatedTime(t)
@@ -187,6 +201,10 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (uc *UserCreate) defaults() {
+	if _, ok := uc.mutation.IsDisabled(); !ok {
+		v := user.DefaultIsDisabled
+		uc.mutation.SetIsDisabled(v)
+	}
 	if _, ok := uc.mutation.CreatedTime(); !ok {
 		v := user.DefaultCreatedTime()
 		uc.mutation.SetCreatedTime(v)
@@ -218,6 +236,9 @@ func (uc *UserCreate) check() error {
 		if err := user.PasswordValidator(v); err != nil {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
+	}
+	if _, ok := uc.mutation.IsDisabled(); !ok {
+		return &ValidationError{Name: "is_disabled", err: errors.New(`ent: missing required field "User.is_disabled"`)}
 	}
 	if _, ok := uc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "User.created_time"`)}
@@ -262,15 +283,15 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := uc.mutation.Account(); ok {
 		_spec.SetField(user.FieldAccount, field.TypeString, value)
-		_node.Account = &value
+		_node.Account = value
 	}
 	if value, ok := uc.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
-		_node.Password = &value
+		_node.Password = value
 	}
 	if value, ok := uc.mutation.Username(); ok {
 		_spec.SetField(user.FieldUsername, field.TypeString, value)
-		_node.Username = &value
+		_node.Username = value
 	}
 	if value, ok := uc.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -282,19 +303,23 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := uc.mutation.Introduction(); ok {
 		_spec.SetField(user.FieldIntroduction, field.TypeString, value)
-		_node.Introduction = &value
+		_node.Introduction = value
+	}
+	if value, ok := uc.mutation.IsDisabled(); ok {
+		_spec.SetField(user.FieldIsDisabled, field.TypeBool, value)
+		_node.IsDisabled = value
 	}
 	if value, ok := uc.mutation.CreatedTime(); ok {
 		_spec.SetField(user.FieldCreatedTime, field.TypeTime, value)
-		_node.CreatedTime = &value
+		_node.CreatedTime = value
 	}
 	if value, ok := uc.mutation.DeletedTime(); ok {
 		_spec.SetField(user.FieldDeletedTime, field.TypeTime, value)
-		_node.DeletedTime = &value
+		_node.DeletedTime = value
 	}
 	if value, ok := uc.mutation.ModifiedTime(); ok {
 		_spec.SetField(user.FieldModifiedTime, field.TypeTime, value)
-		_node.ModifiedTime = &value
+		_node.ModifiedTime = value
 	}
 	if nodes := uc.mutation.RolesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

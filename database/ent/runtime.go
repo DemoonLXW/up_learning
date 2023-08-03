@@ -96,16 +96,20 @@ func init() {
 	userDescPassword := userFields[2].Descriptor()
 	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	user.PasswordValidator = userDescPassword.Validators[0].(func(string) error)
+	// userDescIsDisabled is the schema descriptor for is_disabled field.
+	userDescIsDisabled := userFields[7].Descriptor()
+	// user.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	user.DefaultIsDisabled = userDescIsDisabled.Default.(bool)
 	// userDescCreatedTime is the schema descriptor for created_time field.
-	userDescCreatedTime := userFields[7].Descriptor()
+	userDescCreatedTime := userFields[8].Descriptor()
 	// user.DefaultCreatedTime holds the default value on creation for the created_time field.
 	user.DefaultCreatedTime = userDescCreatedTime.Default.(func() time.Time)
 	// userDescDeletedTime is the schema descriptor for deleted_time field.
-	userDescDeletedTime := userFields[8].Descriptor()
+	userDescDeletedTime := userFields[9].Descriptor()
 	// user.DefaultDeletedTime holds the default value on creation for the deleted_time field.
 	user.DefaultDeletedTime = userDescDeletedTime.Default.(time.Time)
 	// userDescModifiedTime is the schema descriptor for modified_time field.
-	userDescModifiedTime := userFields[9].Descriptor()
+	userDescModifiedTime := userFields[10].Descriptor()
 	// user.DefaultModifiedTime holds the default value on creation for the modified_time field.
 	user.DefaultModifiedTime = userDescModifiedTime.Default.(time.Time)
 	userroleFields := schema.UserRole{}.Fields()

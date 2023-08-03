@@ -26,6 +26,8 @@ const (
 	FieldPhone = "phone"
 	// FieldIntroduction holds the string denoting the introduction field in the database.
 	FieldIntroduction = "introduction"
+	// FieldIsDisabled holds the string denoting the is_disabled field in the database.
+	FieldIsDisabled = "is_disabled"
 	// FieldCreatedTime holds the string denoting the created_time field in the database.
 	FieldCreatedTime = "created_time"
 	// FieldDeletedTime holds the string denoting the deleted_time field in the database.
@@ -61,6 +63,7 @@ var Columns = []string{
 	FieldEmail,
 	FieldPhone,
 	FieldIntroduction,
+	FieldIsDisabled,
 	FieldCreatedTime,
 	FieldDeletedTime,
 	FieldModifiedTime,
@@ -87,6 +90,8 @@ var (
 	AccountValidator func(string) error
 	// PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	PasswordValidator func(string) error
+	// DefaultIsDisabled holds the default value on creation for the "is_disabled" field.
+	DefaultIsDisabled bool
 	// DefaultCreatedTime holds the default value on creation for the "created_time" field.
 	DefaultCreatedTime func() time.Time
 	// DefaultDeletedTime holds the default value on creation for the "deleted_time" field.
@@ -131,6 +136,11 @@ func ByPhone(opts ...sql.OrderTermOption) OrderOption {
 // ByIntroduction orders the results by the introduction field.
 func ByIntroduction(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIntroduction, opts...).ToFunc()
+}
+
+// ByIsDisabled orders the results by the is_disabled field.
+func ByIsDisabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsDisabled, opts...).ToFunc()
 }
 
 // ByCreatedTime orders the results by the created_time field.

@@ -355,11 +355,11 @@ func (serv *ManagementService) CreateUser(toCreates []*ent.User) error {
 	accounts := make([]string, len(toCreates))
 	bulk := make([]*ent.UserCreate, len(toCreates))
 	for i, v := range toCreates {
-		accounts[i] = *v.Account
+		accounts[i] = v.Account
 		bulk[i] = serv.DB.User.Create().
 			SetID(uint32(num + i + 1)).
-			SetAccount(*v.Account).
-			SetPassword(*v.Password)
+			SetAccount(v.Account).
+			SetPassword(v.Password)
 	}
 
 	checkRepeatAccount, err := serv.DB.User.Query().Where(user.AccountIn(accounts...)).Exist(ctx)

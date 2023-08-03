@@ -2801,6 +2801,7 @@ type UserMutation struct {
 	email         *string
 	phone         *string
 	introduction  *string
+	is_disabled   *bool
 	created_time  *time.Time
 	deleted_time  *time.Time
 	modified_time *time.Time
@@ -2934,7 +2935,7 @@ func (m *UserMutation) Account() (r string, exists bool) {
 // OldAccount returns the old "account" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldAccount(ctx context.Context) (v *string, err error) {
+func (m *UserMutation) OldAccount(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldAccount is only allowed on UpdateOne operations")
 	}
@@ -2970,7 +2971,7 @@ func (m *UserMutation) Password() (r string, exists bool) {
 // OldPassword returns the old "password" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldPassword(ctx context.Context) (v *string, err error) {
+func (m *UserMutation) OldPassword(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPassword is only allowed on UpdateOne operations")
 	}
@@ -3006,7 +3007,7 @@ func (m *UserMutation) Username() (r string, exists bool) {
 // OldUsername returns the old "username" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldUsername(ctx context.Context) (v *string, err error) {
+func (m *UserMutation) OldUsername(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUsername is only allowed on UpdateOne operations")
 	}
@@ -3153,7 +3154,7 @@ func (m *UserMutation) Introduction() (r string, exists bool) {
 // OldIntroduction returns the old "introduction" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldIntroduction(ctx context.Context) (v *string, err error) {
+func (m *UserMutation) OldIntroduction(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldIntroduction is only allowed on UpdateOne operations")
 	}
@@ -3185,6 +3186,42 @@ func (m *UserMutation) ResetIntroduction() {
 	delete(m.clearedFields, user.FieldIntroduction)
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (m *UserMutation) SetIsDisabled(b bool) {
+	m.is_disabled = &b
+}
+
+// IsDisabled returns the value of the "is_disabled" field in the mutation.
+func (m *UserMutation) IsDisabled() (r bool, exists bool) {
+	v := m.is_disabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsDisabled returns the old "is_disabled" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldIsDisabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsDisabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsDisabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsDisabled: %w", err)
+	}
+	return oldValue.IsDisabled, nil
+}
+
+// ResetIsDisabled resets all changes to the "is_disabled" field.
+func (m *UserMutation) ResetIsDisabled() {
+	m.is_disabled = nil
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (m *UserMutation) SetCreatedTime(t time.Time) {
 	m.created_time = &t
@@ -3202,7 +3239,7 @@ func (m *UserMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
+func (m *UserMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -3238,7 +3275,7 @@ func (m *UserMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
+func (m *UserMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -3274,7 +3311,7 @@ func (m *UserMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
+func (m *UserMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -3381,7 +3418,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.account != nil {
 		fields = append(fields, user.FieldAccount)
 	}
@@ -3399,6 +3436,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.introduction != nil {
 		fields = append(fields, user.FieldIntroduction)
+	}
+	if m.is_disabled != nil {
+		fields = append(fields, user.FieldIsDisabled)
 	}
 	if m.created_time != nil {
 		fields = append(fields, user.FieldCreatedTime)
@@ -3429,6 +3469,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Phone()
 	case user.FieldIntroduction:
 		return m.Introduction()
+	case user.FieldIsDisabled:
+		return m.IsDisabled()
 	case user.FieldCreatedTime:
 		return m.CreatedTime()
 	case user.FieldDeletedTime:
@@ -3456,6 +3498,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldPhone(ctx)
 	case user.FieldIntroduction:
 		return m.OldIntroduction(ctx)
+	case user.FieldIsDisabled:
+		return m.OldIsDisabled(ctx)
 	case user.FieldCreatedTime:
 		return m.OldCreatedTime(ctx)
 	case user.FieldDeletedTime:
@@ -3512,6 +3556,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIntroduction(v)
+		return nil
+	case user.FieldIsDisabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsDisabled(v)
 		return nil
 	case user.FieldCreatedTime:
 		v, ok := value.(time.Time)
@@ -3627,6 +3678,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldIntroduction:
 		m.ResetIntroduction()
+		return nil
+	case user.FieldIsDisabled:
+		m.ResetIsDisabled()
 		return nil
 	case user.FieldCreatedTime:
 		m.ResetCreatedTime()

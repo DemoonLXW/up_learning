@@ -18,23 +18,25 @@ type User struct {
 	// ID of the ent.
 	ID uint32 `json:"id,omitempty"`
 	// Account holds the value of the "account" field.
-	Account *string `json:"account,omitempty"`
+	Account string `json:"account,omitempty"`
 	// Password holds the value of the "password" field.
-	Password *string `json:"password,omitempty"`
+	Password string `json:"password,omitempty"`
 	// Username holds the value of the "username" field.
-	Username *string `json:"username,omitempty"`
+	Username string `json:"username,omitempty"`
 	// Email holds the value of the "email" field.
 	Email *string `json:"email,omitempty"`
 	// Phone holds the value of the "phone" field.
 	Phone *string `json:"phone,omitempty"`
 	// Introduction holds the value of the "introduction" field.
-	Introduction *string `json:"introduction,omitempty"`
+	Introduction string `json:"introduction,omitempty"`
+	// IsDisabled holds the value of the "is_disabled" field.
+	IsDisabled bool `json:"is_disabled,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
-	CreatedTime *time.Time `json:"created_time,omitempty"`
+	CreatedTime time.Time `json:"created_time,omitempty"`
 	// DeletedTime holds the value of the "deleted_time" field.
-	DeletedTime *time.Time `json:"deleted_time,omitempty"`
+	DeletedTime time.Time `json:"deleted_time,omitempty"`
 	// ModifiedTime holds the value of the "modified_time" field.
-	ModifiedTime *time.Time `json:"modified_time,omitempty"`
+	ModifiedTime time.Time `json:"modified_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -75,6 +77,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case user.FieldIsDisabled:
+			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
 		case user.FieldAccount, user.FieldPassword, user.FieldUsername, user.FieldEmail, user.FieldPhone, user.FieldIntroduction:
@@ -106,22 +110,19 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field account", values[i])
 			} else if value.Valid {
-				u.Account = new(string)
-				*u.Account = value.String
+				u.Account = value.String
 			}
 		case user.FieldPassword:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field password", values[i])
 			} else if value.Valid {
-				u.Password = new(string)
-				*u.Password = value.String
+				u.Password = value.String
 			}
 		case user.FieldUsername:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field username", values[i])
 			} else if value.Valid {
-				u.Username = new(string)
-				*u.Username = value.String
+				u.Username = value.String
 			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -141,29 +142,31 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field introduction", values[i])
 			} else if value.Valid {
-				u.Introduction = new(string)
-				*u.Introduction = value.String
+				u.Introduction = value.String
+			}
+		case user.FieldIsDisabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_disabled", values[i])
+			} else if value.Valid {
+				u.IsDisabled = value.Bool
 			}
 		case user.FieldCreatedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_time", values[i])
 			} else if value.Valid {
-				u.CreatedTime = new(time.Time)
-				*u.CreatedTime = value.Time
+				u.CreatedTime = value.Time
 			}
 		case user.FieldDeletedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_time", values[i])
 			} else if value.Valid {
-				u.DeletedTime = new(time.Time)
-				*u.DeletedTime = value.Time
+				u.DeletedTime = value.Time
 			}
 		case user.FieldModifiedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field modified_time", values[i])
 			} else if value.Valid {
-				u.ModifiedTime = new(time.Time)
-				*u.ModifiedTime = value.Time
+				u.ModifiedTime = value.Time
 			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
@@ -211,20 +214,14 @@ func (u *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
-	if v := u.Account; v != nil {
-		builder.WriteString("account=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("account=")
+	builder.WriteString(u.Account)
 	builder.WriteString(", ")
-	if v := u.Password; v != nil {
-		builder.WriteString("password=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("password=")
+	builder.WriteString(u.Password)
 	builder.WriteString(", ")
-	if v := u.Username; v != nil {
-		builder.WriteString("username=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("username=")
+	builder.WriteString(u.Username)
 	builder.WriteString(", ")
 	if v := u.Email; v != nil {
 		builder.WriteString("email=")
@@ -236,25 +233,20 @@ func (u *User) String() string {
 		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
-	if v := u.Introduction; v != nil {
-		builder.WriteString("introduction=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString("introduction=")
+	builder.WriteString(u.Introduction)
 	builder.WriteString(", ")
-	if v := u.CreatedTime; v != nil {
-		builder.WriteString("created_time=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("is_disabled=")
+	builder.WriteString(fmt.Sprintf("%v", u.IsDisabled))
 	builder.WriteString(", ")
-	if v := u.DeletedTime; v != nil {
-		builder.WriteString("deleted_time=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("created_time=")
+	builder.WriteString(u.CreatedTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := u.ModifiedTime; v != nil {
-		builder.WriteString("modified_time=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("deleted_time=")
+	builder.WriteString(u.DeletedTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("modified_time=")
+	builder.WriteString(u.ModifiedTime.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -197,15 +197,15 @@ func TestCreateUser(t *testing.T) {
 	account1 := "username3"
 	password1 := "password3"
 	user1 := ent.User{
-		Account:  &account1,
-		Password: &password1,
+		Account:  account1,
+		Password: password1,
 	}
 
 	account2 := "account3"
 	password2 := "password2"
 	user2 := ent.User{
-		Account:  &account2,
-		Password: &password2,
+		Account:  account2,
+		Password: password2,
 	}
 	err = serv.CreateUser([]*ent.User{&user2, &user1})
 	assert.Nil(t, err)

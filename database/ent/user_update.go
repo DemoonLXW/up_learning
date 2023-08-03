@@ -121,6 +121,20 @@ func (uu *UserUpdate) ClearIntroduction() *UserUpdate {
 	return uu
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (uu *UserUpdate) SetIsDisabled(b bool) *UserUpdate {
+	uu.mutation.SetIsDisabled(b)
+	return uu
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableIsDisabled(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetIsDisabled(*b)
+	}
+	return uu
+}
+
 // SetCreatedTime sets the "created_time" field.
 func (uu *UserUpdate) SetCreatedTime(t time.Time) *UserUpdate {
 	uu.mutation.SetCreatedTime(t)
@@ -287,6 +301,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.IntroductionCleared() {
 		_spec.ClearField(user.FieldIntroduction, field.TypeString)
+	}
+	if value, ok := uu.mutation.IsDisabled(); ok {
+		_spec.SetField(user.FieldIsDisabled, field.TypeBool, value)
 	}
 	if value, ok := uu.mutation.CreatedTime(); ok {
 		_spec.SetField(user.FieldCreatedTime, field.TypeTime, value)
@@ -463,6 +480,20 @@ func (uuo *UserUpdateOne) SetNillableIntroduction(s *string) *UserUpdateOne {
 // ClearIntroduction clears the value of the "introduction" field.
 func (uuo *UserUpdateOne) ClearIntroduction() *UserUpdateOne {
 	uuo.mutation.ClearIntroduction()
+	return uuo
+}
+
+// SetIsDisabled sets the "is_disabled" field.
+func (uuo *UserUpdateOne) SetIsDisabled(b bool) *UserUpdateOne {
+	uuo.mutation.SetIsDisabled(b)
+	return uuo
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableIsDisabled(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetIsDisabled(*b)
+	}
 	return uuo
 }
 
@@ -662,6 +693,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.IntroductionCleared() {
 		_spec.ClearField(user.FieldIntroduction, field.TypeString)
+	}
+	if value, ok := uuo.mutation.IsDisabled(); ok {
+		_spec.SetField(user.FieldIsDisabled, field.TypeBool, value)
 	}
 	if value, ok := uuo.mutation.CreatedTime(); ok {
 		_spec.SetField(user.FieldCreatedTime, field.TypeTime, value)

@@ -28,15 +28,13 @@ func (User) Fields() []ent.Field {
 			Unique(),
 		field.String("account").
 			NotEmpty().
-			Unique().
-			Nillable(),
+			Unique(),
+
 		field.String("password").
-			NotEmpty().
-			Nillable(),
+			NotEmpty(),
 		field.String("username").
 			Optional().
-			Unique().
-			Nillable(),
+			Unique(),
 		field.String("email").
 			Unique().
 			Optional().
@@ -46,17 +44,15 @@ func (User) Fields() []ent.Field {
 			Optional().
 			Nillable(),
 		field.String("introduction").
-			Optional().
-			Nillable(),
+			Optional(),
+		field.Bool("is_disabled").
+			Default(false),
 		field.Time("created_time").
-			Default(time.Now).
-			Nillable(),
+			Default(time.Now),
 		field.Time("deleted_time").
-			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			Nillable(),
+			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 		field.Time("modified_time").
-			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			Nillable(),
+			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 	}
 }
 

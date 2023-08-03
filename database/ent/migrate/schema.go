@@ -100,6 +100,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "phone", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "introduction", Type: field.TypeString, Nullable: true},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime},
 		{Name: "modified_time", Type: field.TypeTime},

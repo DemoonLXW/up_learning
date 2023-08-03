@@ -85,6 +85,11 @@ func Introduction(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldIntroduction, v))
 }
 
+// IsDisabled applies equality check predicate on the "is_disabled" field. It's identical to IsDisabledEQ.
+func IsDisabled(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsDisabled, v))
+}
+
 // CreatedTime applies equality check predicate on the "created_time" field. It's identical to CreatedTimeEQ.
 func CreatedTime(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldCreatedTime, v))
@@ -528,6 +533,16 @@ func IntroductionEqualFold(v string) predicate.User {
 // IntroductionContainsFold applies the ContainsFold predicate on the "introduction" field.
 func IntroductionContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldIntroduction, v))
+}
+
+// IsDisabledEQ applies the EQ predicate on the "is_disabled" field.
+func IsDisabledEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsDisabled, v))
+}
+
+// IsDisabledNEQ applies the NEQ predicate on the "is_disabled" field.
+func IsDisabledNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldIsDisabled, v))
 }
 
 // CreatedTimeEQ applies the EQ predicate on the "created_time" field.
