@@ -13,11 +13,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserController struct {
+type AuthController struct {
 	Services *service.Services
 }
 
-func (cont *UserController) Login(c *gin.Context) {
+func (cont *AuthController) Login(c *gin.Context) {
 	var login entity.Login
 	if err := c.ShouldBindJSON(&login); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -31,7 +31,7 @@ func (cont *UserController) Login(c *gin.Context) {
 		return
 	}
 	sha1_password := fmt.Sprintf("%x", sha256.Sum256(original_password))
-	user, token, err := cont.Services.User.Login(*login.Account, sha1_password)
+	user, token, err := cont.Services.Auth.Login(*login.Account, sha1_password)
 	if err != nil {
 		err_string := err.Error()
 		switch {
@@ -56,7 +56,7 @@ func (cont *UserController) Login(c *gin.Context) {
 		roles_ids[i] = v.ID
 	}
 
-	m, err := cont.Services.User.FindMenuByRoleIds(roles_ids)
+	m, err := cont.Services.Auth.FindMenuByRoleIds(roles_ids)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -78,7 +78,7 @@ func (cont *UserController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func (cont *UserController) Logout(c *gin.Context) {
+func (cont *AuthController) Logout(c *gin.Context) {
 	uid, err := c.Cookie("uid")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -89,7 +89,7 @@ func (cont *UserController) Logout(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err = cont.Services.User.Logout(uid, token)
+	err = cont.Services.Auth.Logout(uid, token)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -101,7 +101,7 @@ func (cont *UserController) Logout(c *gin.Context) {
 
 }
 
-func (cont *UserController) AutoLogin(c *gin.Context) {
+func (cont *AuthController) AutoLogin(c *gin.Context) {
 	uid, err := c.Cookie("uid")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -114,7 +114,7 @@ func (cont *UserController) AutoLogin(c *gin.Context) {
 		return
 	}
 
-	roles, err := cont.Services.User.FindRolesWithMenusByUserId(uint32(id))
+	roles, err := cont.Services.Auth.FindRolesWithMenusByUserId(uint32(id))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

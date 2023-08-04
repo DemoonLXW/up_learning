@@ -10,9 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func CreateTestUserService() (*service.UserService, error) {
+func CreateTestAuthService() (*service.AuthService, error) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.UserService)
+	serv := new(service.AuthService)
 	db, err := injection.ProvideDataBase()
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func CreateTestUserService() (*service.UserService, error) {
 
 func TestLogin(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.UserService)
+	serv := new(service.AuthService)
 	db, err := injection.ProvideDataBase()
 	assert.Nil(t, err)
 	serv.DB = db
@@ -56,7 +56,7 @@ func TestLogin(t *testing.T) {
 
 func TestLogout(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.UserService)
+	serv := new(service.AuthService)
 	db, err := injection.ProvideDataBase()
 	assert.Nil(t, err)
 	serv.DB = db
@@ -71,7 +71,7 @@ func TestLogout(t *testing.T) {
 
 func TestCheckCredential(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.UserService)
+	serv := new(service.AuthService)
 	db, err := injection.ProvideDataBase()
 	assert.Nil(t, err)
 	serv.DB = db
@@ -87,7 +87,7 @@ func TestCheckCredential(t *testing.T) {
 
 func TestFindOneUserWihtRoles(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.UserService)
+	serv := new(service.AuthService)
 	db, err := injection.ProvideDataBase()
 	assert.Nil(t, err)
 	serv.DB = db
@@ -103,7 +103,7 @@ func TestFindOneUserWihtRoles(t *testing.T) {
 
 func TestFindMenusByUserId(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.UserService)
+	serv := new(service.AuthService)
 	db, err := injection.ProvideDataBase()
 	assert.Nil(t, err)
 	serv.DB = db
@@ -123,7 +123,7 @@ func TestFindMenusByUserId(t *testing.T) {
 
 func TestFindMenusByRoleIds(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.UserService)
+	serv := new(service.AuthService)
 	db, err := injection.ProvideDataBase()
 	assert.Nil(t, err)
 	serv.DB = db
@@ -144,7 +144,7 @@ func TestFindMenusByRoleIds(t *testing.T) {
 
 func TestFindRolesWithMenusByUserId(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.UserService)
+	serv := new(service.AuthService)
 	db, err := injection.ProvideDataBase()
 	assert.Nil(t, err)
 	serv.DB = db
@@ -160,7 +160,7 @@ func TestFindRolesWithMenusByUserId(t *testing.T) {
 
 func TestCheckPermissions(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.UserService)
+	serv := new(service.AuthService)
 	db, err := injection.ProvideDataBase()
 	assert.Nil(t, err)
 	serv.DB = db

@@ -66,7 +66,7 @@ func CookieDomain() gin.HandlerFunc {
 	}
 }
 
-func Auth(serv *service.UserService) gin.HandlerFunc {
+func Auth(serv *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uid, err := c.Cookie("uid")
 		if err != nil {
@@ -111,7 +111,7 @@ func Auth(serv *service.UserService) gin.HandlerFunc {
 	}
 }
 
-func Check(serv *service.UserService, permissions []string) gin.HandlerFunc {
+func Check(serv *service.AuthService, permissions []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uid, err := c.Cookie("uid")
 		if err != nil {

@@ -14,12 +14,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type UserService struct {
+type AuthService struct {
 	DB    *ent.Client
 	Redis *redis.Client
 }
 
-func (serv *UserService) CreateAndSaveToken(id uint32) (string, error) {
+func (serv *AuthService) CreateAndSaveToken(id uint32) (string, error) {
 	ctx := context.Background()
 
 	expire_date := time.Now().In(time.Local).Add(2 * time.Hour)
@@ -72,7 +72,7 @@ func (serv *UserService) CreateAndSaveToken(id uint32) (string, error) {
 	return token, nil
 }
 
-func (serv *UserService) Login(account, password string) (*ent.User, string, error) {
+func (serv *AuthService) Login(account, password string) (*ent.User, string, error) {
 	ctx := context.Background()
 
 	u, err := serv.DB.User.Query().Where(
@@ -98,7 +98,7 @@ func (serv *UserService) Login(account, password string) (*ent.User, string, err
 	return u, token, nil
 }
 
-func (serv *UserService) Logout(id, token string) error {
+func (serv *AuthService) Logout(id, token string) error {
 	ctx := context.Background()
 
 	key := "user:" + id
@@ -117,7 +117,7 @@ func (serv *UserService) Logout(id, token string) error {
 	return nil
 }
 
-func (serv *UserService) CheckCredential(id uint32, token string) (string, error) {
+func (serv *AuthService) CheckCredential(id uint32, token string) (string, error) {
 	ctx := context.Background()
 
 	key := fmt.Sprintf("user:%d", id)
@@ -174,7 +174,7 @@ func (serv *UserService) CheckCredential(id uint32, token string) (string, error
 
 }
 
-func (serv *UserService) FindOneUserById(id uint32) (*ent.User, error) {
+func (serv *AuthService) FindOneUserById(id uint32) (*ent.User, error) {
 	ctx := context.Background()
 	user, err := serv.DB.User.Query().Where(user.IDEQ(id)).WithRoles().Only(ctx)
 	if err != nil {
@@ -183,7 +183,7 @@ func (serv *UserService) FindOneUserById(id uint32) (*ent.User, error) {
 	return user, nil
 }
 
-func (serv *UserService) FindMenuByUserId(id uint32) ([]*ent.Menu, error) {
+func (serv *AuthService) FindMenuByUserId(id uint32) ([]*ent.Menu, error) {
 	ctx := context.Background()
 
 	menu, err := serv.DB.User.Query().Where(user.IDEQ(id)).QueryRoles().QueryMenu().All(ctx)
@@ -194,7 +194,7 @@ func (serv *UserService) FindMenuByUserId(id uint32) ([]*ent.Menu, error) {
 	return menu, nil
 }
 
-func (serv *UserService) FindMenuByRoleIds(ids []uint8) ([]*ent.Menu, error) {
+func (serv *AuthService) FindMenuByRoleIds(ids []uint8) ([]*ent.Menu, error) {
 	ctx := context.Background()
 
 	menu, err := serv.DB.Menu.Query().Where(menu.RidIn(ids...)).All(ctx)
@@ -205,7 +205,7 @@ func (serv *UserService) FindMenuByRoleIds(ids []uint8) ([]*ent.Menu, error) {
 	return menu, nil
 }
 
-func (serv *UserService) FindRolesWithMenusByUserId(id uint32) ([]*ent.Role, error) {
+func (serv *AuthService) FindRolesWithMenusByUserId(id uint32) ([]*ent.Role, error) {
 	ctx := context.Background()
 
 	roles, err := serv.DB.User.Query().Where(user.IDEQ(id)).QueryRoles().WithMenu().All(ctx)
@@ -216,7 +216,7 @@ func (serv *UserService) FindRolesWithMenusByUserId(id uint32) ([]*ent.Role, err
 	return roles, nil
 }
 
-func (serv *UserService) CheckPermissions(id uint32, permissions []string) (bool, error) {
+func (serv *AuthService) CheckPermissions(id uint32, permissions []string) (bool, error) {
 	ctx := context.Background()
 
 	check, err := serv.DB.User.Query().
@@ -239,7 +239,7 @@ func (serv *UserService) CheckPermissions(id uint32, permissions []string) (bool
 	return check == len(permissions), nil
 }
 
-func (serv *UserService) CreateUser(toCreates []*ent.User) error {
+func (serv *AuthService) CreateUser(toCreates []*ent.User) error {
 	ctx := context.Background()
 
 	num, err := serv.DB.User.Query().Aggregate(ent.Count()).Int(ctx)

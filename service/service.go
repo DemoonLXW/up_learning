@@ -10,12 +10,12 @@ import (
 var ServiceProvider = wire.NewSet(
 	wire.Struct(new(Services), "*"),
 	wire.Struct(new(ManagementService), "*"),
-	wire.Struct(new(UserService), "*"),
+	wire.Struct(new(AuthService), "*"),
 )
 
 type Services struct {
 	Management *ManagementService
-	User       *UserService
+	Auth       *AuthService
 }
 
 func rollback(tx *ent.Tx, description string, err error) error {

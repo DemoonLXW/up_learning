@@ -58,13 +58,13 @@ func ProvideService() (*service.Services, error) {
 	if err != nil {
 		return nil, err
 	}
-	userService := &service.UserService{
+	authService := &service.AuthService{
 		DB:    client,
 		Redis: redisClient,
 	}
 	services := &service.Services{
 		Management: managementService,
-		User:       userService,
+		Auth:       authService,
 	}
 	return services, nil
 }
@@ -85,22 +85,22 @@ func ProvideController() (*controller.Controllers, error) {
 	if err != nil {
 		return nil, err
 	}
-	userService := &service.UserService{
+	authService := &service.AuthService{
 		DB:    client,
 		Redis: redisClient,
 	}
 	services := &service.Services{
 		Management: managementService,
-		User:       userService,
+		Auth:       authService,
 	}
-	userController := &controller.UserController{
+	authController := &controller.AuthController{
 		Services: services,
 	}
 	managementController := &controller.ManagementController{
 		Services: services,
 	}
 	controllers := &controller.Controllers{
-		User:       userController,
+		Auth:       authController,
 		Management: managementController,
 	}
 	return controllers, nil
@@ -122,22 +122,22 @@ func ProvideApplication() (*gin.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	userService := &service.UserService{
+	authService := &service.AuthService{
 		DB:    client,
 		Redis: redisClient,
 	}
 	services := &service.Services{
 		Management: managementService,
-		User:       userService,
+		Auth:       authService,
 	}
-	userController := &controller.UserController{
+	authController := &controller.AuthController{
 		Services: services,
 	}
 	managementController := &controller.ManagementController{
 		Services: services,
 	}
 	controllers := &controller.Controllers{
-		User:       userController,
+		Auth:       authController,
 		Management: managementController,
 	}
 	engine := application.SetupApplication(controllers)
