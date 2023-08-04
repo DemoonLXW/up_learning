@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/injection"
 	"github.com/DemoonLXW/up_learning/service"
@@ -190,28 +189,6 @@ func TestDeleteRole(t *testing.T) {
 
 }
 
-func TestCreateUser(t *testing.T) {
-	serv, err := CreateTestManagementService()
-	assert.Nil(t, err)
-
-	account1 := "username3"
-	password1 := "password3"
-	user1 := ent.User{
-		Account:  account1,
-		Password: password1,
-	}
-
-	account2 := "account3"
-	password2 := "password2"
-	user2 := ent.User{
-		Account:  account2,
-		Password: password2,
-	}
-	err = serv.CreateUser([]*ent.User{&user2, &user1})
-	assert.Nil(t, err)
-
-}
-
 func TestFindOneRoleById(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
@@ -315,4 +292,18 @@ func TestUpdatePermissionForRole(t *testing.T) {
 
 	err = serv.UpdatePermissionForRole(rids, pids, isDeleted)
 	assert.Nil(t, err)
+}
+
+func TestRetrieveUser(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	order := false
+	disabled := false
+	users, err := serv.RetrieveUser(1, 10, "", "id", &order, &disabled)
+	assert.Nil(t, err)
+	for _, v := range users {
+		fmt.Println(v)
+	}
+	assert.Equal(t, len(users), 1)
 }

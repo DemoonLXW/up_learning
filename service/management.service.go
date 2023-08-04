@@ -344,51 +344,6 @@ func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 	return nil
 }
 
-func (serv *ManagementService) CreateUser(toCreates []*ent.User) error {
-	ctx := context.Background()
-
-	num, err := serv.DB.User.Query().Aggregate(ent.Count()).Int(ctx)
-	if err != nil {
-		return fmt.Errorf("create users count failed: %w", err)
-	}
-
-	accounts := make([]string, len(toCreates))
-	bulk := make([]*ent.UserCreate, len(toCreates))
-	for i, v := range toCreates {
-		accounts[i] = v.Account
-		bulk[i] = serv.DB.User.Create().
-			SetID(uint32(num + i + 1)).
-			SetAccount(v.Account).
-			SetPassword(v.Password)
-	}
-
-	checkRepeatAccount, err := serv.DB.User.Query().Where(user.AccountIn(accounts...)).Exist(ctx)
-	if err != nil {
-		return fmt.Errorf("create users check repeat user failed: %w", err)
-	}
-	if checkRepeatAccount {
-		return fmt.Errorf("repeat user")
-	}
-
-	tx, err := serv.DB.Tx(ctx)
-	if err != nil {
-		return fmt.Errorf("create user start a transaction failed: %w", err)
-	}
-
-	err = tx.User.CreateBulk(bulk...).Exec(ctx)
-	if err != nil {
-		return rollback(tx, "create users", err)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return fmt.Errorf("create users transaction commit failed: %w", err)
-	}
-
-	return nil
-
-}
-
 func (serv *ManagementService) FindOneRoleById(id uint8) (*ent.Role, error) {
 	ctx := context.Background()
 	role, err := serv.DB.Role.Query().Where(role.IDEQ(id), role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).First(ctx)
@@ -586,4 +541,42 @@ func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint
 
 	return nil
 
+}
+
+func (serv *ManagementService) RetrieveUser(current, pageSize int, like, sort string, order, isDisabled *bool) ([]*ent.User, error) {
+	ctx := context.Background()
+
+	offset := (current - 1) * pageSize
+
+	users, err := serv.DB.User.Query().Where(user.And(
+		user.Or(
+			user.AccountContains(like),
+			user.UsernameContains(like),
+			user.EmailContains(like),
+			user.PhoneContains(like),
+		),
+		func(s *sql.Selector) {
+			if isDisabled != nil {
+				s.Where(sql.EQ(user.FieldIsDisabled, *isDisabled))
+			}
+		},
+		user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	)).
+		Limit(pageSize).
+		Offset(offset).
+		Order(func(s *sql.Selector) {
+			isSorted := sort != "" && (sort == user.FieldID || sort == user.FieldAccount || sort == user.FieldUsername || sort == user.FieldEmail || sort == user.FieldPhone || sort == user.FieldIsDisabled)
+			if isSorted && order != nil {
+				if *order {
+					s.OrderBy(sql.Desc(sort))
+				} else {
+					s.OrderBy(sql.Asc(sort))
+				}
+			}
+		}).
+		All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve user query failed: %w", err)
+	}
+	return users, nil
 }

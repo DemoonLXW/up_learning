@@ -10,6 +10,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func CreateTestUserService() (*service.UserService, error) {
+	os.Setenv("DB_CONFIG", "../database.config.json")
+	serv := new(service.UserService)
+	db, err := injection.ProvideDataBase()
+	if err != nil {
+		return nil, err
+	}
+	serv.DB = db
+	rd, err := injection.ProvideRedis()
+	if err != nil {
+		return nil, err
+	}
+	serv.Redis = rd
+
+	return serv, nil
+}
+
 func TestLogin(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
 	serv := new(service.UserService)
