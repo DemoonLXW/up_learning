@@ -307,3 +307,13 @@ func TestRetrieveUser(t *testing.T) {
 	}
 	assert.Equal(t, len(users), 1)
 }
+
+func TestGetTotalRetrievedUsers(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	// delete := false
+	total, err := serv.GetTotalRetrievedUsers("", nil)
+	assert.Nil(t, err)
+	assert.Equal(t, 3, total)
+}

@@ -580,3 +580,28 @@ func (serv *ManagementService) RetrieveUser(current, pageSize int, like, sort st
 	}
 	return users, nil
 }
+
+func (serv *ManagementService) GetTotalRetrievedUsers(like string, isDisabled *bool) (int, error) {
+	ctx := context.Background()
+
+	total, err := serv.DB.User.Query().Where(user.And(
+		user.Or(
+			user.AccountContains(like),
+			user.UsernameContains(like),
+			user.EmailContains(like),
+			user.PhoneContains(like),
+		),
+		func(s *sql.Selector) {
+			if isDisabled != nil {
+				s.Where(sql.EQ(user.FieldIsDisabled, *isDisabled))
+			}
+		},
+		user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	)).Count(ctx)
+
+	if err != nil {
+		return -1, fmt.Errorf("get retrieved total users query failed: %w", err)
+	}
+
+	return total, nil
+}
