@@ -90,3 +90,12 @@ type ToModifyPermissionsOfRoles struct {
 	PIDs      []uint16 `json:"pids" binding:"required,gte=1"`
 	IsDeleted *bool    `json:"isDeleted" binding:"required"`
 }
+
+type RetrievedUser struct {
+	ID         uint32 `json:"id" uri:"id" binding:"required"`
+	Account    string `json:"account"`
+	Username   string `json:"username"`
+	Email      string `json:"email"`
+	Phone      string `json:"phone"`
+	IsDisabled bool   `json:"isDisabled"`
+}

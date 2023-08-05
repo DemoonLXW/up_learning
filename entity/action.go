@@ -9,4 +9,5 @@ const (
 	RetrievePermission = "permission retrieval"
 	ModifyPermission   = "permission modification"
 	RemovePermission   = "permission removal"
+	RetrieveUser       = "user retrieval"
 )

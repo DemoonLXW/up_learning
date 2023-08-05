@@ -321,3 +321,49 @@ func (cont *ManagementController) ModifyPermissionsForRoles(c *gin.Context) {
 	res.Message = "Modify Permissions For Roles Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) GetUserList(c *gin.Context) {
+
+	var search entity.Search
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	us, err := cont.Services.Management.RetrieveUser(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	total, err := cont.Services.Management.GetTotalRetrievedUsers(search.Like, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	users := make([]entity.RetrievedUser, len(us))
+	for i, v := range us {
+		users[i].ID = v.ID
+		users[i].Account = v.Account
+		users[i].Username = v.Username
+		if v.Email != nil {
+			users[i].Email = *v.Email
+		}
+		if v.Phone != nil {
+			users[i].Phone = *v.Phone
+		}
+		users[i].IsDisabled = v.IsDisabled
+	}
+
+	var data entity.RetrievedListData
+	data.Record = users
+	data.Total = total
+	data.IsPrevious = search.Current > 1
+	data.IsNext = search.Current < int(math.Ceil(float64(total)/float64(search.PageSize)))
+
+	var res entity.Result
+	res.Message = "Get List of Users Successfully"
+	res.Data = data
+	c.JSON(http.StatusOK, res)
+}

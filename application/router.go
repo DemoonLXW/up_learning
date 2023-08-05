@@ -39,6 +39,12 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 			permission.POST("/remove", Check(authService, []string{entity.RemovePermission}), controllers.Management.RemovePermissionsByIds)
 		}
 
+		user := auth.Group("/user")
+		{
+			user.GET("/getlist", Check(authService, []string{entity.RetrieveUser}), controllers.Management.GetUserList)
+
+		}
+
 	}
 
 	return app
