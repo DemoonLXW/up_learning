@@ -108,19 +108,24 @@ func (cont *ManagementController) ModifyARole(c *gin.Context) {
 }
 
 func (cont *ManagementController) GetARoleById(c *gin.Context) {
-	var roleParam entity.RetrievedRole
-	if err := c.ShouldBindUri(&roleParam); err != nil {
+	var role entity.RetrievedDetailedRole
+	if err := c.ShouldBindUri(&role); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	r, err := cont.Services.Management.FindOneRoleById(roleParam.ID)
+	r, err := cont.Services.Management.FindOneRoleById(role.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	role := entity.RetrievedRole{ID: r.ID, Name: r.Name, Description: r.Description, IsDisabled: r.IsDisabled}
+	role.Name = r.Name
+	role.Description = r.Description
+	role.IsDisabled = r.IsDisabled
+	role.CreatedTime = r.CreatedTime
+	role.ModifiedTime = r.ModifiedTime
+
 	var res entity.Result
 	res.Message = "Get a Role By Id Successfully"
 	res.Data = role

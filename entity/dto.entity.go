@@ -1,6 +1,9 @@
 package entity
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type Result struct {
 	Message string      `json:"message"`
@@ -37,6 +40,15 @@ type RetrievedRole struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	IsDisabled  bool   `json:"isDisabled"`
+}
+
+type RetrievedDetailedRole struct {
+	ID           uint8     `json:"id" uri:"id" binding:"required"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description"`
+	IsDisabled   bool      `json:"isDisabled"`
+	CreatedTime  time.Time `json:"createdTime"`
+	ModifiedTime time.Time `json:"modifiedTime"`
 }
 
 type RetrievedListData struct {

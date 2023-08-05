@@ -89,16 +89,13 @@ func TestModifyARole(t *testing.T) {
 }
 
 func TestGetARoleById(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	os.Setenv("DOMAIN_CONFIG", "../domain.config.json")
-	os.Setenv("GIN_LOG", "../gin.log")
-	app, err := injection.ProvideApplication()
+	app, err := CreateTestApp()
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/role/get/1", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/role/get/9", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "6fb405862455d34068cc1228b62fe6fc"}
+	token_cookie := &http.Cookie{Name: "token", Value: "44e13befca166414d9d13dddfc65d84b"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
