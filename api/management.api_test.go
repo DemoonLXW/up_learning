@@ -191,16 +191,13 @@ func TestModifyAPermission(t *testing.T) {
 }
 
 func TestGetAPermissionById(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	os.Setenv("DOMAIN_CONFIG", "../domain.config.json")
-	os.Setenv("GIN_LOG", "../gin.log")
-	app, err := injection.ProvideApplication()
+	app, err := CreateTestApp()
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/permission/get/5", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/permission/get/12", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "2a64fc8b79715466470b920afb1b987e"}
+	token_cookie := &http.Cookie{Name: "token", Value: "44e13befca166414d9d13dddfc65d84b"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -211,10 +208,7 @@ func TestGetAPermissionById(t *testing.T) {
 }
 
 func TestRemovePermissionsByIds(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	os.Setenv("DOMAIN_CONFIG", "../domain.config.json")
-	os.Setenv("GIN_LOG", "../gin.log")
-	app, err := injection.ProvideApplication()
+	app, err := CreateTestApp()
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()

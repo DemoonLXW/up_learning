@@ -81,6 +81,15 @@ type RetrievedPermission struct {
 	IsDisabled  bool   `json:"isDisabled"`
 }
 
+type RetrievedDetailedPermission struct {
+	ID           uint16    `json:"id" uri:"id" binding:"required"`
+	Action       string    `json:"action"`
+	Description  string    `json:"description"`
+	IsDisabled   bool      `json:"isDisabled"`
+	CreatedTime  time.Time `json:"createdTime"`
+	ModifiedTime time.Time `json:"modifiedTime"`
+}
+
 type ToAddPermission struct {
 	Action      *string `json:"action" binding:"required"`
 	Description *string `json:"description" binding:"required"`

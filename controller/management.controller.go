@@ -243,7 +243,7 @@ func (cont *ManagementController) ModifyAPermission(c *gin.Context) {
 }
 
 func (cont *ManagementController) GetAPermissionById(c *gin.Context) {
-	var permission entity.RetrievedPermission
+	var permission entity.RetrievedDetailedPermission
 	if err := c.ShouldBindUri(&permission); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -258,6 +258,9 @@ func (cont *ManagementController) GetAPermissionById(c *gin.Context) {
 	permission.Action = p.Action
 	permission.Description = p.Description
 	permission.IsDisabled = p.IsDisabled
+	permission.CreatedTime = p.CreatedTime
+	permission.ModifiedTime = p.ModifiedTime
+
 	var res entity.Result
 	res.Message = "Get a Permission By Id Successfully"
 	res.Data = permission
