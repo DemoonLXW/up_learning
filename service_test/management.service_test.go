@@ -107,20 +107,34 @@ func TestCreateRole(t *testing.T) {
 	assert.Nil(t, err)
 	serv.DB = db
 
-	// name1 := "role1"
-	// description1 := "role1 description"
-	// role1 := ent.Role{
-	// 	Name:        &name1,
-	// 	Description: &description1,
-	// }
+	name1 := "new role2"
+	description1 := "new role1 description"
+	role1 := entity.ToAddRole{
+		Name:        &name1,
+		Description: &description1,
+	}
 
-	name2 := "role5"
-	description2 := "role5 description"
+	name2 := "new role1"
+	description2 := "new role2 description"
 	role2 := entity.ToAddRole{
 		Name:        &name2,
 		Description: &description2,
 	}
-	err = serv.CreateRole([]*entity.ToAddRole{&role2})
+
+	name3 := "new role3"
+	description3 := "new role3 description"
+	role3 := entity.ToAddRole{
+		Name:        &name3,
+		Description: &description3,
+	}
+
+	name4 := "new role4"
+	description4 := "new role4 description"
+	role4 := entity.ToAddRole{
+		Name:        &name4,
+		Description: &description4,
+	}
+	err = serv.CreateRole([]*entity.ToAddRole{&role1, &role2, &role3, &role4})
 	assert.Nil(t, err)
 
 }

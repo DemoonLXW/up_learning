@@ -171,35 +171,65 @@ func (serv *ManagementService) DeletePermission(toDeleteIDs []uint16) error {
 func (serv *ManagementService) CreateRole(toCreates []*entity.ToAddRole) error {
 	ctx := context.Background()
 
-	num, err := serv.DB.Role.Query().Aggregate(ent.Count()).Int(ctx)
-	if err != nil {
-		return fmt.Errorf("create roles count failed: %w", err)
-	}
-
-	names := make([]string, len(toCreates))
-	bulk := make([]*ent.RoleCreate, len(toCreates))
-	for i, v := range toCreates {
-		names[i] = *v.Name
-		bulk[i] = serv.DB.Role.Create().SetID(uint8(num + i + 1)).SetName(*v.Name).SetDescription(*v.Description)
-	}
-
-	checkRepeatName, err := serv.DB.Role.Query().Where(role.NameIn(names...)).Exist(ctx)
-	if err != nil {
-		return fmt.Errorf("create roles check repeat role failed: %w", err)
-	}
-	if checkRepeatName {
-		return fmt.Errorf("repeat role")
-	}
-
 	tx, err := serv.DB.Tx(ctx)
 	if err != nil {
 		return fmt.Errorf("create role start a transaction failed: %w", err)
 	}
 
-	err = tx.Role.CreateBulk(bulk...).Exec(ctx)
-	if err != nil {
-		return rollback(tx, "create roles", err)
+	current := 0
+	length := len(toCreates)
+	for ; current < length; current++ {
+		id, err := tx.Role.Query().Where(role.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create role find a deleted role id query failed: %w", err)
+			}
+			break
+		}
+		num, err := tx.Role.Update().Where(role.And(
+			role.IDEQ(id),
+			role.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		)).
+			SetCreatedTime(time.Now()).
+			SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			SetName(*toCreates[current].Name).
+			SetDescription(*toCreates[current].Description).
+			SetIsDisabled(false).
+			Save(ctx)
+		if err != nil {
+			return rollback(tx, "create role", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create role", fmt.Errorf("create role update deleted role affect 0 row"))
+		}
+
 	}
+	if current < length {
+		num, err := tx.Role.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create roles count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		bulk := make([]*ent.RoleCreate, bulkLength)
+		for i := 0; i < bulkLength; i++ {
+			bulk[i] = serv.DB.Role.Create().SetID(uint8(num + i + 1)).SetName(*toCreates[current+i].Name).SetDescription(*toCreates[current+i].Name)
+		}
+
+		err = tx.Role.CreateBulk(bulk...).Exec(ctx)
+		if err != nil {
+			return rollback(tx, "create roles", err)
+		}
+	}
+
+	// checkRepeatName, err := serv.DB.Role.Query().Where(role.NameIn(names...)).Exist(ctx)
+	// if err != nil {
+	// 	return fmt.Errorf("create roles check repeat role failed: %w", err)
+	// }
+	// if checkRepeatName {
+	// 	return fmt.Errorf("repeat role")
+	// }
 
 	err = tx.Commit()
 	if err != nil {
