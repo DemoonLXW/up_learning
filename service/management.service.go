@@ -64,7 +64,7 @@ func (serv *ManagementService) CreatePermission(toCreates []*entity.ToAddPermiss
 		bulkLength := length - current
 		bulk := make([]*ent.PermissionCreate, bulkLength)
 		for i := 0; i < bulkLength; i++ {
-			bulk[i] = serv.DB.Permission.Create().SetID(uint16(num + i + 1)).SetAction(*toCreates[current+i].Action).SetDescription(*toCreates[current+i].Description)
+			bulk[i] = tx.Permission.Create().SetID(uint16(num + i + 1)).SetAction(*toCreates[current+i].Action).SetDescription(*toCreates[current+i].Description)
 		}
 
 		err = tx.Permission.CreateBulk(bulk...).Exec(ctx)
@@ -605,7 +605,7 @@ func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint
 	if err != nil {
 		return rollback(tx, "update permission for role", err)
 	}
-	if num == 0 || num != len(rids) {
+	if num != len(rids) {
 		return rollback(tx, "update permission for role", fmt.Errorf("not enough updated roles"))
 	}
 
@@ -679,4 +679,72 @@ func (serv *ManagementService) GetTotalRetrievedUsers(like string, isDisabled *b
 	}
 
 	return total, nil
+}
+
+func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser) error {
+	ctx := context.Background()
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("create user start a transaction failed: %w", err)
+	}
+
+	current := 0
+	length := len(toCreates)
+
+	for ; current < length; current++ {
+		id, err := tx.User.Query().Where(user.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create user find a deleted permission id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := tx.User.Update().Where(user.And(
+			user.IDEQ(id),
+			user.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		)).
+			SetCreatedTime(time.Now()).
+			SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			SetAccount(*toCreates[current].Account).
+			SetUsername(*toCreates[current].Username).
+			SetIntroduction("").
+			SetIsDisabled(false).
+			SetPassword(*toCreates[current].Password).
+			Save(ctx)
+
+		if err != nil {
+			return rollback(tx, "create user", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create user", fmt.Errorf("create user update deleted user affect 0 row"))
+		}
+	}
+	if current < length {
+		num, err := tx.User.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create users count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		bulk := make([]*ent.UserCreate, bulkLength)
+		for i := 0; i < bulkLength; i++ {
+			bulk[i] = tx.User.Create().SetID(uint32(num + i + 1)).SetAccount(*toCreates[current+i].Account).SetUsername(*toCreates[current+i].Username).SetPassword(*toCreates[current+i].Password).SetIntroduction("")
+		}
+
+		err = tx.User.CreateBulk(bulk...).Exec(ctx)
+		if err != nil {
+			return rollback(tx, "create users", err)
+		}
+
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("create users transaction commit failed: %w", err)
+	}
+
+	return nil
 }

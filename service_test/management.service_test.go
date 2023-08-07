@@ -334,3 +334,46 @@ func TestGetTotalRetrievedUsers(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 3, total)
 }
+
+func TestCreateUser(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	password := "123456"
+
+	account1 := "new account"
+	username1 := "new username1"
+	user1 := entity.ToAddUser{
+		Account:  &account1,
+		Username: &username1,
+		Password: &password,
+	}
+
+	account2 := "new account2"
+	username2 := "new username2"
+	user2 := entity.ToAddUser{
+		Account:  &account2,
+		Username: &username2,
+		Password: &password,
+	}
+
+	account3 := "new account3"
+	username3 := "new username3"
+	user3 := entity.ToAddUser{
+		Account:  &account3,
+		Username: &username3,
+		Password: &password,
+	}
+
+	account4 := "new account4"
+	username4 := "new username4"
+	user4 := entity.ToAddUser{
+		Account:  &account4,
+		Username: &username4,
+		Password: &password,
+	}
+
+	err = serv.CreateUser([]*entity.ToAddUser{&user1, &user2, &user3, &user4})
+	assert.Nil(t, err)
+
+}

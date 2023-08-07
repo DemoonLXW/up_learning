@@ -120,3 +120,9 @@ type RetrievedUser struct {
 	Phone      string `json:"phone"`
 	IsDisabled bool   `json:"isDisabled"`
 }
+
+type ToAddUser struct {
+	Account  *string `json:"account" binding:"required"`
+	Username *string `json:"username" binding:"required"`
+	Password *string `json:"password"`
+}
