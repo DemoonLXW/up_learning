@@ -20,34 +20,57 @@ type ManagementService struct {
 func (serv *ManagementService) CreatePermission(toCreates []*entity.ToAddPermission) error {
 	ctx := context.Background()
 
-	num, err := serv.DB.Permission.Query().Aggregate(ent.Count()).Int(ctx)
-	if err != nil {
-		return fmt.Errorf("create permissions count failed: %w", err)
-	}
-
-	actions := make([]string, len(toCreates))
-	bulk := make([]*ent.PermissionCreate, len(toCreates))
-	for i, v := range toCreates {
-		actions[i] = *v.Action
-		bulk[i] = serv.DB.Permission.Create().SetID(uint16(num + i + 1)).SetAction(*v.Action).SetDescription(*v.Description)
-	}
-
-	// checkRepeatAction, err := serv.DB.Permission.Query().Where(permission.ActionIn(actions...)).Exist(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("create permissions check repeat action failed: %w", err)
-	// }
-	// if checkRepeatAction {
-	// 	return fmt.Errorf("repeat action")
-	// }
-
 	tx, err := serv.DB.Tx(ctx)
 	if err != nil {
 		return fmt.Errorf("create permission start a transaction failed: %w", err)
 	}
 
-	err = tx.Permission.CreateBulk(bulk...).Exec(ctx)
-	if err != nil {
-		return rollback(tx, "create permissions", err)
+	current := 0
+	length := len(toCreates)
+	for ; current < length; current++ {
+		id, err := tx.Permission.Query().Where(permission.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create permission find a deleted permission id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := tx.Permission.Update().Where(permission.And(
+			permission.IDEQ(id),
+			permission.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		)).
+			SetCreatedTime(time.Now()).
+			SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			SetAction(*toCreates[current].Action).
+			SetDescription(*toCreates[current].Description).
+			SetIsDisabled(false).
+			Save(ctx)
+		if err != nil {
+			return rollback(tx, "create permission", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create permission", fmt.Errorf("create permission update deleted permission affect 0 row"))
+		}
+
+	}
+	if current < length {
+		num, err := tx.Permission.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create permissions count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		bulk := make([]*ent.PermissionCreate, bulkLength)
+		for i := 0; i < bulkLength; i++ {
+			bulk[i] = serv.DB.Permission.Create().SetID(uint16(num + i + 1)).SetAction(*toCreates[current+i].Action).SetDescription(*toCreates[current+i].Description)
+		}
+
+		err = tx.Permission.CreateBulk(bulk...).Exec(ctx)
+		if err != nil {
+			return rollback(tx, "create permissions", err)
+		}
 	}
 
 	err = tx.Commit()

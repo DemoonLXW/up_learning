@@ -23,11 +23,8 @@ func CreateTestManagementService() (*service.ManagementService, error) {
 }
 
 func TestCreatePermission(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	serv.DB = db
 
 	action1 := "action11"
 	description1 := "action11 description"
@@ -42,7 +39,19 @@ func TestCreatePermission(t *testing.T) {
 		Action:      &action2,
 		Description: &description2,
 	}
-	err = serv.CreatePermission([]*entity.ToAddPermission{&permission1, &permission2})
+	action3 := "action13"
+	description3 := "action13 description"
+	permission3 := entity.ToAddPermission{
+		Action:      &action3,
+		Description: &description3,
+	}
+	action4 := "action14"
+	description4 := "action14 description"
+	permission4 := entity.ToAddPermission{
+		Action:      &action4,
+		Description: &description4,
+	}
+	err = serv.CreatePermission([]*entity.ToAddPermission{&permission1, &permission2, &permission3, &permission4})
 	// err = serv.CreatePermission([]*ent.Permission{&permission1})
 	assert.Nil(t, err)
 
