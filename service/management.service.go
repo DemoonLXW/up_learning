@@ -168,24 +168,35 @@ func (serv *ManagementService) DeletePermission(toDeleteIDs []uint16) error {
 		return fmt.Errorf("delete permissions start a transaction failed: %w", err)
 	}
 
-	num, err := tx.Permission.Update().
-		Where(permission.And(
-			permission.IDIn(toDeleteIDs...),
-			permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
-		)).
-		SetDeletedTime(time.Now()).
-		ClearRoles().
-		Save(ctx)
-	if err != nil {
-		return rollback(tx, "delete permissions", err)
+	original, err := tx.Permission.Query().Where(permission.And(
+		permission.IDIn(toDeleteIDs...),
+		permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	)).All(ctx)
+	if err != nil || len(original) != len(toDeleteIDs) {
+		return fmt.Errorf("delete permissions not found permissions failed: %w", err)
+	}
+
+	for _, v := range original {
+		num, err := tx.Permission.Update().
+			Where(permission.And(
+				permission.IDEQ(v.ID),
+				permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			)).
+			SetDeletedTime(time.Now()).
+			SetAction("*" + v.Action).
+			ClearRoles().
+			Save(ctx)
+		if err != nil {
+			return rollback(tx, "delete permissions", err)
+		}
+		if num == 0 {
+			return rollback(tx, "delete permissions", fmt.Errorf("delete permissions affect 0 row"))
+		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		return fmt.Errorf("delete permissions transaction commit failed: %w", err)
-	}
-	if num == 0 {
-		return fmt.Errorf("delete permissions affect 0 row")
 	}
 
 	return nil
@@ -374,15 +385,15 @@ func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 		return fmt.Errorf("delete roles start a transaction failed: %w", err)
 	}
 
-	originalRoles, err := tx.Role.Query().Where(role.And(
+	original, err := tx.Role.Query().Where(role.And(
 		role.IDIn(toDeleteIDs...),
 		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 	)).All(ctx)
-	if err != nil || len(originalRoles) != len(toDeleteIDs) {
+	if err != nil || len(original) != len(toDeleteIDs) {
 		return fmt.Errorf("delete roles not found roles failed: %w", err)
 	}
 
-	for _, v := range originalRoles {
+	for _, v := range original {
 		num, err := tx.Role.Update().
 			Where(role.And(
 				role.IDEQ(v.ID),

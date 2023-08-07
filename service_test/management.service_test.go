@@ -97,14 +97,11 @@ func TestRetrievePermission(t *testing.T) {
 }
 
 func TestDeletePermission(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	dao := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	dao.DB = db
 
-	IDs := []uint16{9, 10, 11}
-	err = dao.DeletePermission(IDs)
+	IDs := []uint16{9, 11, 13, 14}
+	err = serv.DeletePermission(IDs)
 	assert.Nil(t, err)
 
 }
