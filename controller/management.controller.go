@@ -4,7 +4,6 @@ import (
 	"math"
 	"net/http"
 
-	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/service"
 	"github.com/gin-gonic/gin"
@@ -178,38 +177,27 @@ func (cont *ManagementController) GetPermissionList(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func (cont *ManagementController) AddAPermission(c *gin.Context) {
+func (cont *ManagementController) AddPermission(c *gin.Context) {
 
-	var permission entity.ToAddPermission
-	if err := c.ShouldBindJSON(&permission); err != nil {
+	var permissions []entity.ToAddPermission
+	if err := c.ShouldBindJSON(&permissions); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	id, err := cont.Services.Management.FindADeletedPermissionID()
-	if err != nil {
-		if !ent.IsNotFound(err) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+	ps := make([]*entity.ToAddPermission, len(permissions))
+	for i := range permissions {
+		ps[i] = &permissions[i]
+	}
 
-		err := cont.Services.Management.CreatePermission([]*entity.ToAddPermission{&permission})
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-	} else {
-		isDisabled := false
-		toCreatePermission := &entity.ToModifyPermission{ID: id, Action: permission.Action, Description: permission.Description, IsDisabled: &isDisabled}
-		err := cont.Services.Management.UpdateDeletedPermission(toCreatePermission)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+	err := cont.Services.Management.CreatePermission(ps)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	var res entity.Result
-	res.Message = "Add a Permission Successfully"
+	res.Message = "Add Permission Successfully"
 	c.JSON(http.StatusOK, res)
 }
 

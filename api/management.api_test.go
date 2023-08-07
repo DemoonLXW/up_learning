@@ -152,11 +152,11 @@ func TestAddAPermission(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	body := bytes.NewReader([]byte(`{"action": "action13", "description": "test add action1"}`))
+	body := bytes.NewReader([]byte(`[{"action": "action15", "description": "test add action15"}, {"action": "action16", "description": ""}, {"action": "action17", "description": "test add action11115"}]`))
 	// body := bytes.NewReader([]byte(`{"name": ""}`))
 	req, _ := http.NewRequest(http.MethodPost, "/permission/add", body)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "549f909f1108f1694e00e46d5ca514b1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "4933ddad9c76c8657cbd4ae5fd44339f"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
