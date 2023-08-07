@@ -351,24 +351,35 @@ func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 		return fmt.Errorf("delete roles start a transaction failed: %w", err)
 	}
 
-	num, err := tx.Role.Update().
-		Where(role.And(
-			role.IDIn(toDeleteIDs...),
-			role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
-		)).
-		SetDeletedTime(time.Now()).
-		ClearMenu().ClearUsers().ClearPermissions().
-		Save(ctx)
-	if err != nil {
-		return rollback(tx, "delete roles", err)
+	originalRoles, err := tx.Role.Query().Where(role.And(
+		role.IDIn(toDeleteIDs...),
+		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	)).All(ctx)
+	if err != nil || len(originalRoles) != len(toDeleteIDs) {
+		return fmt.Errorf("delete roles not found roles failed: %w", err)
+	}
+
+	for _, v := range originalRoles {
+		num, err := tx.Role.Update().
+			Where(role.And(
+				role.IDEQ(v.ID),
+				role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			)).
+			SetDeletedTime(time.Now()).
+			SetName("*" + v.Name).
+			ClearMenu().ClearUsers().ClearPermissions().
+			Save(ctx)
+		if err != nil {
+			return rollback(tx, "delete roles", err)
+		}
+		if num == 0 {
+			return rollback(tx, "delete roles", fmt.Errorf("delete roles affect 0 row"))
+		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		return fmt.Errorf("delete roles transaction commit failed: %w", err)
-	}
-	if num == 0 {
-		return fmt.Errorf("delete roles affect 0 row")
 	}
 
 	return nil

@@ -191,14 +191,11 @@ func TestGetTotalRetrievedRoles(t *testing.T) {
 }
 
 func TestDeleteRole(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	dao := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	dao.DB = db
 
-	IDs := []uint8{4}
-	err = dao.DeleteRole(IDs)
+	IDs := []uint8{10, 12}
+	err = serv.DeleteRole(IDs)
 	assert.Nil(t, err)
 
 }
