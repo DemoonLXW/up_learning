@@ -45,19 +45,16 @@ func TestGetRoleList(t *testing.T) {
 	fmt.Println(recorder.Body.String())
 }
 
-func TestAddARole(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	os.Setenv("DOMAIN_CONFIG", "../domain.config.json")
-	os.Setenv("GIN_LOG", "../gin.log")
-	app, err := injection.ProvideApplication()
+func TestAddRole(t *testing.T) {
+	app, err := CreateTestApp()
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	body := bytes.NewReader([]byte(`{"name": "test role10", "description": "come on go go go"}`))
+	body := bytes.NewReader([]byte(`[{"name": "new role2", "description": "come on go go go"}, {"name": "new role1", "description": "come on"}, {"name": "new role3", "description": "come"}, {"name": "new role4", "description": ""}]`))
 	// body := bytes.NewReader([]byte(`{"name": ""}`))
 	req, _ := http.NewRequest(http.MethodPost, "/role/add", body)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "d8d519f1c826411bee4cb8e9eedb9734"}
+	token_cookie := &http.Cookie{Name: "token", Value: "4933ddad9c76c8657cbd4ae5fd44339f"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

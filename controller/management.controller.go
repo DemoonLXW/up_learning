@@ -54,38 +54,27 @@ func (cont *ManagementController) GetRoleList(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func (cont *ManagementController) AddARole(c *gin.Context) {
+func (cont *ManagementController) AddRole(c *gin.Context) {
 
-	var role entity.ToAddRole
-	if err := c.ShouldBindJSON(&role); err != nil {
+	var roles []entity.ToAddRole
+	if err := c.ShouldBindJSON(&roles); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	id, err := cont.Services.Management.FindADeletedRoleID()
-	if err != nil {
-		if !ent.IsNotFound(err) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+	rs := make([]*entity.ToAddRole, len(roles))
+	for i := range roles {
+		rs[i] = &roles[i]
+	}
 
-		err := cont.Services.Management.CreateRole([]*entity.ToAddRole{&role})
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-	} else {
-		isDisabled := false
-		toCreateRole := &entity.ToModifyRole{ID: id, Name: role.Name, Description: role.Description, IsDisabled: &isDisabled}
-		err := cont.Services.Management.UpdateDeletedRole(toCreateRole)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+	err := cont.Services.Management.CreateRole(rs)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	var res entity.Result
-	res.Message = "Add a Role Successfully"
+	res.Message = "Add Role Successfully"
 	c.JSON(http.StatusOK, res)
 }
 
