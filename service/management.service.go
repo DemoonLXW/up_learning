@@ -681,8 +681,17 @@ func (serv *ManagementService) GetTotalRetrievedUsers(like string, isDisabled *b
 	return total, nil
 }
 
-func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser) error {
+func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId uint8) error {
 	ctx := context.Background()
+
+	r, err := serv.DB.Role.Query().Where(role.And(
+		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		role.IsDisabledEQ(false),
+		role.IDEQ(roleId),
+	)).First(ctx)
+	if err != nil {
+		return fmt.Errorf("create user found role by id failed: %w", err)
+	}
 
 	tx, err := serv.DB.Tx(ctx)
 	if err != nil {
@@ -713,6 +722,7 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser) error {
 			SetIntroduction("").
 			SetIsDisabled(false).
 			SetPassword(*toCreates[current].Password).
+			AddRoles(r).
 			Save(ctx)
 
 		if err != nil {
@@ -729,15 +739,31 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser) error {
 		}
 
 		bulkLength := length - current
-		bulk := make([]*ent.UserCreate, bulkLength)
+		// bulk := make([]*ent.UserCreate, bulkLength)
+		// for i := 0; i < bulkLength; i++ {
+		// 	bulk[i] = tx.User.Create().SetID(uint32(num + i + 1)).
+		// 		SetAccount(*toCreates[current+i].Account).
+		// 		SetUsername(*toCreates[current+i].Username).
+		// 		SetPassword(*toCreates[current+i].Password).
+		// 		SetIntroduction("").
+		// 		AddRoles(r)
+		// }
 		for i := 0; i < bulkLength; i++ {
-			bulk[i] = tx.User.Create().SetID(uint32(num + i + 1)).SetAccount(*toCreates[current+i].Account).SetUsername(*toCreates[current+i].Username).SetPassword(*toCreates[current+i].Password).SetIntroduction("")
+			err = tx.User.Create().SetID(uint32(num + i + 1)).
+				SetAccount(*toCreates[current+i].Account).
+				SetUsername(*toCreates[current+i].Username).
+				SetPassword(*toCreates[current+i].Password).
+				SetIntroduction("").
+				AddRoles(r).Exec(ctx)
+			if err != nil {
+				return rollback(tx, "create users", err)
+			}
 		}
 
-		err = tx.User.CreateBulk(bulk...).Exec(ctx)
-		if err != nil {
-			return rollback(tx, "create users", err)
-		}
+		// _, err = tx.User.CreateBulk(bulk...).Save(ctx)
+		// if err != nil {
+		// 	return rollback(tx, "create users", err)
+		// }
 
 	}
 
