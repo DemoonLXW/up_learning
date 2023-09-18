@@ -5,11 +5,15 @@ package ent
 import (
 	"time"
 
+	"github.com/DemoonLXW/up_learning/database/ent/class"
+	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
 	"github.com/DemoonLXW/up_learning/database/ent/schema"
+	"github.com/DemoonLXW/up_learning/database/ent/school"
+	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/database/ent/userrole"
 )
@@ -18,6 +22,42 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	classFields := schema.Class{}.Fields()
+	_ = classFields
+	// classDescIsDisabled is the schema descriptor for is_disabled field.
+	classDescIsDisabled := classFields[3].Descriptor()
+	// class.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	class.DefaultIsDisabled = classDescIsDisabled.Default.(bool)
+	// classDescCreatedTime is the schema descriptor for created_time field.
+	classDescCreatedTime := classFields[4].Descriptor()
+	// class.DefaultCreatedTime holds the default value on creation for the created_time field.
+	class.DefaultCreatedTime = classDescCreatedTime.Default.(func() time.Time)
+	// classDescDeletedTime is the schema descriptor for deleted_time field.
+	classDescDeletedTime := classFields[5].Descriptor()
+	// class.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	class.DefaultDeletedTime = classDescDeletedTime.Default.(time.Time)
+	// classDescModifiedTime is the schema descriptor for modified_time field.
+	classDescModifiedTime := classFields[6].Descriptor()
+	// class.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	class.DefaultModifiedTime = classDescModifiedTime.Default.(time.Time)
+	collegeFields := schema.College{}.Fields()
+	_ = collegeFields
+	// collegeDescIsDisabled is the schema descriptor for is_disabled field.
+	collegeDescIsDisabled := collegeFields[3].Descriptor()
+	// college.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	college.DefaultIsDisabled = collegeDescIsDisabled.Default.(bool)
+	// collegeDescCreatedTime is the schema descriptor for created_time field.
+	collegeDescCreatedTime := collegeFields[4].Descriptor()
+	// college.DefaultCreatedTime holds the default value on creation for the created_time field.
+	college.DefaultCreatedTime = collegeDescCreatedTime.Default.(func() time.Time)
+	// collegeDescDeletedTime is the schema descriptor for deleted_time field.
+	collegeDescDeletedTime := collegeFields[5].Descriptor()
+	// college.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	college.DefaultDeletedTime = collegeDescDeletedTime.Default.(time.Time)
+	// collegeDescModifiedTime is the schema descriptor for modified_time field.
+	collegeDescModifiedTime := collegeFields[6].Descriptor()
+	// college.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	college.DefaultModifiedTime = collegeDescModifiedTime.Default.(time.Time)
 	menuFields := schema.Menu{}.Fields()
 	_ = menuFields
 	// menuDescName is the schema descriptor for name field.
@@ -86,6 +126,50 @@ func init() {
 	rolepermissionDescCreatedTime := rolepermissionFields[2].Descriptor()
 	// rolepermission.DefaultCreatedTime holds the default value on creation for the created_time field.
 	rolepermission.DefaultCreatedTime = rolepermissionDescCreatedTime.Default.(func() time.Time)
+	schoolFields := schema.School{}.Fields()
+	_ = schoolFields
+	// schoolDescIsDisabled is the schema descriptor for is_disabled field.
+	schoolDescIsDisabled := schoolFields[7].Descriptor()
+	// school.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	school.DefaultIsDisabled = schoolDescIsDisabled.Default.(bool)
+	// schoolDescCreatedTime is the schema descriptor for created_time field.
+	schoolDescCreatedTime := schoolFields[8].Descriptor()
+	// school.DefaultCreatedTime holds the default value on creation for the created_time field.
+	school.DefaultCreatedTime = schoolDescCreatedTime.Default.(func() time.Time)
+	// schoolDescDeletedTime is the schema descriptor for deleted_time field.
+	schoolDescDeletedTime := schoolFields[9].Descriptor()
+	// school.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	school.DefaultDeletedTime = schoolDescDeletedTime.Default.(time.Time)
+	// schoolDescModifiedTime is the schema descriptor for modified_time field.
+	schoolDescModifiedTime := schoolFields[10].Descriptor()
+	// school.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	school.DefaultModifiedTime = schoolDescModifiedTime.Default.(time.Time)
+	studentFields := schema.Student{}.Fields()
+	_ = studentFields
+	// studentDescStudentID is the schema descriptor for student_id field.
+	studentDescStudentID := studentFields[3].Descriptor()
+	// student.StudentIDValidator is a validator for the "student_id" field. It is called by the builders before save.
+	student.StudentIDValidator = studentDescStudentID.Validators[0].(func(string) error)
+	// studentDescName is the schema descriptor for name field.
+	studentDescName := studentFields[4].Descriptor()
+	// student.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	student.NameValidator = studentDescName.Validators[0].(func(string) error)
+	// studentDescIsDisabled is the schema descriptor for is_disabled field.
+	studentDescIsDisabled := studentFields[9].Descriptor()
+	// student.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	student.DefaultIsDisabled = studentDescIsDisabled.Default.(bool)
+	// studentDescCreatedTime is the schema descriptor for created_time field.
+	studentDescCreatedTime := studentFields[10].Descriptor()
+	// student.DefaultCreatedTime holds the default value on creation for the created_time field.
+	student.DefaultCreatedTime = studentDescCreatedTime.Default.(func() time.Time)
+	// studentDescDeletedTime is the schema descriptor for deleted_time field.
+	studentDescDeletedTime := studentFields[11].Descriptor()
+	// student.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	student.DefaultDeletedTime = studentDescDeletedTime.Default.(time.Time)
+	// studentDescModifiedTime is the schema descriptor for modified_time field.
+	studentDescModifiedTime := studentFields[12].Descriptor()
+	// student.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	student.DefaultModifiedTime = studentDescModifiedTime.Default.(time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescAccount is the schema descriptor for account field.

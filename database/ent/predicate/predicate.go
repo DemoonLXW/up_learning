@@ -6,6 +6,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Class is the predicate function for class builders.
+type Class func(*sql.Selector)
+
+// College is the predicate function for college builders.
+type College func(*sql.Selector)
+
 // Menu is the predicate function for menu builders.
 type Menu func(*sql.Selector)
 
@@ -17,6 +23,12 @@ type Role func(*sql.Selector)
 
 // RolePermission is the predicate function for rolepermission builders.
 type RolePermission func(*sql.Selector)
+
+// School is the predicate function for school builders.
+type School func(*sql.Selector)
+
+// Student is the predicate function for student builders.
+type Student func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

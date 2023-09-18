@@ -9,6 +9,54 @@ import (
 )
 
 var (
+	// ClassColumns holds the columns for the "class" table.
+	ClassColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime},
+		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "cid", Type: field.TypeUint16},
+	}
+	// ClassTable holds the schema information for the "class" table.
+	ClassTable = &schema.Table{
+		Name:       "class",
+		Columns:    ClassColumns,
+		PrimaryKey: []*schema.Column{ClassColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "class_college_classes",
+				Columns:    []*schema.Column{ClassColumns[6]},
+				RefColumns: []*schema.Column{CollegeColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// CollegeColumns holds the columns for the "college" table.
+	CollegeColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint16, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime},
+		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "sid", Type: field.TypeUint16},
+	}
+	// CollegeTable holds the schema information for the "college" table.
+	CollegeTable = &schema.Table{
+		Name:       "college",
+		Columns:    CollegeColumns,
+		PrimaryKey: []*schema.Column{CollegeColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "college_school_colleges",
+				Columns:    []*schema.Column{CollegeColumns[6]},
+				RefColumns: []*schema.Column{SchoolColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// MenuColumns holds the columns for the "menu" table.
 	MenuColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint8, Increment: true},
@@ -91,6 +139,62 @@ var (
 			},
 		},
 	}
+	// SchoolColumns holds the columns for the "school" table.
+	SchoolColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint16, Increment: true},
+		{Name: "code", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "location", Type: field.TypeString},
+		{Name: "competent_department", Type: field.TypeString},
+		{Name: "education_level", Type: field.TypeUint8},
+		{Name: "remark", Type: field.TypeString},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime},
+		{Name: "modified_time", Type: field.TypeTime},
+	}
+	// SchoolTable holds the schema information for the "school" table.
+	SchoolTable = &schema.Table{
+		Name:       "school",
+		Columns:    SchoolColumns,
+		PrimaryKey: []*schema.Column{SchoolColumns[0]},
+	}
+	// StudentColumns holds the columns for the "student" table.
+	StudentColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "student_id", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "gender", Type: field.TypeUint8},
+		{Name: "birthday", Type: field.TypeTime},
+		{Name: "admission_date", Type: field.TypeTime},
+		{Name: "state", Type: field.TypeUint8},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime},
+		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "cid", Type: field.TypeUint32},
+		{Name: "uid", Type: field.TypeUint32},
+	}
+	// StudentTable holds the schema information for the "student" table.
+	StudentTable = &schema.Table{
+		Name:       "student",
+		Columns:    StudentColumns,
+		PrimaryKey: []*schema.Column{StudentColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "student_class_students",
+				Columns:    []*schema.Column{StudentColumns[11]},
+				RefColumns: []*schema.Column{ClassColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "student_user_students",
+				Columns:    []*schema.Column{StudentColumns[12]},
+				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// UserColumns holds the columns for the "user" table.
 	UserColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true},
@@ -139,16 +243,28 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ClassTable,
+		CollegeTable,
 		MenuTable,
 		PermissionTable,
 		RoleTable,
 		RolePermissionTable,
+		SchoolTable,
+		StudentTable,
 		UserTable,
 		UserRoleTable,
 	}
 )
 
 func init() {
+	ClassTable.ForeignKeys[0].RefTable = CollegeTable
+	ClassTable.Annotation = &entsql.Annotation{
+		Table: "class",
+	}
+	CollegeTable.ForeignKeys[0].RefTable = SchoolTable
+	CollegeTable.Annotation = &entsql.Annotation{
+		Table: "college",
+	}
 	MenuTable.ForeignKeys[0].RefTable = RoleTable
 	MenuTable.Annotation = &entsql.Annotation{
 		Table: "menu",
@@ -163,6 +279,14 @@ func init() {
 	RolePermissionTable.ForeignKeys[1].RefTable = PermissionTable
 	RolePermissionTable.Annotation = &entsql.Annotation{
 		Table: "role_permission",
+	}
+	SchoolTable.Annotation = &entsql.Annotation{
+		Table: "school",
+	}
+	StudentTable.ForeignKeys[0].RefTable = ClassTable
+	StudentTable.ForeignKeys[1].RefTable = UserTable
+	StudentTable.Annotation = &entsql.Annotation{
+		Table: "student",
 	}
 	UserTable.Annotation = &entsql.Annotation{
 		Table: "user",
