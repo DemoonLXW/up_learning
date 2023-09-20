@@ -32,10 +32,10 @@ func TestGetRoleList(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	query := "?current=1&pagesize=15&like=role"
+	query := "?pagesize=34534634&isdisabled=false"
 	req, _ := http.NewRequest(http.MethodGet, "/role/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "fa2cbe9b9d547ef14ad1d6fc5301e208"}
+	token_cookie := &http.Cookie{Name: "token", Value: "8483f6a8aaed3ce434c5d3fb51aa26bd"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -131,10 +131,10 @@ func TestGetPermssionList(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	query := "?current=1&pagesize=10&isdisabled=false"
+	query := "?isdisabled=false"
 	req, _ := http.NewRequest(http.MethodGet, "/permission/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "2080f46085531850732fad3e9316d46f"}
+	token_cookie := &http.Cookie{Name: "token", Value: "8483f6a8aaed3ce434c5d3fb51aa26bd"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -262,10 +262,10 @@ func TestGetUserList(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	query := "?current=1&pagesize=10&sort=id&order=true"
+	query := "?current=-991&sort=id&order=true"
 	req, _ := http.NewRequest(http.MethodGet, "/user/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "44e13befca166414d9d13dddfc65d84b"}
+	token_cookie := &http.Cookie{Name: "token", Value: "8483f6a8aaed3ce434c5d3fb51aa26bd"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

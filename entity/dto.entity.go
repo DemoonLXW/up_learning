@@ -27,8 +27,8 @@ func (m *Menu) String() string {
 }
 
 type Search struct {
-	Current    int    `form:"current" binding:"required,gte=1"`
-	PageSize   int    `form:"pagesize" binding:"required,gte=1"`
+	Current    *int   `form:"current"`
+	PageSize   *int   `form:"pagesize"`
 	Like       string `form:"like"`
 	Sort       string `form:"sort"`
 	Order      *bool  `form:"order"`

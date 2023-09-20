@@ -44,8 +44,10 @@ func (cont *ManagementController) GetRoleList(c *gin.Context) {
 	var data entity.RetrievedListData
 	data.Record = roles
 	data.Total = total
-	data.IsPrevious = search.Current > 1
-	data.IsNext = search.Current < int(math.Ceil(float64(total)/float64(search.PageSize)))
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < int(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
 
 	var res entity.Result
 	res.Message = "Get List of Roles Successfully"
@@ -168,8 +170,10 @@ func (cont *ManagementController) GetPermissionList(c *gin.Context) {
 	var data entity.RetrievedListData
 	data.Record = permissions
 	data.Total = total
-	data.IsPrevious = search.Current > 1
-	data.IsNext = search.Current < int(math.Ceil(float64(total)/float64(search.PageSize)))
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < int(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
 
 	var res entity.Result
 	res.Message = "Get List of Permissions Successfully"
@@ -344,8 +348,10 @@ func (cont *ManagementController) GetUserList(c *gin.Context) {
 	var data entity.RetrievedListData
 	data.Record = users
 	data.Total = total
-	data.IsPrevious = search.Current > 1
-	data.IsNext = search.Current < int(math.Ceil(float64(total)/float64(search.PageSize)))
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < int(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
 
 	var res entity.Result
 	res.Message = "Get List of Users Successfully"
