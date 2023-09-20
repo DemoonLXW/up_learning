@@ -244,10 +244,10 @@ func TestModifyPermissionsForRoles(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	body := bytes.NewReader([]byte(`{"isDeleted": true, "rids": [2], "pids": [1]}`))
+	body := bytes.NewReader([]byte(`{"rids": [2], "pids": [1, 2]}`))
 	req, _ := http.NewRequest(http.MethodPost, "/role/modify/permissions", body)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "607da025ff5e83ddc8c25dbd664f3bcb"}
+	token_cookie := &http.Cookie{Name: "token", Value: "ef7f90af5c30a440467df6b704da36f2"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

@@ -107,9 +107,9 @@ type ToRemovePermissionIDs struct {
 }
 
 type ToModifyPermissionsOfRoles struct {
-	RIDs      []uint8  `json:"rids" binding:"required,gte=1"`
-	PIDs      []uint16 `json:"pids" binding:"required,gte=1"`
-	IsDeleted *bool    `json:"isDeleted" binding:"required"`
+	RIDs []uint8  `json:"rids" binding:"required,gte=1"`
+	PIDs []uint16 `json:"pids" binding:"required"`
+	// IsDeleted *bool    `json:"isDeleted" binding:"required"`
 }
 
 type RetrievedUser struct {
