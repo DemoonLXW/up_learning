@@ -274,3 +274,21 @@ func TestGetUserList(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestGetAllPermission(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	req, _ := http.NewRequest(http.MethodGet, "/permission/getall", nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "8483f6a8aaed3ce434c5d3fb51aa26bd"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
