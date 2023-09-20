@@ -85,15 +85,17 @@ func TestRetrievePermission(t *testing.T) {
 	assert.Nil(t, err)
 	dao.DB = db
 
+	// current := 1
+	pageSize := 10
 	order := true
 	disabled := false
-	permissons, err := dao.RetrievePermission(1, 10, "", "action", &order, &disabled)
+	permissons, err := dao.RetrievePermission(nil, &pageSize, "", "id", &order, &disabled)
 	assert.Nil(t, err)
 	for _, v := range permissons {
 
 		fmt.Println(v)
 	}
-	assert.Len(t, permissons, 5)
+	assert.Len(t, permissons, 11)
 }
 
 func TestDeletePermission(t *testing.T) {
@@ -173,9 +175,11 @@ func TestRetrieveRole(t *testing.T) {
 	assert.Nil(t, err)
 	dao.DB = db
 
-	order := false
+	current := 2
+	pageSize := 5
+	order := true
 	disabled := false
-	roles, err := dao.RetrieveRole(1, 5, "", "id", &order, &disabled)
+	roles, err := dao.RetrieveRole(&current, &pageSize, "role", "id", &order, &disabled)
 	assert.Nil(t, err)
 	for _, v := range roles {
 		fmt.Println(v)
@@ -315,14 +319,16 @@ func TestRetrieveUser(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
+	current := 1
+	// pageSize := 5
 	order := false
-	disabled := false
-	users, err := serv.RetrieveUser(1, 10, "", "id", &order, &disabled)
+	// disabled := false
+	users, err := serv.RetrieveUser(&current, nil, "", "id", &order, nil)
 	assert.Nil(t, err)
 	for _, v := range users {
 		fmt.Println(v)
 	}
-	assert.Equal(t, len(users), 1)
+	assert.Equal(t, len(users), 9)
 }
 
 func TestGetTotalRetrievedUsers(t *testing.T) {
