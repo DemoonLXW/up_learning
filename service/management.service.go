@@ -597,7 +597,7 @@ func (serv *ManagementService) FindPermissionsByRoleId(id uint8) ([]*ent.Permiss
 	return ps, nil
 }
 
-func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint16, isDeleted bool) error {
+func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint16) error {
 	ctx := context.Background()
 
 	ps, err := serv.DB.Permission.Query().Where(
@@ -617,24 +617,48 @@ func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint
 		return fmt.Errorf("update permissions for role start a transaction failed: %w", err)
 	}
 
-	updater := tx.Role.Update().Where(
+	// updater := tx.Role.Update().Where(
+	// 	role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	// 	role.IsDisabledEQ(false),
+	// 	role.IDIn(rids...),
+	// )
+	// mutation := updater.Mutation()
+	// if isDeleted {
+	// 	mutation.RemovePermissionIDs(pids...)
+	// } else {
+	// 	mutation.AddPermissionIDs(pids...)
+	// }
+
+	// num, err := updater.Save(ctx)
+	// if err != nil {
+	// 	return rollback(tx, "update permission for role", err)
+	// }
+	// if num != len(rids) {
+	// 	return rollback(tx, "update permission for role", fmt.Errorf("not enough updated roles"))
+	// }
+
+	num, err := tx.Role.Update().Where(
 		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 		role.IsDisabledEQ(false),
 		role.IDIn(rids...),
-	)
-	mutation := updater.Mutation()
-	if isDeleted {
-		mutation.RemovePermissionIDs(pids...)
-	} else {
-		mutation.AddPermissionIDs(pids...)
-	}
-
-	num, err := updater.Save(ctx)
+	).ClearPermissions().Save(ctx)
 	if err != nil {
-		return rollback(tx, "update permission for role", err)
+		return rollback(tx, "update permission for role -> clear permissions", err)
 	}
 	if num != len(rids) {
-		return rollback(tx, "update permission for role", fmt.Errorf("not enough updated roles"))
+		return rollback(tx, "update permission for role -> clear permissions", fmt.Errorf("not enough updated roles"))
+	}
+
+	num, err = tx.Role.Update().Where(
+		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		role.IsDisabledEQ(false),
+		role.IDIn(rids...),
+	).AddPermissionIDs(pids...).Save(ctx)
+	if err != nil {
+		return rollback(tx, "update permission for role -> add permissions' ids", err)
+	}
+	if num != len(rids) {
+		return rollback(tx, "update permission for role -> add permissions' ids", fmt.Errorf("not enough updated roles"))
 	}
 
 	err = tx.Commit()

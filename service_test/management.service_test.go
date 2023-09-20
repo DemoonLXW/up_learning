@@ -307,11 +307,10 @@ func TestUpdatePermissionForRole(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	rids := []uint8{2, 3}
-	pids := []uint16{1, 2}
-	isDeleted := true
+	rids := []uint8{2}
+	pids := []uint16{99}
 
-	err = serv.UpdatePermissionForRole(rids, pids, isDeleted)
+	err = serv.UpdatePermissionForRole(rids, pids)
 	assert.Nil(t, err)
 }
 

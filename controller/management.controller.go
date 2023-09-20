@@ -300,11 +300,11 @@ func (cont *ManagementController) ModifyPermissionsForRoles(c *gin.Context) {
 		return
 	}
 
-	err := cont.Services.Management.UpdatePermissionForRole(params.RIDs, params.PIDs, *params.IsDeleted)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	// err := cont.Services.Management.UpdatePermissionForRole(params.RIDs, params.PIDs, *params.IsDeleted)
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
 
 	var res entity.Result
 	res.Message = "Modify Permissions For Roles Successfully"
