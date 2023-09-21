@@ -205,10 +205,10 @@ func (serv *AuthService) FindMenuByRoleIds(ids []uint8) ([]*ent.Menu, error) {
 	return menu, nil
 }
 
-func (serv *AuthService) FindRolesWithMenusByUserId(id uint32) ([]*ent.Role, error) {
+func (serv *AuthService) FindRolesWithMenusAndPermissonsByUserId(id uint32) ([]*ent.Role, error) {
 	ctx := context.Background()
 
-	roles, err := serv.DB.User.Query().Where(user.IDEQ(id)).QueryRoles().WithMenu().All(ctx)
+	roles, err := serv.DB.User.Query().Where(user.IDEQ(id)).QueryRoles().WithMenu().WithPermissions().All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("roles with menus find by user id failed: %w", err)
 	}

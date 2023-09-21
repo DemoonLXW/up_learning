@@ -142,7 +142,7 @@ func TestFindMenusByRoleIds(t *testing.T) {
 	}
 }
 
-func TestFindRolesWithMenusByUserId(t *testing.T) {
+func TestFindRolesWithMenusAndPermissonsByUserId(t *testing.T) {
 	os.Setenv("DB_CONFIG", "../database.config.json")
 	serv := new(service.AuthService)
 	db, err := injection.ProvideDataBase()
@@ -154,8 +154,11 @@ func TestFindRolesWithMenusByUserId(t *testing.T) {
 
 	var id uint32 = 1
 
-	_, err = serv.FindRolesWithMenusByUserId(id)
+	rs, err := serv.FindRolesWithMenusAndPermissonsByUserId(id)
 	assert.Nil(t, err)
+	for i := range rs {
+		fmt.Print(rs[i].Edges.Permissions)
+	}
 }
 
 func TestCheckPermissions(t *testing.T) {
