@@ -9,11 +9,11 @@ const (
 	GetPermissionsByRoleId    = "get permission by role id"
 	ModifyPermissionsForRoles = "modify permissions for roles"
 
-	GetPermissionList      = "get permission list"
-	AddPermission          = "add permission"
-	ModifyAPermission      = "modify a permission"
-	GetAPermissionById     = "get a permission by id"
-	RemovePermissionsByIds = "remove permissions by ids"
+	GetPermissionList = "get permission list"
+	// AddPermission          = "add permission"
+	ModifyAPermission  = "modify a permission"
+	GetAPermissionById = "get a permission by id"
+	// RemovePermissionsByIds = "remove permissions by ids"
 
 	GetUserList = "get user list"
 )

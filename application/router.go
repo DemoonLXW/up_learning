@@ -33,10 +33,10 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 		permission := auth.Group("/permission")
 		{
 			permission.GET("/getlist", Check(authService, []string{entity.GetPermissionList}), controllers.Management.GetPermissionList)
-			permission.POST("/add", Check(authService, []string{entity.AddPermission}), controllers.Management.AddPermission)
+			// permission.POST("/add", Check(authService, []string{entity.AddPermission}), controllers.Management.AddPermission)
 			permission.POST("/modify", Check(authService, []string{entity.ModifyAPermission}), controllers.Management.ModifyAPermission)
 			permission.GET("/get/:id", Check(authService, []string{entity.GetAPermissionById}), controllers.Management.GetAPermissionById)
-			permission.POST("/remove", Check(authService, []string{entity.RemovePermissionsByIds}), controllers.Management.RemovePermissionsByIds)
+			// permission.POST("/remove", Check(authService, []string{entity.RemovePermissionsByIds}), controllers.Management.RemovePermissionsByIds)
 		}
 
 		user := auth.Group("/user")
