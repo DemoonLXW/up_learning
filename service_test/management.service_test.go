@@ -382,13 +382,3 @@ func TestCreateUser(t *testing.T) {
 	assert.Nil(t, err)
 
 }
-
-func TestRetrieveAllPermission(t *testing.T) {
-	serv, err := CreateTestManagementService()
-	assert.Nil(t, err)
-
-	ps, err := serv.RetrieveAllPermission()
-	assert.Nil(t, err)
-
-	fmt.Print(ps)
-}

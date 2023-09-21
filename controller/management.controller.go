@@ -358,26 +358,3 @@ func (cont *ManagementController) GetUserList(c *gin.Context) {
 	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
-
-func (cont *ManagementController) GetAllPermission(c *gin.Context) {
-
-	ps, err := cont.Services.Management.RetrieveAllPermission()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	permissions := make([]entity.RetrievedPermission, len(ps))
-	for i, v := range ps {
-		permissions[i].ID = v.ID
-		permissions[i].Action = v.Action
-		permissions[i].Description = v.Description
-		permissions[i].IsDisabled = v.IsDisabled
-	}
-
-	var res entity.Result
-	res.Message = "Get All Permissions Successfully"
-	res.Data = permissions
-	c.JSON(http.StatusOK, res)
-
-}

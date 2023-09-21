@@ -823,14 +823,3 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId 
 
 	return nil
 }
-
-func (serv *ManagementService) RetrieveAllPermission() ([]*ent.Permission, error) {
-	ctx := context.Background()
-
-	permissions, err := serv.DB.Permission.Query().All(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("retrieve all permission query failed: %w", err)
-	}
-
-	return permissions, nil
-}
