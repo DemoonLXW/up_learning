@@ -122,35 +122,7 @@ func (serv *ManagementService) UpdatePermission(toUpdate *entity.ToModifyPermiss
 func (serv *ManagementService) RetrievePermission(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.Permission, error) {
 	ctx := context.Background()
 
-	// permissions, err := serv.DB.Permission.Query().
-	// 	Where(
-	// 		permission.And(
-	// 			permission.Or(
-	// 				permission.ActionContains(like),
-	// 				permission.DescriptionContains(like),
-	// 			),
-	// 			func(s *sql.Selector) {
-	// 				if isDisabled != nil {
-	// 					s.Where(sql.EQ(permission.FieldIsDisabled, *isDisabled))
-	// 				}
-	// 			},
-	// 			permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
-	// 		),
-	// 	).
-	// 	Limit(pageSize).
-	// 	Offset(offset).
-	// 	Order(func(s *sql.Selector) {
-	// 		isSorted := sort != "" && (sort == permission.FieldID || sort == permission.FieldAction || sort == permission.FieldDescription || sort == permission.FieldIsDisabled)
-	// 		if isSorted && order != nil {
-	// 			if *order {
-	// 				s.OrderBy(sql.Desc(sort))
-	// 			} else {
-	// 				s.OrderBy(sql.Asc(sort))
-	// 			}
-	// 		}
-	// 	}).
-	// 	All(ctx)
-	permissions, err := serv.DB.Permission.Query().
+	query := serv.DB.Permission.Query().
 		Where(
 			permission.And(
 				permission.Or(
@@ -160,10 +132,6 @@ func (serv *ManagementService) RetrievePermission(current, pageSize *int, like, 
 				func(s *sql.Selector) {
 					if isDisabled != nil {
 						s.Where(sql.EQ(permission.FieldIsDisabled, *isDisabled))
-					}
-					if pageSize != nil && current != nil {
-						offset := (*current - 1) * (*pageSize)
-						s.Limit(*pageSize).Offset(offset)
 					}
 				},
 				permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
@@ -178,7 +146,13 @@ func (serv *ManagementService) RetrievePermission(current, pageSize *int, like, 
 					s.OrderBy(sql.Asc(sort))
 				}
 			}
-		}).All(ctx)
+		})
+
+	if pageSize != nil && current != nil {
+		offset := (*current - 1) * (*pageSize)
+		query.Limit(*pageSize).Offset(offset)
+	}
+	permissions, err := query.All(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("retrieve permission query failed: %w", err)
@@ -341,7 +315,7 @@ func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 func (serv *ManagementService) RetrieveRole(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.Role, error) {
 	ctx := context.Background()
 
-	roles, err := serv.DB.Role.Query().
+	query := serv.DB.Role.Query().
 		Where(
 			role.And(
 				role.Or(
@@ -351,10 +325,6 @@ func (serv *ManagementService) RetrieveRole(current, pageSize *int, like, sort s
 				func(s *sql.Selector) {
 					if isDisabled != nil {
 						s.Where(sql.EQ(role.FieldIsDisabled, *isDisabled))
-					}
-					if pageSize != nil && current != nil {
-						offset := (*current - 1) * (*pageSize)
-						s.Limit(*pageSize).Offset(offset)
 					}
 				},
 				role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
@@ -369,7 +339,13 @@ func (serv *ManagementService) RetrieveRole(current, pageSize *int, like, sort s
 					s.OrderBy(sql.Asc(sort))
 				}
 			}
-		}).All(ctx)
+		})
+
+	if pageSize != nil && current != nil {
+		offset := (*current - 1) * (*pageSize)
+		query.Limit(*pageSize).Offset(offset)
+	}
+	roles, err := query.All(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("retrieve role query failed: %w", err)
@@ -673,7 +649,7 @@ func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint
 func (serv *ManagementService) RetrieveUser(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.User, error) {
 	ctx := context.Background()
 
-	users, err := serv.DB.User.Query().Where(user.And(
+	query := serv.DB.User.Query().Where(user.And(
 		user.Or(
 			user.AccountContains(like),
 			user.UsernameContains(like),
@@ -683,10 +659,6 @@ func (serv *ManagementService) RetrieveUser(current, pageSize *int, like, sort s
 		func(s *sql.Selector) {
 			if isDisabled != nil {
 				s.Where(sql.EQ(user.FieldIsDisabled, *isDisabled))
-			}
-			if pageSize != nil && current != nil {
-				offset := (*current - 1) * (*pageSize)
-				s.Limit(*pageSize).Offset(offset)
 			}
 		},
 		user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
@@ -700,11 +672,17 @@ func (serv *ManagementService) RetrieveUser(current, pageSize *int, like, sort s
 					s.OrderBy(sql.Asc(sort))
 				}
 			}
-		}).All(ctx)
+		})
 
+	if pageSize != nil && current != nil {
+		offset := (*current - 1) * (*pageSize)
+		query.Limit(*pageSize).Offset(offset)
+	}
+	users, err := query.All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("retrieve user query failed: %w", err)
 	}
+
 	return users, nil
 }
 
