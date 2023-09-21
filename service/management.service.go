@@ -92,9 +92,10 @@ func (serv *ManagementService) UpdatePermission(toUpdate *entity.ToModifyPermiss
 
 	updater := tx.Permission.Update().Where(permission.IDEQ(toUpdate.ID), permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
 	mutation := updater.Mutation()
-	if toUpdate.Action != nil {
-		mutation.SetAction(*toUpdate.Action)
-	}
+	// Action can not be modified, should be fixed
+	// if toUpdate.Action != nil {
+	// 	mutation.SetAction(*toUpdate.Action)
+	// }
 	if toUpdate.Description != nil {
 		mutation.SetDescription(*toUpdate.Description)
 	}

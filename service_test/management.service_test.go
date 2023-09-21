@@ -64,11 +64,11 @@ func TestUpdatePermission(t *testing.T) {
 	assert.Nil(t, err)
 	serv.DB = db
 
-	// action := "test update permssion in service"
-	// description := "come"
+	// action := "test update permssion in service hhhhhh"
+	// description := "test"
 	// disabled := true
 	permission := entity.ToModifyPermission{
-		ID: 12,
+		ID: 3,
 		// Action:      &action,
 		// Description: &description,
 		// IsDisabled:  &disabled,
