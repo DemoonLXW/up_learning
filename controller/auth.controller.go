@@ -56,6 +56,16 @@ func (cont *AuthController) Login(c *gin.Context) {
 		roles_ids[i] = v.ID
 	}
 
+	ps, err := cont.Services.Management.FindPermissionsByRoleIds(roles_ids)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	permissions_action := make([]string, len(ps))
+	for i, v := range ps {
+		permissions_action[i] = v.Action
+	}
+
 	m, err := cont.Services.Auth.FindMenuByRoleIds(roles_ids)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -73,7 +83,7 @@ func (cont *AuthController) Login(c *gin.Context) {
 
 	var res entity.Result
 	res.Message = "Login Successfully"
-	res.Data = map[string]interface{}{"roles": roles_name, "menus": menus}
+	res.Data = map[string]interface{}{"roles": roles_name, "menus": menus, "permissions": permissions_action}
 
 	c.JSON(http.StatusOK, res)
 }

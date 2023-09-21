@@ -273,7 +273,7 @@ func (cont *ManagementController) GetPermissionsByRoleId(c *gin.Context) {
 		return
 	}
 
-	ps, err := cont.Services.Management.FindPermissionsByRoleId(role.ID)
+	ps, err := cont.Services.Management.FindPermissionsByRoleIds([]uint8{role.ID})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
