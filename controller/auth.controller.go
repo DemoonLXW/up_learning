@@ -124,7 +124,7 @@ func (cont *AuthController) AutoLogin(c *gin.Context) {
 		return
 	}
 
-	roles, err := cont.Services.Auth.FindRolesWithMenusByUserId(uint32(id))
+	roles, err := cont.Services.Auth.FindRolesWithMenusAndPermissonsByUserId(uint32(id))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -132,16 +132,20 @@ func (cont *AuthController) AutoLogin(c *gin.Context) {
 
 	roles_name := make([]string, len(roles))
 	menus := make([]*entity.Menu, 0)
+	var permissions_action []string
 	for i, r := range roles {
 		roles_name[i] = r.Name
 		for _, menu := range r.Edges.Menu {
 			menus = append(menus, menu.JSONMenu...)
 		}
+		for _, permission := range r.Edges.Permissions {
+			permissions_action = append(permissions_action, permission.Action)
+		}
 	}
 
 	var res entity.Result
 	res.Message = "Auto Login Successfully"
-	res.Data = map[string]interface{}{"roles": roles_name, "menus": menus}
+	res.Data = map[string]interface{}{"roles": roles_name, "menus": menus, "permissions": permissions_action}
 
 	c.JSON(http.StatusOK, res)
 }

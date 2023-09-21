@@ -62,7 +62,7 @@ func TestAutoLogin(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/autologin", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "65bfb7cd33933c825d8ddc019a3a7ec6"}
+	token_cookie := &http.Cookie{Name: "token", Value: "ed51c2f46c751f31b34c01b0234b9602"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
