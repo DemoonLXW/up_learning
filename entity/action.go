@@ -1,13 +1,19 @@
 package entity
 
 const (
-	AddRole            = "role addition"
-	RetrieveRole       = "role retrieval"
-	ModifyRole         = "role modification"
-	RemoveRole         = "role removal"
-	AddPermission      = "permission addition"
-	RetrievePermission = "permission retrieval"
-	ModifyPermission   = "permission modification"
-	RemovePermission   = "permission removal"
-	RetrieveUser       = "user retrieval"
+	GetRoleList               = "get role list"
+	AddRole                   = "add role"
+	ModifyARole               = "modify a role"
+	GetARoleById              = "get a role by id"
+	RemoveRolesByIds          = "remove roles by ids"
+	GetPermissionsByRoleId    = "get permission by role id"
+	ModifyPermissionsForRoles = "modify permissions for roles"
+
+	GetPermissionList      = "get permission list"
+	AddPermission          = "add permission"
+	ModifyAPermission      = "modify a permission"
+	GetAPermissionById     = "get a permission by id"
+	RemovePermissionsByIds = "remove permissions by ids"
+
+	GetUserList = "get user list"
 )

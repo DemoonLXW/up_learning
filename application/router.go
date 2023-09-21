@@ -21,28 +21,27 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 
 		role := auth.Group("/role")
 		{
-			role.GET("/getlist", Check(authService, []string{entity.RetrieveRole}), controllers.Management.GetRoleList)
+			role.GET("/getlist", Check(authService, []string{entity.GetRoleList}), controllers.Management.GetRoleList)
 			role.POST("/add", Check(authService, []string{entity.AddRole}), controllers.Management.AddRole)
-			role.POST("/modify", Check(authService, []string{entity.ModifyRole}), controllers.Management.ModifyARole)
-			role.GET("/get/:id", Check(authService, []string{entity.RetrieveRole}), controllers.Management.GetARoleById)
-			role.POST("/remove", Check(authService, []string{entity.RemoveRole}), controllers.Management.RemoveRolesByIds)
-			role.GET("/:id/get/permissions", Check(authService, []string{entity.RetrieveRole, entity.RetrievePermission}), controllers.Management.GetPermissionsByRoleId)
-			role.POST("/modify/permissions", Check(authService, []string{entity.ModifyRole, entity.RetrievePermission}), controllers.Management.ModifyPermissionsForRoles)
+			role.POST("/modify", Check(authService, []string{entity.ModifyARole}), controllers.Management.ModifyARole)
+			role.GET("/get/:id", Check(authService, []string{entity.GetARoleById}), controllers.Management.GetARoleById)
+			role.POST("/remove", Check(authService, []string{entity.RemoveRolesByIds}), controllers.Management.RemoveRolesByIds)
+			role.GET("/:id/get/permissions", Check(authService, []string{entity.GetPermissionsByRoleId}), controllers.Management.GetPermissionsByRoleId)
+			role.POST("/modify/permissions", Check(authService, []string{entity.ModifyPermissionsForRoles}), controllers.Management.ModifyPermissionsForRoles)
 		}
 
 		permission := auth.Group("/permission")
 		{
-			permission.GET("/getlist", Check(authService, []string{entity.RetrievePermission}), controllers.Management.GetPermissionList)
+			permission.GET("/getlist", Check(authService, []string{entity.GetPermissionList}), controllers.Management.GetPermissionList)
 			permission.POST("/add", Check(authService, []string{entity.AddPermission}), controllers.Management.AddPermission)
-			permission.POST("/modify", Check(authService, []string{entity.ModifyPermission}), controllers.Management.ModifyAPermission)
-			permission.GET("/get/:id", Check(authService, []string{entity.RetrievePermission}), controllers.Management.GetAPermissionById)
-			permission.POST("/remove", Check(authService, []string{entity.RemovePermission}), controllers.Management.RemovePermissionsByIds)
-			permission.GET("/getall", Check(authService, []string{entity.RetrievePermission}), controllers.Management.GetAllPermission)
+			permission.POST("/modify", Check(authService, []string{entity.ModifyAPermission}), controllers.Management.ModifyAPermission)
+			permission.GET("/get/:id", Check(authService, []string{entity.GetAPermissionById}), controllers.Management.GetAPermissionById)
+			permission.POST("/remove", Check(authService, []string{entity.RemovePermissionsByIds}), controllers.Management.RemovePermissionsByIds)
 		}
 
 		user := auth.Group("/user")
 		{
-			user.GET("/getlist", Check(authService, []string{entity.RetrieveUser}), controllers.Management.GetUserList)
+			user.GET("/getlist", Check(authService, []string{entity.GetUserList}), controllers.Management.GetUserList)
 
 		}
 

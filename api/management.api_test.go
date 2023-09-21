@@ -25,17 +25,14 @@ func CreateTestApp() (*gin.Engine, error) {
 }
 
 func TestGetRoleList(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	os.Setenv("DOMAIN_CONFIG", "../domain.config.json")
-	os.Setenv("GIN_LOG", "../gin.log")
-	app, err := injection.ProvideApplication()
+	app, err := CreateTestApp()
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
 	query := "?current=2&pagesize=5"
 	req, _ := http.NewRequest(http.MethodGet, "/role/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "f4f337a89b10cf8c8975332e9a798c46"}
+	token_cookie := &http.Cookie{Name: "token", Value: "ed51c2f46c751f31b34c01b0234b9602"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -50,11 +47,11 @@ func TestAddRole(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	body := bytes.NewReader([]byte(`[{"name": "new role2", "description": "come on go go go"}, {"name": "new role1", "description": "come on"}, {"name": "new role3", "description": "come"}, {"name": "new role4", "description": ""}]`))
+	body := bytes.NewReader([]byte(`[{"name": "new role8", "description": "oh my girl"}, {"name": "new role111", "description": "stayc"}]`))
 	// body := bytes.NewReader([]byte(`{"name": ""}`))
 	req, _ := http.NewRequest(http.MethodPost, "/role/add", body)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "4933ddad9c76c8657cbd4ae5fd44339f"}
+	token_cookie := &http.Cookie{Name: "token", Value: "ed51c2f46c751f31b34c01b0234b9602"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -92,7 +89,7 @@ func TestGetARoleById(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/role/get/9", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "44e13befca166414d9d13dddfc65d84b"}
+	token_cookie := &http.Cookie{Name: "token", Value: "ed51c2f46c751f31b34c01b0234b9602"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -134,7 +131,7 @@ func TestGetPermssionList(t *testing.T) {
 	query := ""
 	req, _ := http.NewRequest(http.MethodGet, "/permission/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "ef7f90af5c30a440467df6b704da36f2"}
+	token_cookie := &http.Cookie{Name: "token", Value: "ed51c2f46c751f31b34c01b0234b9602"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -194,7 +191,7 @@ func TestGetAPermissionById(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/permission/get/12", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "44e13befca166414d9d13dddfc65d84b"}
+	token_cookie := &http.Cookie{Name: "token", Value: "ed51c2f46c751f31b34c01b0234b9602"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -229,7 +226,7 @@ func TestGetPermissionsByRoleId(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/role/3/get/permissions", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "607da025ff5e83ddc8c25dbd664f3bcb"}
+	token_cookie := &http.Cookie{Name: "token", Value: "ed51c2f46c751f31b34c01b0234b9602"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -265,7 +262,7 @@ func TestGetUserList(t *testing.T) {
 	query := "?current=-991&sort=id&order=true"
 	req, _ := http.NewRequest(http.MethodGet, "/user/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "8483f6a8aaed3ce434c5d3fb51aa26bd"}
+	token_cookie := &http.Cookie{Name: "token", Value: "ed51c2f46c751f31b34c01b0234b9602"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
