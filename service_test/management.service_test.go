@@ -292,11 +292,11 @@ func TestFindOnePermissionById(t *testing.T) {
 
 }
 
-func TestFindPermissionsByRoleId(t *testing.T) {
+func TestFindPermissionsByRoleIds(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	ps, err := serv.FindPermissionsByRoleId(2)
+	ps, err := serv.FindPermissionsByRoleIds([]uint8{2, 99})
 	assert.Nil(t, err)
 	for _, v := range ps {
 		fmt.Println(v)

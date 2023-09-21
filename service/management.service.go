@@ -558,18 +558,37 @@ func (serv *ManagementService) FindOnePermissionById(id uint16) (*ent.Permission
 	return p, nil
 }
 
-func (serv *ManagementService) FindPermissionsByRoleId(id uint8) ([]*ent.Permission, error) {
+func (serv *ManagementService) FindPermissionsByRoleIds(ids []uint8) ([]*ent.Permission, error) {
 	ctx := context.Background()
-	ps, err := serv.DB.Role.Query().Where(role.And(
-		role.IDEQ(id),
+	// ps, err := serv.DB.Role.Query().Where(role.And(
+	// 	role.IDEQ(id),
+	// 	role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	// )).QueryPermissions().Where(permission.And(
+	// 	permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	// 	permission.IsDisabledEQ(false),
+	// )).All(ctx)
+	rs, err := serv.DB.Role.Query().Where(role.And(
+		role.IDIn(ids...),
 		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
-	)).QueryPermissions().Where(permission.And(
-		permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
-		permission.IsDisabledEQ(false),
-	)).All(ctx)
+	)).WithPermissions(func(q *ent.PermissionQuery) {
+		q.Where(permission.And(
+			permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			permission.IsDisabledEQ(false),
+		))
+	}).All(ctx)
+
+	if len(rs) != len(ids) {
+		return nil, fmt.Errorf("permission find many by role id failed: %w", fmt.Errorf("not enough retrieve roles"))
+	}
 	if err != nil {
 		return nil, fmt.Errorf("permission find many by role id failed: %w", err)
 	}
+
+	var ps []*ent.Permission
+	for _, v := range rs {
+		ps = append(ps, v.Edges.Permissions...)
+	}
+
 	return ps, nil
 }
 
