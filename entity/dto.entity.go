@@ -131,3 +131,12 @@ type ToAddUserParam struct {
 	Users  []ToAddUser `json:"users" binding:"required"`
 	RoleID uint8       `json:"rid" binding:"required,gte=1"`
 }
+
+type ToAddSchool struct {
+	Code                string `json:"code"`
+	Name                string `json:"name"`
+	Location            string `json:"location"`
+	CompetentDepartment string `json:"competent_department"`
+	EducationLevel      uint8  `json:"education_level"`
+	Remark              string `json:"remark"`
+}

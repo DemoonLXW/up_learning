@@ -420,3 +420,18 @@ func TestSaveImportedFile(t *testing.T) {
 	fmt.Println(o.Name())
 	os.Remove(o.Name())
 }
+
+func TestReadSchoolsFromFile(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	f, err := os.Open("../importSchools.xlsx")
+	assert.Nil(t, err)
+
+	schools, err := serv.ReadSchoolsFromFile(f)
+	assert.Nil(t, err)
+
+	for _, s := range schools {
+		fmt.Println(s.Name, s.Code, s.CompetentDepartment, s.EducationLevel, s.Location, s.Remark)
+	}
+}

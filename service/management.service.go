@@ -15,6 +15,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/entity"
+	"github.com/xuri/excelize/v2"
 )
 
 type ManagementService struct {
@@ -852,4 +853,72 @@ func (serv *ManagementService) SaveImportedFile(file *multipart.FileHeader, dir,
 	defer out.Close()
 
 	return out, nil
+}
+
+func (serv *ManagementService) ReadSchoolsFromFile(f *os.File) ([]*entity.ToAddSchool, error) {
+	book, err := excelize.OpenFile(f.Name())
+	if err != nil {
+		return nil, fmt.Errorf("read schools from file open failed: %w", err)
+	}
+
+	rows, err := book.GetRows(book.GetSheetName(0))
+	if err != nil {
+		return nil, fmt.Errorf("read schools from file get rows failed: %w", err)
+	}
+
+	length := len(rows)
+	if length < 2 {
+		return nil, fmt.Errorf("read schools from file less than two rows failed: %w", err)
+	}
+
+	schools := make([]*entity.ToAddSchool, length-1)
+	for i := 1; i < length; i++ {
+		var school entity.ToAddSchool
+
+		size := len(rows[i])
+		if size < 5 {
+			return nil, fmt.Errorf("read schools from file less than five columns failed: %w", err)
+		}
+
+		if rows[i][0] == "" {
+			return nil, fmt.Errorf("read schools from file cell[%d][%d] name empty failed: %w", i, 0, err)
+		}
+		school.Name = rows[i][0]
+
+		if rows[i][1] == "" {
+			return nil, fmt.Errorf("read schools from file cell[%d][%d] code empty failed: %w", i, 1, err)
+		}
+		school.Code = rows[i][1]
+
+		if rows[i][2] == "" {
+			return nil, fmt.Errorf("read schools from file cell[%d][%d] competent department empty failed: %w", i, 2, err)
+		}
+		school.CompetentDepartment = rows[i][2]
+
+		if rows[i][3] == "" {
+			return nil, fmt.Errorf("read schools from file cell[%d][%d] location empty failed: %w", i, 3, err)
+		}
+		school.Location = rows[i][3]
+
+		if rows[i][4] == "" {
+			return nil, fmt.Errorf("read schools from file cell[%d][%d] education level empty failed: %w", i, 4, err)
+		}
+		switch rows[i][4] {
+		case "本科":
+			school.EducationLevel = 0
+		case "专科":
+			school.EducationLevel = 1
+		default:
+			return nil, fmt.Errorf("read schools from file cell[%d][%d] education level invalid failed: %w", i, 4, err)
+		}
+
+		if size == 6 {
+			school.Remark = rows[i][5]
+		}
+
+		// note that i
+		schools[i-1] = &school
+	}
+
+	return schools, nil
 }
