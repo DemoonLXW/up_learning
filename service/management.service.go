@@ -6,7 +6,6 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -840,11 +839,11 @@ func (serv *ManagementService) SaveImportedFile(file *multipart.FileHeader, dir,
 	}
 	defer src.Close()
 
-	if err = os.MkdirAll(filepath.Dir(dir), 0750); err != nil {
+	if err = os.MkdirAll(dir, 0750); err != nil {
 		return nil, fmt.Errorf("save imported file mkdir failed: %w", err)
 	}
 
-	out, err := os.CreateTemp(filepath.Dir(dir), prefix)
+	out, err := os.CreateTemp(dir, prefix)
 	if err != nil {
 		return nil, fmt.Errorf("save imported file create temp failed: %w", err)
 	}

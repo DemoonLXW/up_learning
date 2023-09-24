@@ -412,13 +412,14 @@ func TestSaveImportedFile(t *testing.T) {
 	_, fh, err := req.FormFile("upload")
 	assert.Nil(t, err)
 
-	dir := "../temp/importSchool/"
-	prefix := "uio"
+	dir := "../temp/importSchool"
+	prefix := "liu"
 
 	o, err := serv.SaveImportedFile(fh, dir, prefix)
 	assert.Nil(t, err)
 	fmt.Println(o.Name())
-	os.Remove(o.Name())
+	// o.Close()
+	// os.Remove(o.Name())
 }
 
 func TestReadSchoolsFromFile(t *testing.T) {
