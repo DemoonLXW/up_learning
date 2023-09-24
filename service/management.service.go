@@ -832,19 +832,19 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId 
 func (serv *ManagementService) SaveImportedFile(file *multipart.FileHeader, dir, prefix string) (*os.File, error) {
 	src, err := file.Open()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("save imported file open file failed: %w", err)
 	}
 	defer src.Close()
 
 	if err = os.MkdirAll(filepath.Dir(dir), 0750); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("save imported file mkdir failed: %w", err)
 	}
 
 	out, err := os.CreateTemp(filepath.Dir(dir), prefix)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("save imported file create temp failed: %w", err)
 	}
 
 	_, err = io.Copy(out, src)
-	return out, err
+	return out, fmt.Errorf("save imported file copy failed: %w", err)
 }
