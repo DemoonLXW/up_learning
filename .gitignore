@@ -2,3 +2,4 @@ database.config.json
 domain.config.json
 gin.log
 up_learning
+temp/

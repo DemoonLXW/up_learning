@@ -1,8 +1,13 @@
 package service_test
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/DemoonLXW/up_learning/entity"
@@ -381,4 +386,39 @@ func TestCreateUser(t *testing.T) {
 	err = serv.CreateUser([]*entity.ToAddUser{&user1, &user2}, 3)
 	assert.Nil(t, err)
 
+}
+
+func TestSaveImportedFile(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	f, err := os.Open("../domain.config.json")
+	assert.Nil(t, err)
+	defer f.Close()
+
+	b := bytes.Buffer{}
+	writer := multipart.NewWriter(&b)
+	part, err := writer.CreateFormFile("upload", filepath.Base(f.Name()))
+	assert.Nil(t, err)
+
+	_, err = io.Copy(part, f)
+	assert.Nil(t, err)
+	err = writer.Close()
+	assert.Nil(t, err)
+
+	req, err := http.NewRequest(http.MethodPost, "localhost:8080", &b)
+	assert.Nil(t, err)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	_, fh, err := req.FormFile("upload")
+	assert.Nil(t, err)
+
+	dir := "../temp/importSchool/"
+	prefix := "uio"
+
+	o, err := serv.SaveImportedFile(fh, dir, prefix)
+	assert.Nil(t, err)
+	fmt.Println(o.Name())
+	err = o.Close()
+	assert.Nil(t, err)
+	// os.Remove(o.Name())
 }

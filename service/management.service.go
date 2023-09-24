@@ -3,6 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -823,4 +827,24 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId 
 	}
 
 	return nil
+}
+
+func (serv *ManagementService) SaveImportedFile(file *multipart.FileHeader, dir, prefix string) (*os.File, error) {
+	src, err := file.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer src.Close()
+
+	if err = os.MkdirAll(filepath.Dir(dir), 0750); err != nil {
+		return nil, err
+	}
+
+	out, err := os.CreateTemp(filepath.Dir(dir), prefix)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = io.Copy(out, src)
+	return out, err
 }
