@@ -16,4 +16,6 @@ const (
 	// RemovePermissionsByIds = "remove permissions by ids"
 
 	GetUserList = "get user list"
+
+	ImportSchool = "import school"
 )

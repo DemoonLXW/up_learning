@@ -31,33 +31,33 @@ func TestCreatePermission(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	action1 := "action11"
-	description1 := "action11 description"
+	action1 := "import school"
+	description1 := "import school description"
 	permission1 := entity.ToAddPermission{
 		Action:      &action1,
 		Description: &description1,
 	}
 
-	action2 := "action12"
-	description2 := "action12 description"
-	permission2 := entity.ToAddPermission{
-		Action:      &action2,
-		Description: &description2,
-	}
-	action3 := "action13"
-	description3 := "action13 description"
-	permission3 := entity.ToAddPermission{
-		Action:      &action3,
-		Description: &description3,
-	}
-	action4 := "action14"
-	description4 := "action14 description"
-	permission4 := entity.ToAddPermission{
-		Action:      &action4,
-		Description: &description4,
-	}
-	err = serv.CreatePermission([]*entity.ToAddPermission{&permission1, &permission2, &permission3, &permission4})
-	// err = serv.CreatePermission([]*ent.Permission{&permission1})
+	// action2 := "action12"
+	// description2 := "action12 description"
+	// permission2 := entity.ToAddPermission{
+	// 	Action:      &action2,
+	// 	Description: &description2,
+	// }
+	// action3 := "action13"
+	// description3 := "action13 description"
+	// permission3 := entity.ToAddPermission{
+	// 	Action:      &action3,
+	// 	Description: &description3,
+	// }
+	// action4 := "action14"
+	// description4 := "action14 description"
+	// permission4 := entity.ToAddPermission{
+	// 	Action:      &action4,
+	// 	Description: &description4,
+	// }
+	// err = serv.CreatePermission([]*entity.ToAddPermission{&permission1, &permission2, &permission3, &permission4})
+	err = serv.CreatePermission([]*entity.ToAddPermission{&permission1})
 	assert.Nil(t, err)
 
 }

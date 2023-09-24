@@ -3,9 +3,12 @@ package api_test
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/DemoonLXW/up_learning/injection"
@@ -281,6 +284,39 @@ func TestGetAllPermission(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/permission/getall", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
 	token_cookie := &http.Cookie{Name: "token", Value: "8483f6a8aaed3ce434c5d3fb51aa26bd"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
+
+func TestImportSchool(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	f, err := os.Open("../importSchools2.xlsx")
+	assert.Nil(t, err)
+	defer f.Close()
+
+	b := bytes.Buffer{}
+	writer := multipart.NewWriter(&b)
+	part, err := writer.CreateFormFile("import", filepath.Base(f.Name()))
+	assert.Nil(t, err)
+
+	_, err = io.Copy(part, f)
+	assert.Nil(t, err)
+	err = writer.Close()
+	assert.Nil(t, err)
+
+	req, _ := http.NewRequest(http.MethodPost, "/school/import", &b)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "e395616bf00310ee678ec35bc0876943"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

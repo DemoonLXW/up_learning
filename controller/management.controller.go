@@ -3,6 +3,7 @@ package controller
 import (
 	"math"
 	"net/http"
+	"os"
 
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/service"
@@ -356,5 +357,42 @@ func (cont *ManagementController) GetUserList(c *gin.Context) {
 	var res entity.Result
 	res.Message = "Get List of Users Successfully"
 	res.Data = data
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *ManagementController) ImportSchool(c *gin.Context) {
+	fh, err := c.FormFile("import")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importSchool", "school")
+	defer os.Remove(f.Name())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	s, err := cont.Services.Management.ReadSchoolsFromFile(f)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = cont.Services.Management.CreateSchool(s)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Import Schools Successfully"
 	c.JSON(http.StatusOK, res)
 }

@@ -45,6 +45,11 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 
 		}
 
+		school := auth.Group("/school")
+		{
+			school.POST("/import", Check(authService, []string{entity.ImportSchool}), controllers.Management.ImportSchool)
+		}
+
 	}
 
 	return app
