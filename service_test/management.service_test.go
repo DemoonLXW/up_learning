@@ -435,3 +435,59 @@ func TestReadSchoolsFromFile(t *testing.T) {
 		fmt.Println(s.Name, s.Code, s.CompetentDepartment, s.EducationLevel, s.Location, s.Remark)
 	}
 }
+
+func TestCreateSchool(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	school1 := entity.ToAddSchool{
+		Code:                "4161011397",
+		Name:                "安康学院",
+		CompetentDepartment: "陕西省",
+		Location:            "安康市",
+		EducationLevel:      0,
+		Remark:              "",
+	}
+
+	school2 := entity.ToAddSchool{
+		Code:                "4161011400",
+		Name:                "西安培华学院",
+		CompetentDepartment: "陕西省教育厅",
+		Location:            "西安市",
+		EducationLevel:      0,
+		Remark:              "民办",
+	}
+
+	// school3 := entity.ToAddSchool{
+	// 	Code:                "4161011560",
+	// 	Name:                "西安财经大学",
+	// 	CompetentDepartment: "陕西省",
+	// 	Location:            "西安市",
+	// 	EducationLevel:      0,
+	// 	Remark:              "",
+	// }
+
+	school4 := entity.ToAddSchool{
+		Code:                "4161013739",
+		Name:                "西安健康工程职业学院",
+		CompetentDepartment: "陕西省教育厅",
+		Location:            "西安市",
+		EducationLevel:      1,
+		Remark:              "民办",
+	}
+
+	school5 := entity.ToAddSchool{
+		Code:                "44161013945",
+		Name:                "西安铁路职业技术学院",
+		CompetentDepartment: "陕西省",
+		Location:            "西安市",
+		EducationLevel:      1,
+		Remark:              "",
+	}
+
+	schools := []*entity.ToAddSchool{&school1, &school2, &school4, &school5}
+
+	err = serv.CreateSchool(schools)
+	assert.Nil(t, err)
+
+}

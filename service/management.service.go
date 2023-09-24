@@ -13,6 +13,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
+	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/xuri/excelize/v2"
@@ -921,4 +922,77 @@ func (serv *ManagementService) ReadSchoolsFromFile(f *os.File) ([]*entity.ToAddS
 	}
 
 	return schools, nil
+}
+
+func (serv *ManagementService) CreateSchool(toCreates []*entity.ToAddSchool) error {
+	ctx := context.Background()
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("create school start a transaction failed: %w", err)
+	}
+
+	current := 0
+	length := len(toCreates)
+	for ; current < length; current++ {
+		id, err := tx.School.Query().Where(school.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create school find a deleted school id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := tx.School.Update().Where(school.And(
+			school.IDEQ(id),
+			school.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		)).
+			SetCreatedTime(time.Now()).
+			SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			SetIsDisabled(false).
+			SetCode(toCreates[current].Code).
+			SetName(toCreates[current].Name).
+			SetCompetentDepartment(toCreates[current].CompetentDepartment).
+			SetLocation(toCreates[current].Location).
+			SetEducationLevel(toCreates[current].EducationLevel).
+			SetRemark(toCreates[current].Remark).
+			Save(ctx)
+		if err != nil {
+			return rollback(tx, "create school", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create school", fmt.Errorf("create school update deleted school affect 0 row"))
+		}
+	}
+	if current < length {
+		num, err := tx.School.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create school count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		bulk := make([]*ent.SchoolCreate, bulkLength)
+		for i := 0; i < bulkLength; i++ {
+			bulk[i] = tx.School.Create().SetID(uint16(num + i + 1)).
+				SetCode(toCreates[current+i].Code).
+				SetName(toCreates[current+i].Name).
+				SetCompetentDepartment(toCreates[current+i].CompetentDepartment).
+				SetLocation(toCreates[current+i].Location).
+				SetEducationLevel(toCreates[current+i].EducationLevel).
+				SetRemark(toCreates[current+i].Remark)
+		}
+
+		err = tx.School.CreateBulk(bulk...).Exec(ctx)
+		if err != nil {
+			return rollback(tx, "create school", err)
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("create school transaction commit failed: %w", err)
+	}
+
+	return nil
 }
