@@ -7,6 +7,8 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
+	"reflect"
+	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -873,49 +875,88 @@ func (serv *ManagementService) ReadSchoolsFromFile(f *os.File) ([]*entity.ToAddS
 	}
 
 	schools := make([]*entity.ToAddSchool, length-1)
+	columnMap := map[int]string{0: "Name", 1: "Code", 2: "CompetentDepartment", 3: "Location", 4: "EducationLevel", 5: "Remark"}
+	fieldMap := make(map[string]int)
+	v := reflect.ValueOf(&entity.ToAddSchool{}).Elem()
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		fieldMap[t.Field(i).Name] = i
+	}
+
 	for i := 1; i < length; i++ {
 		var school entity.ToAddSchool
+		schoolValue := reflect.ValueOf(&school).Elem()
 
 		size := len(rows[i])
 		if size < 5 {
 			return nil, fmt.Errorf("read schools from file less than five columns failed: %w", err)
 		}
 
-		if rows[i][0] == "" {
-			return nil, fmt.Errorf("read schools from file cell[%d][%d] name empty failed: %w", i, 0, err)
-		}
-		school.Name = rows[i][0]
+		for j := 0; j < 5; j++ {
+			col := strings.Trim(rows[i][j], " ")
+			if col == "" {
+				return nil, fmt.Errorf("read schools from file cell[%d][%d] %s empty failed: %w", i, j, columnMap[j], err)
+			}
+			switch j {
+			case 4:
+				{
+					var level uint8
+					switch col {
+					case "本科":
+						level = 0
+					case "专科":
+						level = 1
+					default:
+						return nil, fmt.Errorf("read schools from file cell[%d][%d] %s invalid failed: %w", i, j, columnMap[j], err)
+					}
+					schoolValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(level))
 
-		if rows[i][1] == "" {
-			return nil, fmt.Errorf("read schools from file cell[%d][%d] code empty failed: %w", i, 1, err)
-		}
-		school.Code = rows[i][1]
+				}
+			default:
+				schoolValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(col))
+			}
 
-		if rows[i][2] == "" {
-			return nil, fmt.Errorf("read schools from file cell[%d][%d] competent department empty failed: %w", i, 2, err)
-		}
-		school.CompetentDepartment = rows[i][2]
-
-		if rows[i][3] == "" {
-			return nil, fmt.Errorf("read schools from file cell[%d][%d] location empty failed: %w", i, 3, err)
-		}
-		school.Location = rows[i][3]
-
-		if rows[i][4] == "" {
-			return nil, fmt.Errorf("read schools from file cell[%d][%d] education level empty failed: %w", i, 4, err)
-		}
-		switch rows[i][4] {
-		case "本科":
-			school.EducationLevel = 0
-		case "专科":
-			school.EducationLevel = 1
-		default:
-			return nil, fmt.Errorf("read schools from file cell[%d][%d] education level invalid failed: %w", i, 4, err)
 		}
 
-		if size == 6 {
+		if size == 6 && strings.Trim(rows[i][5], " ") != "" {
 			school.Remark = rows[i][5]
 		}
+
+		// if rows[i][0] == "" {
+		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] name empty failed: %w", i, 0, err)
+		// }
+		// school.Name = rows[i][0]
+
+		// if rows[i][1] == "" {
+		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] code empty failed: %w", i, 1, err)
+		// }
+		// school.Code = rows[i][1]
+
+		// if rows[i][2] == "" {
+		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] competent department empty failed: %w", i, 2, err)
+		// }
+		// school.CompetentDepartment = rows[i][2]
+
+		// if rows[i][3] == "" {
+		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] location empty failed: %w", i, 3, err)
+		// }
+		// school.Location = rows[i][3]
+
+		// if rows[i][4] == "" {
+		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] education level empty failed: %w", i, 4, err)
+		// }
+		// switch rows[i][4] {
+		// case "本科":
+		// 	school.EducationLevel = 0
+		// case "专科":
+		// 	school.EducationLevel = 1
+		// default:
+		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] education level invalid failed: %w", i, 4, err)
+		// }
+
+		// if size == 6 {
+		// 	school.Remark = rows[i][5]
+		// }
 
 		// note that i
 		schools[i-1] = &school
