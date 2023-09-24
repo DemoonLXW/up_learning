@@ -418,7 +418,5 @@ func TestSaveImportedFile(t *testing.T) {
 	o, err := serv.SaveImportedFile(fh, dir, prefix)
 	assert.Nil(t, err)
 	fmt.Println(o.Name())
-	err = o.Close()
-	assert.Nil(t, err)
-	// os.Remove(o.Name())
+	os.Remove(o.Name())
 }

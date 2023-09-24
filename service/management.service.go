@@ -846,5 +846,10 @@ func (serv *ManagementService) SaveImportedFile(file *multipart.FileHeader, dir,
 	}
 
 	_, err = io.Copy(out, src)
-	return out, fmt.Errorf("save imported file copy failed: %w", err)
+	if err != nil {
+		return nil, fmt.Errorf("save imported file copy failed: %w", err)
+	}
+	defer out.Close()
+
+	return out, nil
 }
