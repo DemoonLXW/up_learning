@@ -325,3 +325,21 @@ func TestImportSchool(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestGetSchoolList(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	query := "?current=1&pagesize=3&sort=id&order=true"
+	req, _ := http.NewRequest(http.MethodGet, "/school/getlist"+query, nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "c7a18ec1c1c94696059d629d47899262"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}

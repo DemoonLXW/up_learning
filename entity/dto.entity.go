@@ -140,3 +140,14 @@ type ToAddSchool struct {
 	EducationLevel      uint8  `json:"education_level"`
 	Remark              string `json:"remark"`
 }
+
+type RetrievedSchool struct {
+	ID                  uint16 `json:"id" uri:"id" binding:"required"`
+	Code                string `json:"code"`
+	Name                string `json:"name"`
+	Location            string `json:"location"`
+	CompetentDepartment string `json:"competent_department"`
+	EducationLevel      string `json:"education_level"`
+	Remark              string `json:"remark"`
+	IsDisabled          bool   `json:"isDisabled"`
+}

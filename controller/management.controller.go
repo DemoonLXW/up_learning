@@ -396,3 +396,54 @@ func (cont *ManagementController) ImportSchool(c *gin.Context) {
 	res.Message = "Import Schools Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) GetSchoolList(c *gin.Context) {
+
+	var search entity.Search
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ss, err := cont.Services.Management.RetrieveSchool(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	total, err := cont.Services.Management.GetTotalRetrievedSchools(search.Like, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	schools := make([]entity.RetrievedSchool, len(ss))
+	for i, v := range ss {
+		schools[i].ID = v.ID
+		schools[i].Code = v.Code
+		schools[i].Name = v.Name
+		schools[i].CompetentDepartment = v.CompetentDepartment
+		schools[i].Location = v.Location
+		schools[i].Remark = v.Remark
+		schools[i].IsDisabled = v.IsDisabled
+		switch v.EducationLevel {
+		case 0:
+			schools[i].EducationLevel = "本科"
+		case 1:
+			schools[i].EducationLevel = "专科"
+		}
+	}
+
+	var data entity.RetrievedListData
+	data.Record = schools
+	data.Total = total
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < int(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
+
+	var res entity.Result
+	res.Message = "Get List of Schools Successfully"
+	res.Data = data
+	c.JSON(http.StatusOK, res)
+}
