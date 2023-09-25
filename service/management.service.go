@@ -1076,3 +1076,26 @@ func (serv *ManagementService) RetrieveSchool(current, pageSize *int, like, sort
 
 	return schools, nil
 }
+
+func (serv *ManagementService) GetTotalRetrievedSchools(like string, isDisabled *bool) (int, error) {
+	ctx := context.Background()
+
+	total, err := serv.DB.School.Query().
+		Where(school.And(
+			school.Or(
+				school.NameContains(like),
+			),
+			func(s *sql.Selector) {
+				if isDisabled != nil {
+					s.Where(sql.EQ(school.FieldIsDisabled, *isDisabled))
+				}
+			},
+			school.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		)).Count(ctx)
+
+	if err != nil {
+		return -1, fmt.Errorf("get retrieved total schools query failed: %w", err)
+	}
+
+	return total, nil
+}
