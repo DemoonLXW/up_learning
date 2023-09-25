@@ -1036,3 +1036,43 @@ func (serv *ManagementService) CreateSchool(toCreates []*entity.ToAddSchool) err
 
 	return nil
 }
+
+func (serv *ManagementService) RetrieveSchool(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.School, error) {
+	ctx := context.Background()
+
+	query := serv.DB.School.Query().
+		Where(school.And(
+			school.Or(
+				school.NameContains(like),
+			),
+			func(s *sql.Selector) {
+				if isDisabled != nil {
+					s.Where(sql.EQ(school.FieldIsDisabled, *isDisabled))
+				}
+			},
+			school.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		)).
+		Order(func(s *sql.Selector) {
+			isSorted := sort != "" && (sort == school.FieldID || sort == school.FieldCode || sort == school.FieldName ||
+				sort == school.FieldLocation || sort == school.FieldCompetentDepartment || sort == school.FieldIsDisabled)
+			if isSorted && order != nil {
+				if *order {
+					s.OrderBy(sql.Desc(sort))
+				} else {
+					s.OrderBy(sql.Asc(sort))
+				}
+			}
+		})
+
+	if pageSize != nil && current != nil {
+		offset := (*current - 1) * (*pageSize)
+		query.Limit(*pageSize).Offset(offset)
+	}
+	schools, err := query.All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("retrieve school query failed: %w", err)
+	}
+
+	return schools, nil
+}
