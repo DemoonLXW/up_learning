@@ -219,32 +219,6 @@ func TestFindOneRoleById(t *testing.T) {
 
 }
 
-func TestUpdateDeletedRole(t *testing.T) {
-	serv, err := CreateTestManagementService()
-	assert.Nil(t, err)
-
-	name := "role7"
-	description := "test change deleted role description"
-	isDisabled := true
-	role := &entity.ToModifyRole{
-		ID:          7,
-		Name:        &name,
-		Description: &description,
-		IsDisabled:  &isDisabled,
-	}
-	err = serv.UpdateDeletedRole(role)
-	assert.Nil(t, err)
-}
-
-func TestFindADeletedRoleID(t *testing.T) {
-	serv, err := CreateTestManagementService()
-	assert.Nil(t, err)
-
-	id, err := serv.FindADeletedRoleID()
-	assert.Nil(t, err)
-	fmt.Println(id)
-}
-
 func TestGetTotalRetrievedPermissions(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)

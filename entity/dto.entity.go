@@ -43,12 +43,12 @@ type RetrievedRole struct {
 }
 
 type RetrievedDetailedRole struct {
-	ID           uint8     `json:"id" uri:"id" binding:"required"`
-	Name         string    `json:"name"`
-	Description  string    `json:"description"`
-	IsDisabled   bool      `json:"isDisabled"`
-	CreatedTime  time.Time `json:"createdTime"`
-	ModifiedTime time.Time `json:"modifiedTime"`
+	ID           uint8      `json:"id" uri:"id" binding:"required"`
+	Name         string     `json:"name"`
+	Description  string     `json:"description"`
+	IsDisabled   bool       `json:"isDisabled"`
+	CreatedTime  *time.Time `json:"createdTime"`
+	ModifiedTime *time.Time `json:"modifiedTime"`
 }
 
 type RetrievedListData struct {

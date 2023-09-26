@@ -239,7 +239,10 @@ func (serv *ManagementService) CreateRole(toCreates []*entity.ToAddRole) error {
 	current := 0
 	length := len(toCreates)
 	for ; current < length; current++ {
-		id, err := tx.Role.Query().Where(role.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+		id, err := tx.Role.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(role.FieldDeletedTime))
+		},
+		).FirstID(ctx)
 		if err != nil {
 			if !ent.IsNotFound(err) {
 				return fmt.Errorf("create role find a deleted role id query failed: %w", err)
@@ -248,11 +251,13 @@ func (serv *ManagementService) CreateRole(toCreates []*entity.ToAddRole) error {
 		}
 		num, err := tx.Role.Update().Where(role.And(
 			role.IDEQ(id),
-			role.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(role.FieldDeletedTime))
+			},
 		)).
 			SetCreatedTime(time.Now()).
-			SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			ClearModifiedTime().
+			ClearDeletedTime().
 			SetName(*toCreates[current].Name).
 			SetDescription(*toCreates[current].Description).
 			SetIsDisabled(false).
@@ -307,7 +312,12 @@ func (serv *ManagementService) UpdateRole(toUpdate *entity.ToModifyRole) error {
 		return fmt.Errorf("update role start a transaction failed: %w", err)
 	}
 
-	updater := tx.Role.Update().Where(role.IDEQ(toUpdate.ID), role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
+	updater := tx.Role.Update().Where(
+		role.IDEQ(toUpdate.ID),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(role.FieldDeletedTime))
+		},
+	)
 	mutation := updater.Mutation()
 	if toUpdate.Name != nil {
 		mutation.SetName(*toUpdate.Name)
@@ -351,7 +361,9 @@ func (serv *ManagementService) RetrieveRole(current, pageSize *int, like, sort s
 						s.Where(sql.EQ(role.FieldIsDisabled, *isDisabled))
 					}
 				},
-				role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+				func(s *sql.Selector) {
+					s.Where(sql.IsNull(role.FieldDeletedTime))
+				},
 			),
 		).
 		Order(func(s *sql.Selector) {
@@ -394,7 +406,9 @@ func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDisabled *b
 						s.Where(sql.EQ(role.FieldIsDisabled, *isDisabled))
 					}
 				},
-				role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+				func(s *sql.Selector) {
+					s.Where(sql.IsNull(role.FieldDeletedTime))
+				},
 			),
 		).Count(ctx)
 
@@ -415,7 +429,9 @@ func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 
 	original, err := tx.Role.Query().Where(role.And(
 		role.IDIn(toDeleteIDs...),
-		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(role.FieldDeletedTime))
+		},
 	)).All(ctx)
 	if err != nil || len(original) != len(toDeleteIDs) {
 		return fmt.Errorf("delete roles not found roles failed: %w", err)
@@ -425,7 +441,9 @@ func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 		num, err := tx.Role.Update().
 			Where(role.And(
 				role.IDEQ(v.ID),
-				role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+				func(s *sql.Selector) {
+					s.Where(sql.IsNull(role.FieldDeletedTime))
+				},
 			)).
 			SetDeletedTime(time.Now()).
 			SetName("*" + v.Name).
@@ -449,55 +467,16 @@ func (serv *ManagementService) DeleteRole(toDeleteIDs []uint8) error {
 
 func (serv *ManagementService) FindOneRoleById(id uint8) (*ent.Role, error) {
 	ctx := context.Background()
-	role, err := serv.DB.Role.Query().Where(role.IDEQ(id), role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).First(ctx)
+	role, err := serv.DB.Role.Query().Where(
+		role.IDEQ(id),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(role.FieldDeletedTime))
+		},
+	).First(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("role find one by id failed: %w", err)
 	}
 	return role, nil
-}
-
-func (serv *ManagementService) UpdateDeletedRole(toUpdate *entity.ToModifyRole) error {
-	ctx := context.Background()
-
-	tx, err := serv.DB.Tx(ctx)
-	if err != nil {
-		return fmt.Errorf("update deleted role start a transaction failed: %w", err)
-	}
-
-	num, err := tx.Role.Update().Where(role.And(
-		role.IDEQ(toUpdate.ID),
-		role.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
-	)).
-		SetCreatedTime(time.Now()).
-		SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-		SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-		SetName(*toUpdate.Name).
-		SetDescription(*toUpdate.Description).
-		SetIsDisabled(*toUpdate.IsDisabled).
-		Save(ctx)
-	if err != nil {
-		return rollback(tx, "update deleted role", err)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return fmt.Errorf("update deleted role transaction commit failed: %w", err)
-	}
-	if num == 0 {
-		return fmt.Errorf("update deleted role affect 0 row")
-	}
-
-	return nil
-}
-
-func (serv *ManagementService) FindADeletedRoleID() (uint8, error) {
-	ctx := context.Background()
-
-	id, err := serv.DB.Role.Query().Where(role.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
-	if err != nil {
-		return 0, fmt.Errorf("find a deleted role id query failed: %w", err)
-	}
-	return id, nil
 }
 
 func (serv *ManagementService) GetTotalRetrievedPermissions(like string, isDisabled *bool) (int, error) {
@@ -542,19 +521,16 @@ func (serv *ManagementService) FindOnePermissionById(id uint16) (*ent.Permission
 
 func (serv *ManagementService) FindPermissionsByRoleIds(ids []uint8) ([]*ent.Permission, error) {
 	ctx := context.Background()
-	// ps, err := serv.DB.Role.Query().Where(role.And(
-	// 	role.IDEQ(id),
-	// 	role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
-	// )).QueryPermissions().Where(permission.And(
-	// 	permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
-	// 	permission.IsDisabledEQ(false),
-	// )).All(ctx)
 	rs, err := serv.DB.Role.Query().Where(role.And(
 		role.IDIn(ids...),
-		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(role.FieldDeletedTime))
+		},
 	)).WithPermissions(func(q *ent.PermissionQuery) {
 		q.Where(permission.And(
-			permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(permission.FieldDeletedTime))
+			},
 			permission.IsDisabledEQ(false),
 		))
 	}).All(ctx)
@@ -578,7 +554,9 @@ func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint
 	ctx := context.Background()
 
 	ps, err := serv.DB.Permission.Query().Where(
-		permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(permission.FieldDeletedTime))
+		},
 		permission.IsDisabledEQ(false),
 		permission.IDIn(pids...),
 	).All(ctx)
@@ -595,7 +573,9 @@ func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint
 	}
 
 	// updater := tx.Role.Update().Where(
-	// 	role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+	// 	func(s *sql.Selector) {
+	// s.Where(sql.IsNull(role.FieldDeletedTime))
+	// },
 	// 	role.IsDisabledEQ(false),
 	// 	role.IDIn(rids...),
 	// )
@@ -615,7 +595,9 @@ func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint
 	// }
 
 	num, err := tx.Role.Update().Where(
-		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(role.FieldDeletedTime))
+		},
 		role.IsDisabledEQ(false),
 		role.IDIn(rids...),
 	).ClearPermissions().Save(ctx)
@@ -627,7 +609,9 @@ func (serv *ManagementService) UpdatePermissionForRole(rids []uint8, pids []uint
 	}
 
 	num, err = tx.Role.Update().Where(
-		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(role.FieldDeletedTime))
+		},
 		role.IsDisabledEQ(false),
 		role.IDIn(rids...),
 	).AddPermissionIDs(pids...).Save(ctx)
