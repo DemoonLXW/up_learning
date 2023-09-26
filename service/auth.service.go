@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
@@ -83,7 +84,9 @@ func (serv *AuthService) Login(account, password string) (*ent.User, string, err
 				user.Phone(account),
 			),
 			user.Password(password),
-			user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(user.FieldDeletedTime))
+			},
 		),
 	).WithRoles().First(ctx)
 	if err != nil {
@@ -223,13 +226,17 @@ func (serv *AuthService) CheckPermissions(id uint32, permissions []string) (bool
 		Where(user.IDEQ(id)).
 		QueryRoles().
 		Where(role.And(
-			role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(role.FieldDeletedTime))
+			},
 			role.IsDisabledEQ(false),
 		)).
 		QueryPermissions().
 		Where(permission.And(
 			permission.ActionIn(permissions...),
-			permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(permission.FieldDeletedTime))
+			},
 			permission.IsDisabled(false),
 		)).
 		Count(ctx)
