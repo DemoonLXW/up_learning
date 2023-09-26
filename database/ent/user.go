@@ -49,11 +49,13 @@ type UserEdges struct {
 	Roles []*Role `json:"roles,omitempty"`
 	// Students holds the value of the students edge.
 	Students []*Student `json:"students,omitempty"`
+	// Files holds the value of the files edge.
+	Files []*File `json:"files,omitempty"`
 	// UserRole holds the value of the user_role edge.
 	UserRole []*UserRole `json:"user_role,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // RolesOrErr returns the Roles value or an error if the edge
@@ -74,10 +76,19 @@ func (e UserEdges) StudentsOrErr() ([]*Student, error) {
 	return nil, &NotLoadedError{edge: "students"}
 }
 
+// FilesOrErr returns the Files value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) FilesOrErr() ([]*File, error) {
+	if e.loadedTypes[2] {
+		return e.Files, nil
+	}
+	return nil, &NotLoadedError{edge: "files"}
+}
+
 // UserRoleOrErr returns the UserRole value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) UserRoleOrErr() ([]*UserRole, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.UserRole, nil
 	}
 	return nil, &NotLoadedError{edge: "user_role"}
@@ -200,6 +211,11 @@ func (u *User) QueryRoles() *RoleQuery {
 // QueryStudents queries the "students" edge of the User entity.
 func (u *User) QueryStudents() *StudentQuery {
 	return NewUserClient(u.config).QueryStudents(u)
+}
+
+// QueryFiles queries the "files" edge of the User entity.
+func (u *User) QueryFiles() *FileQuery {
+	return NewUserClient(u.config).QueryFiles(u)
 }
 
 // QueryUserRole queries the "user_role" edge of the User entity.

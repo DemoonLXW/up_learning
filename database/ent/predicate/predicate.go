@@ -12,6 +12,9 @@ type Class func(*sql.Selector)
 // College is the predicate function for college builders.
 type College func(*sql.Selector)
 
+// File is the predicate function for file builders.
+type File func(*sql.Selector)
+
 // Menu is the predicate function for menu builders.
 type Menu func(*sql.Selector)
 
@@ -23,6 +26,9 @@ type Role func(*sql.Selector)
 
 // RolePermission is the predicate function for rolepermission builders.
 type RolePermission func(*sql.Selector)
+
+// SampleFile is the predicate function for samplefile builders.
+type SampleFile func(*sql.Selector)
 
 // School is the predicate function for school builders.
 type School func(*sql.Selector)

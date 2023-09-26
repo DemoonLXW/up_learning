@@ -16,10 +16,12 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
+	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
+	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
@@ -35,6 +37,8 @@ type Client struct {
 	Class *ClassClient
 	// College is the client for interacting with the College builders.
 	College *CollegeClient
+	// File is the client for interacting with the File builders.
+	File *FileClient
 	// Menu is the client for interacting with the Menu builders.
 	Menu *MenuClient
 	// Permission is the client for interacting with the Permission builders.
@@ -43,6 +47,8 @@ type Client struct {
 	Role *RoleClient
 	// RolePermission is the client for interacting with the RolePermission builders.
 	RolePermission *RolePermissionClient
+	// SampleFile is the client for interacting with the SampleFile builders.
+	SampleFile *SampleFileClient
 	// School is the client for interacting with the School builders.
 	School *SchoolClient
 	// Student is the client for interacting with the Student builders.
@@ -66,10 +72,12 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Class = NewClassClient(c.config)
 	c.College = NewCollegeClient(c.config)
+	c.File = NewFileClient(c.config)
 	c.Menu = NewMenuClient(c.config)
 	c.Permission = NewPermissionClient(c.config)
 	c.Role = NewRoleClient(c.config)
 	c.RolePermission = NewRolePermissionClient(c.config)
+	c.SampleFile = NewSampleFileClient(c.config)
 	c.School = NewSchoolClient(c.config)
 	c.Student = NewStudentClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -158,10 +166,12 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:         cfg,
 		Class:          NewClassClient(cfg),
 		College:        NewCollegeClient(cfg),
+		File:           NewFileClient(cfg),
 		Menu:           NewMenuClient(cfg),
 		Permission:     NewPermissionClient(cfg),
 		Role:           NewRoleClient(cfg),
 		RolePermission: NewRolePermissionClient(cfg),
+		SampleFile:     NewSampleFileClient(cfg),
 		School:         NewSchoolClient(cfg),
 		Student:        NewStudentClient(cfg),
 		User:           NewUserClient(cfg),
@@ -187,10 +197,12 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:         cfg,
 		Class:          NewClassClient(cfg),
 		College:        NewCollegeClient(cfg),
+		File:           NewFileClient(cfg),
 		Menu:           NewMenuClient(cfg),
 		Permission:     NewPermissionClient(cfg),
 		Role:           NewRoleClient(cfg),
 		RolePermission: NewRolePermissionClient(cfg),
+		SampleFile:     NewSampleFileClient(cfg),
 		School:         NewSchoolClient(cfg),
 		Student:        NewStudentClient(cfg),
 		User:           NewUserClient(cfg),
@@ -224,8 +236,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Class, c.College, c.Menu, c.Permission, c.Role, c.RolePermission, c.School,
-		c.Student, c.User, c.UserRole,
+		c.Class, c.College, c.File, c.Menu, c.Permission, c.Role, c.RolePermission,
+		c.SampleFile, c.School, c.Student, c.User, c.UserRole,
 	} {
 		n.Use(hooks...)
 	}
@@ -235,8 +247,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Class, c.College, c.Menu, c.Permission, c.Role, c.RolePermission, c.School,
-		c.Student, c.User, c.UserRole,
+		c.Class, c.College, c.File, c.Menu, c.Permission, c.Role, c.RolePermission,
+		c.SampleFile, c.School, c.Student, c.User, c.UserRole,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -249,6 +261,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Class.mutate(ctx, m)
 	case *CollegeMutation:
 		return c.College.mutate(ctx, m)
+	case *FileMutation:
+		return c.File.mutate(ctx, m)
 	case *MenuMutation:
 		return c.Menu.mutate(ctx, m)
 	case *PermissionMutation:
@@ -257,6 +271,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Role.mutate(ctx, m)
 	case *RolePermissionMutation:
 		return c.RolePermission.mutate(ctx, m)
+	case *SampleFileMutation:
+		return c.SampleFile.mutate(ctx, m)
 	case *SchoolMutation:
 		return c.School.mutate(ctx, m)
 	case *StudentMutation:
@@ -567,6 +583,156 @@ func (c *CollegeClient) mutate(ctx context.Context, m *CollegeMutation) (Value, 
 		return (&CollegeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown College mutation op: %q", m.Op())
+	}
+}
+
+// FileClient is a client for the File schema.
+type FileClient struct {
+	config
+}
+
+// NewFileClient returns a client for the File from the given config.
+func NewFileClient(c config) *FileClient {
+	return &FileClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `file.Hooks(f(g(h())))`.
+func (c *FileClient) Use(hooks ...Hook) {
+	c.hooks.File = append(c.hooks.File, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `file.Intercept(f(g(h())))`.
+func (c *FileClient) Intercept(interceptors ...Interceptor) {
+	c.inters.File = append(c.inters.File, interceptors...)
+}
+
+// Create returns a builder for creating a File entity.
+func (c *FileClient) Create() *FileCreate {
+	mutation := newFileMutation(c.config, OpCreate)
+	return &FileCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of File entities.
+func (c *FileClient) CreateBulk(builders ...*FileCreate) *FileCreateBulk {
+	return &FileCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for File.
+func (c *FileClient) Update() *FileUpdate {
+	mutation := newFileMutation(c.config, OpUpdate)
+	return &FileUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *FileClient) UpdateOne(f *File) *FileUpdateOne {
+	mutation := newFileMutation(c.config, OpUpdateOne, withFile(f))
+	return &FileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *FileClient) UpdateOneID(id uint32) *FileUpdateOne {
+	mutation := newFileMutation(c.config, OpUpdateOne, withFileID(id))
+	return &FileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for File.
+func (c *FileClient) Delete() *FileDelete {
+	mutation := newFileMutation(c.config, OpDelete)
+	return &FileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *FileClient) DeleteOne(f *File) *FileDeleteOne {
+	return c.DeleteOneID(f.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *FileClient) DeleteOneID(id uint32) *FileDeleteOne {
+	builder := c.Delete().Where(file.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &FileDeleteOne{builder}
+}
+
+// Query returns a query builder for File.
+func (c *FileClient) Query() *FileQuery {
+	return &FileQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeFile},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a File entity by its id.
+func (c *FileClient) Get(ctx context.Context, id uint32) (*File, error) {
+	return c.Query().Where(file.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *FileClient) GetX(ctx context.Context, id uint32) *File {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryCreator queries the creator edge of a File.
+func (c *FileClient) QueryCreator(f *File) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(file.Table, file.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, file.CreatorTable, file.CreatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySample queries the sample edge of a File.
+func (c *FileClient) QuerySample(f *File) *SampleFileQuery {
+	query := (&SampleFileClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(file.Table, file.FieldID, id),
+			sqlgraph.To(samplefile.Table, samplefile.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, file.SampleTable, file.SampleColumn),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *FileClient) Hooks() []Hook {
+	return c.hooks.File
+}
+
+// Interceptors returns the client interceptors.
+func (c *FileClient) Interceptors() []Interceptor {
+	return c.inters.File
+}
+
+func (c *FileClient) mutate(ctx context.Context, m *FileMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&FileCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&FileUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&FileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&FileDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown File mutation op: %q", m.Op())
 	}
 }
 
@@ -1153,6 +1319,140 @@ func (c *RolePermissionClient) mutate(ctx context.Context, m *RolePermissionMuta
 	}
 }
 
+// SampleFileClient is a client for the SampleFile schema.
+type SampleFileClient struct {
+	config
+}
+
+// NewSampleFileClient returns a client for the SampleFile from the given config.
+func NewSampleFileClient(c config) *SampleFileClient {
+	return &SampleFileClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `samplefile.Hooks(f(g(h())))`.
+func (c *SampleFileClient) Use(hooks ...Hook) {
+	c.hooks.SampleFile = append(c.hooks.SampleFile, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `samplefile.Intercept(f(g(h())))`.
+func (c *SampleFileClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SampleFile = append(c.inters.SampleFile, interceptors...)
+}
+
+// Create returns a builder for creating a SampleFile entity.
+func (c *SampleFileClient) Create() *SampleFileCreate {
+	mutation := newSampleFileMutation(c.config, OpCreate)
+	return &SampleFileCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SampleFile entities.
+func (c *SampleFileClient) CreateBulk(builders ...*SampleFileCreate) *SampleFileCreateBulk {
+	return &SampleFileCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SampleFile.
+func (c *SampleFileClient) Update() *SampleFileUpdate {
+	mutation := newSampleFileMutation(c.config, OpUpdate)
+	return &SampleFileUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SampleFileClient) UpdateOne(sf *SampleFile) *SampleFileUpdateOne {
+	mutation := newSampleFileMutation(c.config, OpUpdateOne, withSampleFile(sf))
+	return &SampleFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SampleFileClient) UpdateOneID(id uint8) *SampleFileUpdateOne {
+	mutation := newSampleFileMutation(c.config, OpUpdateOne, withSampleFileID(id))
+	return &SampleFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SampleFile.
+func (c *SampleFileClient) Delete() *SampleFileDelete {
+	mutation := newSampleFileMutation(c.config, OpDelete)
+	return &SampleFileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SampleFileClient) DeleteOne(sf *SampleFile) *SampleFileDeleteOne {
+	return c.DeleteOneID(sf.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SampleFileClient) DeleteOneID(id uint8) *SampleFileDeleteOne {
+	builder := c.Delete().Where(samplefile.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SampleFileDeleteOne{builder}
+}
+
+// Query returns a query builder for SampleFile.
+func (c *SampleFileClient) Query() *SampleFileQuery {
+	return &SampleFileQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSampleFile},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SampleFile entity by its id.
+func (c *SampleFileClient) Get(ctx context.Context, id uint8) (*SampleFile, error) {
+	return c.Query().Where(samplefile.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SampleFileClient) GetX(ctx context.Context, id uint8) *SampleFile {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryFile queries the file edge of a SampleFile.
+func (c *SampleFileClient) QueryFile(sf *SampleFile) *FileQuery {
+	query := (&FileClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(samplefile.Table, samplefile.FieldID, id),
+			sqlgraph.To(file.Table, file.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, samplefile.FileTable, samplefile.FileColumn),
+		)
+		fromV = sqlgraph.Neighbors(sf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SampleFileClient) Hooks() []Hook {
+	return c.hooks.SampleFile
+}
+
+// Interceptors returns the client interceptors.
+func (c *SampleFileClient) Interceptors() []Interceptor {
+	return c.inters.SampleFile
+}
+
+func (c *SampleFileClient) mutate(ctx context.Context, m *SampleFileMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SampleFileCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SampleFileUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SampleFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SampleFileDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SampleFile mutation op: %q", m.Op())
+	}
+}
+
 // SchoolClient is a client for the School schema.
 type SchoolClient struct {
 	config
@@ -1562,6 +1862,22 @@ func (c *UserClient) QueryStudents(u *User) *StudentQuery {
 	return query
 }
 
+// QueryFiles queries the files edge of a User.
+func (c *UserClient) QueryFiles(u *User) *FileQuery {
+	query := (&FileClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(file.Table, file.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.FilesTable, user.FilesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryUserRole queries the user_role edge of a User.
 func (c *UserClient) QueryUserRole(u *User) *UserRoleQuery {
 	query := (&UserRoleClient{config: c.config}).Query()
@@ -1707,11 +2023,11 @@ func (c *UserRoleClient) mutate(ctx context.Context, m *UserRoleMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Class, College, Menu, Permission, Role, RolePermission, School, Student, User,
-		UserRole []ent.Hook
+		Class, College, File, Menu, Permission, Role, RolePermission, SampleFile,
+		School, Student, User, UserRole []ent.Hook
 	}
 	inters struct {
-		Class, College, Menu, Permission, Role, RolePermission, School, Student, User,
-		UserRole []ent.Interceptor
+		Class, College, File, Menu, Permission, Role, RolePermission, SampleFile,
+		School, Student, User, UserRole []ent.Interceptor
 	}
 )

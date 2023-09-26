@@ -7,10 +7,12 @@ import (
 
 	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
+	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
+	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/schema"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
@@ -58,6 +60,32 @@ func init() {
 	collegeDescModifiedTime := collegeFields[6].Descriptor()
 	// college.DefaultModifiedTime holds the default value on creation for the modified_time field.
 	college.DefaultModifiedTime = collegeDescModifiedTime.Default.(time.Time)
+	fileFields := schema.File{}.Fields()
+	_ = fileFields
+	// fileDescName is the schema descriptor for name field.
+	fileDescName := fileFields[2].Descriptor()
+	// file.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	file.NameValidator = fileDescName.Validators[0].(func(string) error)
+	// fileDescPath is the schema descriptor for path field.
+	fileDescPath := fileFields[3].Descriptor()
+	// file.PathValidator is a validator for the "path" field. It is called by the builders before save.
+	file.PathValidator = fileDescPath.Validators[0].(func(string) error)
+	// fileDescIsDisabled is the schema descriptor for is_disabled field.
+	fileDescIsDisabled := fileFields[5].Descriptor()
+	// file.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	file.DefaultIsDisabled = fileDescIsDisabled.Default.(bool)
+	// fileDescCreatedTime is the schema descriptor for created_time field.
+	fileDescCreatedTime := fileFields[6].Descriptor()
+	// file.DefaultCreatedTime holds the default value on creation for the created_time field.
+	file.DefaultCreatedTime = fileDescCreatedTime.Default.(func() time.Time)
+	// fileDescDeletedTime is the schema descriptor for deleted_time field.
+	fileDescDeletedTime := fileFields[7].Descriptor()
+	// file.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	file.DefaultDeletedTime = fileDescDeletedTime.Default.(time.Time)
+	// fileDescModifiedTime is the schema descriptor for modified_time field.
+	fileDescModifiedTime := fileFields[8].Descriptor()
+	// file.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	file.DefaultModifiedTime = fileDescModifiedTime.Default.(time.Time)
 	menuFields := schema.Menu{}.Fields()
 	_ = menuFields
 	// menuDescName is the schema descriptor for name field.
@@ -126,6 +154,24 @@ func init() {
 	rolepermissionDescCreatedTime := rolepermissionFields[2].Descriptor()
 	// rolepermission.DefaultCreatedTime holds the default value on creation for the created_time field.
 	rolepermission.DefaultCreatedTime = rolepermissionDescCreatedTime.Default.(func() time.Time)
+	samplefileFields := schema.SampleFile{}.Fields()
+	_ = samplefileFields
+	// samplefileDescIsDisabled is the schema descriptor for is_disabled field.
+	samplefileDescIsDisabled := samplefileFields[3].Descriptor()
+	// samplefile.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	samplefile.DefaultIsDisabled = samplefileDescIsDisabled.Default.(bool)
+	// samplefileDescCreatedTime is the schema descriptor for created_time field.
+	samplefileDescCreatedTime := samplefileFields[4].Descriptor()
+	// samplefile.DefaultCreatedTime holds the default value on creation for the created_time field.
+	samplefile.DefaultCreatedTime = samplefileDescCreatedTime.Default.(func() time.Time)
+	// samplefileDescDeletedTime is the schema descriptor for deleted_time field.
+	samplefileDescDeletedTime := samplefileFields[5].Descriptor()
+	// samplefile.DefaultDeletedTime holds the default value on creation for the deleted_time field.
+	samplefile.DefaultDeletedTime = samplefileDescDeletedTime.Default.(time.Time)
+	// samplefileDescModifiedTime is the schema descriptor for modified_time field.
+	samplefileDescModifiedTime := samplefileFields[6].Descriptor()
+	// samplefile.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	samplefile.DefaultModifiedTime = samplefileDescModifiedTime.Default.(time.Time)
 	schoolFields := schema.School{}.Fields()
 	_ = schoolFields
 	// schoolDescIsDisabled is the schema descriptor for is_disabled field.

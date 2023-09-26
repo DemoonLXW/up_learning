@@ -16,6 +16,8 @@ type Tx struct {
 	Class *ClassClient
 	// College is the client for interacting with the College builders.
 	College *CollegeClient
+	// File is the client for interacting with the File builders.
+	File *FileClient
 	// Menu is the client for interacting with the Menu builders.
 	Menu *MenuClient
 	// Permission is the client for interacting with the Permission builders.
@@ -24,6 +26,8 @@ type Tx struct {
 	Role *RoleClient
 	// RolePermission is the client for interacting with the RolePermission builders.
 	RolePermission *RolePermissionClient
+	// SampleFile is the client for interacting with the SampleFile builders.
+	SampleFile *SampleFileClient
 	// School is the client for interacting with the School builders.
 	School *SchoolClient
 	// Student is the client for interacting with the Student builders.
@@ -165,10 +169,12 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Class = NewClassClient(tx.config)
 	tx.College = NewCollegeClient(tx.config)
+	tx.File = NewFileClient(tx.config)
 	tx.Menu = NewMenuClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.RolePermission = NewRolePermissionClient(tx.config)
+	tx.SampleFile = NewSampleFileClient(tx.config)
 	tx.School = NewSchoolClient(tx.config)
 	tx.Student = NewStudentClient(tx.config)
 	tx.User = NewUserClient(tx.config)

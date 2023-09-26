@@ -57,6 +57,32 @@ var (
 			},
 		},
 	}
+	// FileColumns holds the columns for the "file" table.
+	FileColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "path", Type: field.TypeString},
+		{Name: "size", Type: field.TypeString},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime},
+		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "uid", Type: field.TypeUint32},
+	}
+	// FileTable holds the schema information for the "file" table.
+	FileTable = &schema.Table{
+		Name:       "file",
+		Columns:    FileColumns,
+		PrimaryKey: []*schema.Column{FileColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "file_user_files",
+				Columns:    []*schema.Column{FileColumns[8]},
+				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// MenuColumns holds the columns for the "menu" table.
 	MenuColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint8, Increment: true},
@@ -135,6 +161,30 @@ var (
 				Symbol:     "role_permission_permission_permission",
 				Columns:    []*schema.Column{RolePermissionColumns[2]},
 				RefColumns: []*schema.Column{PermissionColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// SampleFileColumns holds the columns for the "sample_file" table.
+	SampleFileColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint8, Increment: true},
+		{Name: "type", Type: field.TypeString, Unique: true},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime},
+		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "fid", Type: field.TypeUint32, Unique: true},
+	}
+	// SampleFileTable holds the schema information for the "sample_file" table.
+	SampleFileTable = &schema.Table{
+		Name:       "sample_file",
+		Columns:    SampleFileColumns,
+		PrimaryKey: []*schema.Column{SampleFileColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "sample_file_file_sample",
+				Columns:    []*schema.Column{SampleFileColumns[6]},
+				RefColumns: []*schema.Column{FileColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -245,10 +295,12 @@ var (
 	Tables = []*schema.Table{
 		ClassTable,
 		CollegeTable,
+		FileTable,
 		MenuTable,
 		PermissionTable,
 		RoleTable,
 		RolePermissionTable,
+		SampleFileTable,
 		SchoolTable,
 		StudentTable,
 		UserTable,
@@ -265,6 +317,10 @@ func init() {
 	CollegeTable.Annotation = &entsql.Annotation{
 		Table: "college",
 	}
+	FileTable.ForeignKeys[0].RefTable = UserTable
+	FileTable.Annotation = &entsql.Annotation{
+		Table: "file",
+	}
 	MenuTable.ForeignKeys[0].RefTable = RoleTable
 	MenuTable.Annotation = &entsql.Annotation{
 		Table: "menu",
@@ -279,6 +335,10 @@ func init() {
 	RolePermissionTable.ForeignKeys[1].RefTable = PermissionTable
 	RolePermissionTable.Annotation = &entsql.Annotation{
 		Table: "role_permission",
+	}
+	SampleFileTable.ForeignKeys[0].RefTable = FileTable
+	SampleFileTable.Annotation = &entsql.Annotation{
+		Table: "sample_file",
 	}
 	SchoolTable.Annotation = &entsql.Annotation{
 		Table: "school",

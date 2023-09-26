@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
@@ -27,6 +28,7 @@ type UserQuery struct {
 	predicates   []predicate.User
 	withRoles    *RoleQuery
 	withStudents *StudentQuery
+	withFiles    *FileQuery
 	withUserRole *UserRoleQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -101,6 +103,28 @@ func (uq *UserQuery) QueryStudents() *StudentQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(student.Table, student.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.StudentsTable, user.StudentsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFiles chains the current query on the "files" edge.
+func (uq *UserQuery) QueryFiles() *FileQuery {
+	query := (&FileClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(file.Table, file.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.FilesTable, user.FilesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -324,6 +348,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		predicates:   append([]predicate.User{}, uq.predicates...),
 		withRoles:    uq.withRoles.Clone(),
 		withStudents: uq.withStudents.Clone(),
+		withFiles:    uq.withFiles.Clone(),
 		withUserRole: uq.withUserRole.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
@@ -350,6 +375,17 @@ func (uq *UserQuery) WithStudents(opts ...func(*StudentQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withStudents = query
+	return uq
+}
+
+// WithFiles tells the query-builder to eager-load the nodes that are connected to
+// the "files" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithFiles(opts ...func(*FileQuery)) *UserQuery {
+	query := (&FileClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withFiles = query
 	return uq
 }
 
@@ -442,9 +478,10 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			uq.withRoles != nil,
 			uq.withStudents != nil,
+			uq.withFiles != nil,
 			uq.withUserRole != nil,
 		}
 	)
@@ -477,6 +514,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadStudents(ctx, query, nodes,
 			func(n *User) { n.Edges.Students = []*Student{} },
 			func(n *User, e *Student) { n.Edges.Students = append(n.Edges.Students, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withFiles; query != nil {
+		if err := uq.loadFiles(ctx, query, nodes,
+			func(n *User) { n.Edges.Files = []*File{} },
+			func(n *User, e *File) { n.Edges.Files = append(n.Edges.Files, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -566,6 +610,36 @@ func (uq *UserQuery) loadStudents(ctx context.Context, query *StudentQuery, node
 	}
 	query.Where(predicate.Student(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.StudentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "uid" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadFiles(ctx context.Context, query *FileQuery, nodes []*User, init func(*User), assign func(*User, *File)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint32]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(file.FieldUID)
+	}
+	query.Where(predicate.File(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.FilesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
