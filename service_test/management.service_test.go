@@ -518,3 +518,12 @@ func TestGetTotalRetrievedSchools(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 10, total)
 }
+
+func TestFindOneSampleFileByType(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	f, err := serv.FindOneSampleFileByType("school")
+	assert.Nil(t, err)
+	fmt.Println(f)
+}

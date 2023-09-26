@@ -12,8 +12,10 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
+	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/entity"
@@ -1098,4 +1100,28 @@ func (serv *ManagementService) GetTotalRetrievedSchools(like string, isDisabled 
 	}
 
 	return total, nil
+}
+
+func (serv *ManagementService) FindOneSampleFileByType(t string) (*ent.File, error) {
+	ctx := context.Background()
+
+	f, err := serv.DB.SampleFile.Query().Where(samplefile.And(
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(samplefile.FieldDeletedTime))
+		},
+		samplefile.IsDisabledEQ(false),
+		samplefile.TypeEQ(t),
+	)).
+		QueryFile().Where(file.And(
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(file.FieldDeletedTime))
+		},
+		file.IsDisabledEQ(false),
+	)).
+		First(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("sample file find one by type failed: %w", err)
+	}
+
+	return f, nil
 }
