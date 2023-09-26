@@ -161,14 +161,6 @@ func (pc *PermissionCreate) defaults() {
 		v := permission.DefaultCreatedTime()
 		pc.mutation.SetCreatedTime(v)
 	}
-	if _, ok := pc.mutation.DeletedTime(); !ok {
-		v := permission.DefaultDeletedTime
-		pc.mutation.SetDeletedTime(v)
-	}
-	if _, ok := pc.mutation.ModifiedTime(); !ok {
-		v := permission.DefaultModifiedTime
-		pc.mutation.SetModifiedTime(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -186,12 +178,6 @@ func (pc *PermissionCreate) check() error {
 	}
 	if _, ok := pc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "Permission.created_time"`)}
-	}
-	if _, ok := pc.mutation.DeletedTime(); !ok {
-		return &ValidationError{Name: "deleted_time", err: errors.New(`ent: missing required field "Permission.deleted_time"`)}
-	}
-	if _, ok := pc.mutation.ModifiedTime(); !ok {
-		return &ValidationError{Name: "modified_time", err: errors.New(`ent: missing required field "Permission.modified_time"`)}
 	}
 	return nil
 }
@@ -239,15 +225,15 @@ func (pc *PermissionCreate) createSpec() (*Permission, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := pc.mutation.CreatedTime(); ok {
 		_spec.SetField(permission.FieldCreatedTime, field.TypeTime, value)
-		_node.CreatedTime = value
+		_node.CreatedTime = &value
 	}
 	if value, ok := pc.mutation.DeletedTime(); ok {
 		_spec.SetField(permission.FieldDeletedTime, field.TypeTime, value)
-		_node.DeletedTime = value
+		_node.DeletedTime = &value
 	}
 	if value, ok := pc.mutation.ModifiedTime(); ok {
 		_spec.SetField(permission.FieldModifiedTime, field.TypeTime, value)
-		_node.ModifiedTime = value
+		_node.ModifiedTime = &value
 	}
 	if nodes := pc.mutation.RolesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

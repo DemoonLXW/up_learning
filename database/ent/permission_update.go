@@ -97,6 +97,12 @@ func (pu *PermissionUpdate) SetNillableDeletedTime(t *time.Time) *PermissionUpda
 	return pu
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (pu *PermissionUpdate) ClearDeletedTime() *PermissionUpdate {
+	pu.mutation.ClearDeletedTime()
+	return pu
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (pu *PermissionUpdate) SetModifiedTime(t time.Time) *PermissionUpdate {
 	pu.mutation.SetModifiedTime(t)
@@ -108,6 +114,12 @@ func (pu *PermissionUpdate) SetNillableModifiedTime(t *time.Time) *PermissionUpd
 	if t != nil {
 		pu.SetModifiedTime(*t)
 	}
+	return pu
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (pu *PermissionUpdate) ClearModifiedTime() *PermissionUpdate {
+	pu.mutation.ClearModifiedTime()
 	return pu
 }
 
@@ -219,8 +231,14 @@ func (pu *PermissionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.DeletedTime(); ok {
 		_spec.SetField(permission.FieldDeletedTime, field.TypeTime, value)
 	}
+	if pu.mutation.DeletedTimeCleared() {
+		_spec.ClearField(permission.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := pu.mutation.ModifiedTime(); ok {
 		_spec.SetField(permission.FieldModifiedTime, field.TypeTime, value)
+	}
+	if pu.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(permission.FieldModifiedTime, field.TypeTime)
 	}
 	if pu.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -367,6 +385,12 @@ func (puo *PermissionUpdateOne) SetNillableDeletedTime(t *time.Time) *Permission
 	return puo
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (puo *PermissionUpdateOne) ClearDeletedTime() *PermissionUpdateOne {
+	puo.mutation.ClearDeletedTime()
+	return puo
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (puo *PermissionUpdateOne) SetModifiedTime(t time.Time) *PermissionUpdateOne {
 	puo.mutation.SetModifiedTime(t)
@@ -378,6 +402,12 @@ func (puo *PermissionUpdateOne) SetNillableModifiedTime(t *time.Time) *Permissio
 	if t != nil {
 		puo.SetModifiedTime(*t)
 	}
+	return puo
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (puo *PermissionUpdateOne) ClearModifiedTime() *PermissionUpdateOne {
+	puo.mutation.ClearModifiedTime()
 	return puo
 }
 
@@ -519,8 +549,14 @@ func (puo *PermissionUpdateOne) sqlSave(ctx context.Context) (_node *Permission,
 	if value, ok := puo.mutation.DeletedTime(); ok {
 		_spec.SetField(permission.FieldDeletedTime, field.TypeTime, value)
 	}
+	if puo.mutation.DeletedTimeCleared() {
+		_spec.ClearField(permission.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := puo.mutation.ModifiedTime(); ok {
 		_spec.SetField(permission.FieldModifiedTime, field.TypeTime, value)
+	}
+	if puo.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(permission.FieldModifiedTime, field.TypeTime)
 	}
 	if puo.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -3549,7 +3549,7 @@ func (m *PermissionMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the Permission entity.
 // If the Permission object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
+func (m *PermissionMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -3585,7 +3585,7 @@ func (m *PermissionMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the Permission entity.
 // If the Permission object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
+func (m *PermissionMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -3599,9 +3599,22 @@ func (m *PermissionMutation) OldDeletedTime(ctx context.Context) (v time.Time, e
 	return oldValue.DeletedTime, nil
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (m *PermissionMutation) ClearDeletedTime() {
+	m.deleted_time = nil
+	m.clearedFields[permission.FieldDeletedTime] = struct{}{}
+}
+
+// DeletedTimeCleared returns if the "deleted_time" field was cleared in this mutation.
+func (m *PermissionMutation) DeletedTimeCleared() bool {
+	_, ok := m.clearedFields[permission.FieldDeletedTime]
+	return ok
+}
+
 // ResetDeletedTime resets all changes to the "deleted_time" field.
 func (m *PermissionMutation) ResetDeletedTime() {
 	m.deleted_time = nil
+	delete(m.clearedFields, permission.FieldDeletedTime)
 }
 
 // SetModifiedTime sets the "modified_time" field.
@@ -3621,7 +3634,7 @@ func (m *PermissionMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the Permission entity.
 // If the Permission object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PermissionMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
+func (m *PermissionMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -3635,9 +3648,22 @@ func (m *PermissionMutation) OldModifiedTime(ctx context.Context) (v time.Time, 
 	return oldValue.ModifiedTime, nil
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (m *PermissionMutation) ClearModifiedTime() {
+	m.modified_time = nil
+	m.clearedFields[permission.FieldModifiedTime] = struct{}{}
+}
+
+// ModifiedTimeCleared returns if the "modified_time" field was cleared in this mutation.
+func (m *PermissionMutation) ModifiedTimeCleared() bool {
+	_, ok := m.clearedFields[permission.FieldModifiedTime]
+	return ok
+}
+
 // ResetModifiedTime resets all changes to the "modified_time" field.
 func (m *PermissionMutation) ResetModifiedTime() {
 	m.modified_time = nil
+	delete(m.clearedFields, permission.FieldModifiedTime)
 }
 
 // AddRoleIDs adds the "roles" edge to the Role entity by ids.
@@ -3872,6 +3898,12 @@ func (m *PermissionMutation) ClearedFields() []string {
 	if m.FieldCleared(permission.FieldDescription) {
 		fields = append(fields, permission.FieldDescription)
 	}
+	if m.FieldCleared(permission.FieldDeletedTime) {
+		fields = append(fields, permission.FieldDeletedTime)
+	}
+	if m.FieldCleared(permission.FieldModifiedTime) {
+		fields = append(fields, permission.FieldModifiedTime)
+	}
 	return fields
 }
 
@@ -3888,6 +3920,12 @@ func (m *PermissionMutation) ClearField(name string) error {
 	switch name {
 	case permission.FieldDescription:
 		m.ClearDescription()
+		return nil
+	case permission.FieldDeletedTime:
+		m.ClearDeletedTime()
+		return nil
+	case permission.FieldModifiedTime:
+		m.ClearModifiedTime()
 		return nil
 	}
 	return fmt.Errorf("unknown Permission nullable field %s", name)

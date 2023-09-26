@@ -94,14 +94,6 @@ func init() {
 	permissionDescCreatedTime := permissionFields[4].Descriptor()
 	// permission.DefaultCreatedTime holds the default value on creation for the created_time field.
 	permission.DefaultCreatedTime = permissionDescCreatedTime.Default.(func() time.Time)
-	// permissionDescDeletedTime is the schema descriptor for deleted_time field.
-	permissionDescDeletedTime := permissionFields[5].Descriptor()
-	// permission.DefaultDeletedTime holds the default value on creation for the deleted_time field.
-	permission.DefaultDeletedTime = permissionDescDeletedTime.Default.(time.Time)
-	// permissionDescModifiedTime is the schema descriptor for modified_time field.
-	permissionDescModifiedTime := permissionFields[6].Descriptor()
-	// permission.DefaultModifiedTime holds the default value on creation for the modified_time field.
-	permission.DefaultModifiedTime = permissionDescModifiedTime.Default.(time.Time)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
 	// roleDescName is the schema descriptor for name field.
