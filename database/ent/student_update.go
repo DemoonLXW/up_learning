@@ -134,6 +134,12 @@ func (su *StudentUpdate) SetNillableDeletedTime(t *time.Time) *StudentUpdate {
 	return su
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (su *StudentUpdate) ClearDeletedTime() *StudentUpdate {
+	su.mutation.ClearDeletedTime()
+	return su
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (su *StudentUpdate) SetModifiedTime(t time.Time) *StudentUpdate {
 	su.mutation.SetModifiedTime(t)
@@ -145,6 +151,12 @@ func (su *StudentUpdate) SetNillableModifiedTime(t *time.Time) *StudentUpdate {
 	if t != nil {
 		su.SetModifiedTime(*t)
 	}
+	return su
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (su *StudentUpdate) ClearModifiedTime() *StudentUpdate {
+	su.mutation.ClearModifiedTime()
 	return su
 }
 
@@ -280,8 +292,14 @@ func (su *StudentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.DeletedTime(); ok {
 		_spec.SetField(student.FieldDeletedTime, field.TypeTime, value)
 	}
+	if su.mutation.DeletedTimeCleared() {
+		_spec.ClearField(student.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := su.mutation.ModifiedTime(); ok {
 		_spec.SetField(student.FieldModifiedTime, field.TypeTime, value)
+	}
+	if su.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(student.FieldModifiedTime, field.TypeTime)
 	}
 	if su.mutation.ClassCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -465,6 +483,12 @@ func (suo *StudentUpdateOne) SetNillableDeletedTime(t *time.Time) *StudentUpdate
 	return suo
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (suo *StudentUpdateOne) ClearDeletedTime() *StudentUpdateOne {
+	suo.mutation.ClearDeletedTime()
+	return suo
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (suo *StudentUpdateOne) SetModifiedTime(t time.Time) *StudentUpdateOne {
 	suo.mutation.SetModifiedTime(t)
@@ -476,6 +500,12 @@ func (suo *StudentUpdateOne) SetNillableModifiedTime(t *time.Time) *StudentUpdat
 	if t != nil {
 		suo.SetModifiedTime(*t)
 	}
+	return suo
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (suo *StudentUpdateOne) ClearModifiedTime() *StudentUpdateOne {
+	suo.mutation.ClearModifiedTime()
 	return suo
 }
 
@@ -641,8 +671,14 @@ func (suo *StudentUpdateOne) sqlSave(ctx context.Context) (_node *Student, err e
 	if value, ok := suo.mutation.DeletedTime(); ok {
 		_spec.SetField(student.FieldDeletedTime, field.TypeTime, value)
 	}
+	if suo.mutation.DeletedTimeCleared() {
+		_spec.ClearField(student.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := suo.mutation.ModifiedTime(); ok {
 		_spec.SetField(student.FieldModifiedTime, field.TypeTime, value)
+	}
+	if suo.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(student.FieldModifiedTime, field.TypeTime)
 	}
 	if suo.mutation.ClassCleared() {
 		edge := &sqlgraph.EdgeSpec{

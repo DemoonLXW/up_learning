@@ -560,6 +560,16 @@ func DeletedTimeLTE(v time.Time) predicate.School {
 	return predicate.School(sql.FieldLTE(FieldDeletedTime, v))
 }
 
+// DeletedTimeIsNil applies the IsNil predicate on the "deleted_time" field.
+func DeletedTimeIsNil() predicate.School {
+	return predicate.School(sql.FieldIsNull(FieldDeletedTime))
+}
+
+// DeletedTimeNotNil applies the NotNil predicate on the "deleted_time" field.
+func DeletedTimeNotNil() predicate.School {
+	return predicate.School(sql.FieldNotNull(FieldDeletedTime))
+}
+
 // ModifiedTimeEQ applies the EQ predicate on the "modified_time" field.
 func ModifiedTimeEQ(v time.Time) predicate.School {
 	return predicate.School(sql.FieldEQ(FieldModifiedTime, v))
@@ -598,6 +608,16 @@ func ModifiedTimeLT(v time.Time) predicate.School {
 // ModifiedTimeLTE applies the LTE predicate on the "modified_time" field.
 func ModifiedTimeLTE(v time.Time) predicate.School {
 	return predicate.School(sql.FieldLTE(FieldModifiedTime, v))
+}
+
+// ModifiedTimeIsNil applies the IsNil predicate on the "modified_time" field.
+func ModifiedTimeIsNil() predicate.School {
+	return predicate.School(sql.FieldIsNull(FieldModifiedTime))
+}
+
+// ModifiedTimeNotNil applies the NotNil predicate on the "modified_time" field.
+func ModifiedTimeNotNil() predicate.School {
+	return predicate.School(sql.FieldNotNull(FieldModifiedTime))
 }
 
 // HasColleges applies the HasEdge predicate on the "colleges" edge.

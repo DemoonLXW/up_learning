@@ -15,8 +15,8 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime},
-		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
 		{Name: "cid", Type: field.TypeUint16},
 	}
 	// ClassTable holds the schema information for the "class" table.
@@ -39,8 +39,8 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime},
-		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
 		{Name: "sid", Type: field.TypeUint16},
 	}
 	// CollegeTable holds the schema information for the "college" table.
@@ -200,8 +200,8 @@ var (
 		{Name: "remark", Type: field.TypeString},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime},
-		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
 	}
 	// SchoolTable holds the schema information for the "school" table.
 	SchoolTable = &schema.Table{
@@ -220,8 +220,8 @@ var (
 		{Name: "state", Type: field.TypeUint8},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime},
-		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
 		{Name: "cid", Type: field.TypeUint32},
 		{Name: "uid", Type: field.TypeUint32},
 	}

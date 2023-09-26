@@ -197,14 +197,6 @@ func (sc *StudentCreate) defaults() {
 		v := student.DefaultCreatedTime()
 		sc.mutation.SetCreatedTime(v)
 	}
-	if _, ok := sc.mutation.DeletedTime(); !ok {
-		v := student.DefaultDeletedTime
-		sc.mutation.SetDeletedTime(v)
-	}
-	if _, ok := sc.mutation.ModifiedTime(); !ok {
-		v := student.DefaultModifiedTime
-		sc.mutation.SetModifiedTime(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -248,12 +240,6 @@ func (sc *StudentCreate) check() error {
 	}
 	if _, ok := sc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "Student.created_time"`)}
-	}
-	if _, ok := sc.mutation.DeletedTime(); !ok {
-		return &ValidationError{Name: "deleted_time", err: errors.New(`ent: missing required field "Student.deleted_time"`)}
-	}
-	if _, ok := sc.mutation.ModifiedTime(); !ok {
-		return &ValidationError{Name: "modified_time", err: errors.New(`ent: missing required field "Student.modified_time"`)}
 	}
 	if _, ok := sc.mutation.ClassID(); !ok {
 		return &ValidationError{Name: "class", err: errors.New(`ent: missing required edge "Student.class"`)}
@@ -323,15 +309,15 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := sc.mutation.CreatedTime(); ok {
 		_spec.SetField(student.FieldCreatedTime, field.TypeTime, value)
-		_node.CreatedTime = value
+		_node.CreatedTime = &value
 	}
 	if value, ok := sc.mutation.DeletedTime(); ok {
 		_spec.SetField(student.FieldDeletedTime, field.TypeTime, value)
-		_node.DeletedTime = value
+		_node.DeletedTime = &value
 	}
 	if value, ok := sc.mutation.ModifiedTime(); ok {
 		_spec.SetField(student.FieldModifiedTime, field.TypeTime, value)
-		_node.ModifiedTime = value
+		_node.ModifiedTime = &value
 	}
 	if nodes := sc.mutation.ClassIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

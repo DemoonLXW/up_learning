@@ -301,7 +301,7 @@ func (m *ClassMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the Class entity.
 // If the Class object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ClassMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
+func (m *ClassMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -337,7 +337,7 @@ func (m *ClassMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the Class entity.
 // If the Class object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ClassMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
+func (m *ClassMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -351,9 +351,22 @@ func (m *ClassMutation) OldDeletedTime(ctx context.Context) (v time.Time, err er
 	return oldValue.DeletedTime, nil
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (m *ClassMutation) ClearDeletedTime() {
+	m.deleted_time = nil
+	m.clearedFields[class.FieldDeletedTime] = struct{}{}
+}
+
+// DeletedTimeCleared returns if the "deleted_time" field was cleared in this mutation.
+func (m *ClassMutation) DeletedTimeCleared() bool {
+	_, ok := m.clearedFields[class.FieldDeletedTime]
+	return ok
+}
+
 // ResetDeletedTime resets all changes to the "deleted_time" field.
 func (m *ClassMutation) ResetDeletedTime() {
 	m.deleted_time = nil
+	delete(m.clearedFields, class.FieldDeletedTime)
 }
 
 // SetModifiedTime sets the "modified_time" field.
@@ -373,7 +386,7 @@ func (m *ClassMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the Class entity.
 // If the Class object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ClassMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
+func (m *ClassMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -387,9 +400,22 @@ func (m *ClassMutation) OldModifiedTime(ctx context.Context) (v time.Time, err e
 	return oldValue.ModifiedTime, nil
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (m *ClassMutation) ClearModifiedTime() {
+	m.modified_time = nil
+	m.clearedFields[class.FieldModifiedTime] = struct{}{}
+}
+
+// ModifiedTimeCleared returns if the "modified_time" field was cleared in this mutation.
+func (m *ClassMutation) ModifiedTimeCleared() bool {
+	_, ok := m.clearedFields[class.FieldModifiedTime]
+	return ok
+}
+
 // ResetModifiedTime resets all changes to the "modified_time" field.
 func (m *ClassMutation) ResetModifiedTime() {
 	m.modified_time = nil
+	delete(m.clearedFields, class.FieldModifiedTime)
 }
 
 // SetCollegeID sets the "college" edge to the College entity by id.
@@ -662,7 +688,14 @@ func (m *ClassMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ClassMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(class.FieldDeletedTime) {
+		fields = append(fields, class.FieldDeletedTime)
+	}
+	if m.FieldCleared(class.FieldModifiedTime) {
+		fields = append(fields, class.FieldModifiedTime)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -675,6 +708,14 @@ func (m *ClassMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ClassMutation) ClearField(name string) error {
+	switch name {
+	case class.FieldDeletedTime:
+		m.ClearDeletedTime()
+		return nil
+	case class.FieldModifiedTime:
+		m.ClearModifiedTime()
+		return nil
+	}
 	return fmt.Errorf("unknown Class nullable field %s", name)
 }
 
@@ -1057,7 +1098,7 @@ func (m *CollegeMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the College entity.
 // If the College object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CollegeMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
+func (m *CollegeMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -1093,7 +1134,7 @@ func (m *CollegeMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the College entity.
 // If the College object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CollegeMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
+func (m *CollegeMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -1107,9 +1148,22 @@ func (m *CollegeMutation) OldDeletedTime(ctx context.Context) (v time.Time, err 
 	return oldValue.DeletedTime, nil
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (m *CollegeMutation) ClearDeletedTime() {
+	m.deleted_time = nil
+	m.clearedFields[college.FieldDeletedTime] = struct{}{}
+}
+
+// DeletedTimeCleared returns if the "deleted_time" field was cleared in this mutation.
+func (m *CollegeMutation) DeletedTimeCleared() bool {
+	_, ok := m.clearedFields[college.FieldDeletedTime]
+	return ok
+}
+
 // ResetDeletedTime resets all changes to the "deleted_time" field.
 func (m *CollegeMutation) ResetDeletedTime() {
 	m.deleted_time = nil
+	delete(m.clearedFields, college.FieldDeletedTime)
 }
 
 // SetModifiedTime sets the "modified_time" field.
@@ -1129,7 +1183,7 @@ func (m *CollegeMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the College entity.
 // If the College object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CollegeMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
+func (m *CollegeMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -1143,9 +1197,22 @@ func (m *CollegeMutation) OldModifiedTime(ctx context.Context) (v time.Time, err
 	return oldValue.ModifiedTime, nil
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (m *CollegeMutation) ClearModifiedTime() {
+	m.modified_time = nil
+	m.clearedFields[college.FieldModifiedTime] = struct{}{}
+}
+
+// ModifiedTimeCleared returns if the "modified_time" field was cleared in this mutation.
+func (m *CollegeMutation) ModifiedTimeCleared() bool {
+	_, ok := m.clearedFields[college.FieldModifiedTime]
+	return ok
+}
+
 // ResetModifiedTime resets all changes to the "modified_time" field.
 func (m *CollegeMutation) ResetModifiedTime() {
 	m.modified_time = nil
+	delete(m.clearedFields, college.FieldModifiedTime)
 }
 
 // SetSchoolID sets the "school" edge to the School entity by id.
@@ -1418,7 +1485,14 @@ func (m *CollegeMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *CollegeMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(college.FieldDeletedTime) {
+		fields = append(fields, college.FieldDeletedTime)
+	}
+	if m.FieldCleared(college.FieldModifiedTime) {
+		fields = append(fields, college.FieldModifiedTime)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1431,6 +1505,14 @@ func (m *CollegeMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *CollegeMutation) ClearField(name string) error {
+	switch name {
+	case college.FieldDeletedTime:
+		m.ClearDeletedTime()
+		return nil
+	case college.FieldModifiedTime:
+		m.ClearModifiedTime()
+		return nil
+	}
 	return fmt.Errorf("unknown College nullable field %s", name)
 }
 
@@ -6376,7 +6458,7 @@ func (m *SchoolMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the School entity.
 // If the School object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SchoolMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
+func (m *SchoolMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -6412,7 +6494,7 @@ func (m *SchoolMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the School entity.
 // If the School object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SchoolMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
+func (m *SchoolMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -6426,9 +6508,22 @@ func (m *SchoolMutation) OldDeletedTime(ctx context.Context) (v time.Time, err e
 	return oldValue.DeletedTime, nil
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (m *SchoolMutation) ClearDeletedTime() {
+	m.deleted_time = nil
+	m.clearedFields[school.FieldDeletedTime] = struct{}{}
+}
+
+// DeletedTimeCleared returns if the "deleted_time" field was cleared in this mutation.
+func (m *SchoolMutation) DeletedTimeCleared() bool {
+	_, ok := m.clearedFields[school.FieldDeletedTime]
+	return ok
+}
+
 // ResetDeletedTime resets all changes to the "deleted_time" field.
 func (m *SchoolMutation) ResetDeletedTime() {
 	m.deleted_time = nil
+	delete(m.clearedFields, school.FieldDeletedTime)
 }
 
 // SetModifiedTime sets the "modified_time" field.
@@ -6448,7 +6543,7 @@ func (m *SchoolMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the School entity.
 // If the School object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SchoolMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
+func (m *SchoolMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -6462,9 +6557,22 @@ func (m *SchoolMutation) OldModifiedTime(ctx context.Context) (v time.Time, err 
 	return oldValue.ModifiedTime, nil
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (m *SchoolMutation) ClearModifiedTime() {
+	m.modified_time = nil
+	m.clearedFields[school.FieldModifiedTime] = struct{}{}
+}
+
+// ModifiedTimeCleared returns if the "modified_time" field was cleared in this mutation.
+func (m *SchoolMutation) ModifiedTimeCleared() bool {
+	_, ok := m.clearedFields[school.FieldModifiedTime]
+	return ok
+}
+
 // ResetModifiedTime resets all changes to the "modified_time" field.
 func (m *SchoolMutation) ResetModifiedTime() {
 	m.modified_time = nil
+	delete(m.clearedFields, school.FieldModifiedTime)
 }
 
 // AddCollegeIDs adds the "colleges" edge to the College entity by ids.
@@ -6766,7 +6874,14 @@ func (m *SchoolMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *SchoolMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(school.FieldDeletedTime) {
+		fields = append(fields, school.FieldDeletedTime)
+	}
+	if m.FieldCleared(school.FieldModifiedTime) {
+		fields = append(fields, school.FieldModifiedTime)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -6779,6 +6894,14 @@ func (m *SchoolMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *SchoolMutation) ClearField(name string) error {
+	switch name {
+	case school.FieldDeletedTime:
+		m.ClearDeletedTime()
+		return nil
+	case school.FieldModifiedTime:
+		m.ClearModifiedTime()
+		return nil
+	}
 	return fmt.Errorf("unknown School nullable field %s", name)
 }
 
@@ -7417,7 +7540,7 @@ func (m *StudentMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the Student entity.
 // If the Student object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *StudentMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
+func (m *StudentMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -7453,7 +7576,7 @@ func (m *StudentMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the Student entity.
 // If the Student object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *StudentMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
+func (m *StudentMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -7467,9 +7590,22 @@ func (m *StudentMutation) OldDeletedTime(ctx context.Context) (v time.Time, err 
 	return oldValue.DeletedTime, nil
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (m *StudentMutation) ClearDeletedTime() {
+	m.deleted_time = nil
+	m.clearedFields[student.FieldDeletedTime] = struct{}{}
+}
+
+// DeletedTimeCleared returns if the "deleted_time" field was cleared in this mutation.
+func (m *StudentMutation) DeletedTimeCleared() bool {
+	_, ok := m.clearedFields[student.FieldDeletedTime]
+	return ok
+}
+
 // ResetDeletedTime resets all changes to the "deleted_time" field.
 func (m *StudentMutation) ResetDeletedTime() {
 	m.deleted_time = nil
+	delete(m.clearedFields, student.FieldDeletedTime)
 }
 
 // SetModifiedTime sets the "modified_time" field.
@@ -7489,7 +7625,7 @@ func (m *StudentMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the Student entity.
 // If the Student object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *StudentMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
+func (m *StudentMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -7503,9 +7639,22 @@ func (m *StudentMutation) OldModifiedTime(ctx context.Context) (v time.Time, err
 	return oldValue.ModifiedTime, nil
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (m *StudentMutation) ClearModifiedTime() {
+	m.modified_time = nil
+	m.clearedFields[student.FieldModifiedTime] = struct{}{}
+}
+
+// ModifiedTimeCleared returns if the "modified_time" field was cleared in this mutation.
+func (m *StudentMutation) ModifiedTimeCleared() bool {
+	_, ok := m.clearedFields[student.FieldModifiedTime]
+	return ok
+}
+
 // ResetModifiedTime resets all changes to the "modified_time" field.
 func (m *StudentMutation) ResetModifiedTime() {
 	m.modified_time = nil
+	delete(m.clearedFields, student.FieldModifiedTime)
 }
 
 // SetClassID sets the "class" edge to the Class entity by id.
@@ -7871,7 +8020,14 @@ func (m *StudentMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *StudentMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(student.FieldDeletedTime) {
+		fields = append(fields, student.FieldDeletedTime)
+	}
+	if m.FieldCleared(student.FieldModifiedTime) {
+		fields = append(fields, student.FieldModifiedTime)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -7884,6 +8040,14 @@ func (m *StudentMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *StudentMutation) ClearField(name string) error {
+	switch name {
+	case student.FieldDeletedTime:
+		m.ClearDeletedTime()
+		return nil
+	case student.FieldModifiedTime:
+		m.ClearModifiedTime()
+		return nil
+	}
 	return fmt.Errorf("unknown Student nullable field %s", name)
 }
 

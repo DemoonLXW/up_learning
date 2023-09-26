@@ -165,14 +165,6 @@ func (cc *ClassCreate) defaults() {
 		v := class.DefaultCreatedTime()
 		cc.mutation.SetCreatedTime(v)
 	}
-	if _, ok := cc.mutation.DeletedTime(); !ok {
-		v := class.DefaultDeletedTime
-		cc.mutation.SetDeletedTime(v)
-	}
-	if _, ok := cc.mutation.ModifiedTime(); !ok {
-		v := class.DefaultModifiedTime
-		cc.mutation.SetModifiedTime(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -188,12 +180,6 @@ func (cc *ClassCreate) check() error {
 	}
 	if _, ok := cc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "Class.created_time"`)}
-	}
-	if _, ok := cc.mutation.DeletedTime(); !ok {
-		return &ValidationError{Name: "deleted_time", err: errors.New(`ent: missing required field "Class.deleted_time"`)}
-	}
-	if _, ok := cc.mutation.ModifiedTime(); !ok {
-		return &ValidationError{Name: "modified_time", err: errors.New(`ent: missing required field "Class.modified_time"`)}
 	}
 	if _, ok := cc.mutation.CollegeID(); !ok {
 		return &ValidationError{Name: "college", err: errors.New(`ent: missing required edge "Class.college"`)}
@@ -240,15 +226,15 @@ func (cc *ClassCreate) createSpec() (*Class, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := cc.mutation.CreatedTime(); ok {
 		_spec.SetField(class.FieldCreatedTime, field.TypeTime, value)
-		_node.CreatedTime = value
+		_node.CreatedTime = &value
 	}
 	if value, ok := cc.mutation.DeletedTime(); ok {
 		_spec.SetField(class.FieldDeletedTime, field.TypeTime, value)
-		_node.DeletedTime = value
+		_node.DeletedTime = &value
 	}
 	if value, ok := cc.mutation.ModifiedTime(); ok {
 		_spec.SetField(class.FieldModifiedTime, field.TypeTime, value)
-		_node.ModifiedTime = value
+		_node.ModifiedTime = &value
 	}
 	if nodes := cc.mutation.CollegeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
