@@ -152,7 +152,7 @@ func (urc *UserRoleCreate) createSpec() (*UserRole, *sqlgraph.CreateSpec) {
 	)
 	if value, ok := urc.mutation.CreatedTime(); ok {
 		_spec.SetField(userrole.FieldCreatedTime, field.TypeTime, value)
-		_node.CreatedTime = value
+		_node.CreatedTime = &value
 	}
 	if nodes := urc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

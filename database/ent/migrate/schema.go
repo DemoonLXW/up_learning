@@ -89,8 +89,8 @@ var (
 		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "json_menu", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime},
-		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
 		{Name: "rid", Type: field.TypeUint8},
 	}
 	// MenuTable holds the schema information for the "menu" table.
@@ -130,8 +130,8 @@ var (
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
-		{Name: "modified_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
 	}
 	// RoleTable holds the schema information for the "role" table.
 	RoleTable = &schema.Table{

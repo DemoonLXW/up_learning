@@ -89,6 +89,12 @@ func (mu *MenuUpdate) SetNillableDeletedTime(t *time.Time) *MenuUpdate {
 	return mu
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (mu *MenuUpdate) ClearDeletedTime() *MenuUpdate {
+	mu.mutation.ClearDeletedTime()
+	return mu
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (mu *MenuUpdate) SetModifiedTime(t time.Time) *MenuUpdate {
 	mu.mutation.SetModifiedTime(t)
@@ -100,6 +106,12 @@ func (mu *MenuUpdate) SetNillableModifiedTime(t *time.Time) *MenuUpdate {
 	if t != nil {
 		mu.SetModifiedTime(*t)
 	}
+	return mu
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (mu *MenuUpdate) ClearModifiedTime() *MenuUpdate {
+	mu.mutation.ClearModifiedTime()
 	return mu
 }
 
@@ -197,8 +209,14 @@ func (mu *MenuUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := mu.mutation.DeletedTime(); ok {
 		_spec.SetField(menu.FieldDeletedTime, field.TypeTime, value)
 	}
+	if mu.mutation.DeletedTimeCleared() {
+		_spec.ClearField(menu.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := mu.mutation.ModifiedTime(); ok {
 		_spec.SetField(menu.FieldModifiedTime, field.TypeTime, value)
+	}
+	if mu.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(menu.FieldModifiedTime, field.TypeTime)
 	}
 	if mu.mutation.RoleCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -307,6 +325,12 @@ func (muo *MenuUpdateOne) SetNillableDeletedTime(t *time.Time) *MenuUpdateOne {
 	return muo
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (muo *MenuUpdateOne) ClearDeletedTime() *MenuUpdateOne {
+	muo.mutation.ClearDeletedTime()
+	return muo
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (muo *MenuUpdateOne) SetModifiedTime(t time.Time) *MenuUpdateOne {
 	muo.mutation.SetModifiedTime(t)
@@ -318,6 +342,12 @@ func (muo *MenuUpdateOne) SetNillableModifiedTime(t *time.Time) *MenuUpdateOne {
 	if t != nil {
 		muo.SetModifiedTime(*t)
 	}
+	return muo
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (muo *MenuUpdateOne) ClearModifiedTime() *MenuUpdateOne {
+	muo.mutation.ClearModifiedTime()
 	return muo
 }
 
@@ -445,8 +475,14 @@ func (muo *MenuUpdateOne) sqlSave(ctx context.Context) (_node *Menu, err error) 
 	if value, ok := muo.mutation.DeletedTime(); ok {
 		_spec.SetField(menu.FieldDeletedTime, field.TypeTime, value)
 	}
+	if muo.mutation.DeletedTimeCleared() {
+		_spec.ClearField(menu.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := muo.mutation.ModifiedTime(); ok {
 		_spec.SetField(menu.FieldModifiedTime, field.TypeTime, value)
+	}
+	if muo.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(menu.FieldModifiedTime, field.TypeTime)
 	}
 	if muo.mutation.RoleCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -152,7 +152,7 @@ func (rpc *RolePermissionCreate) createSpec() (*RolePermission, *sqlgraph.Create
 	)
 	if value, ok := rpc.mutation.CreatedTime(); ok {
 		_spec.SetField(rolepermission.FieldCreatedTime, field.TypeTime, value)
-		_node.CreatedTime = value
+		_node.CreatedTime = &value
 	}
 	if nodes := rpc.mutation.RoleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

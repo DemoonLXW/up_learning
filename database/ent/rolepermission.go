@@ -22,7 +22,7 @@ type RolePermission struct {
 	// Pid holds the value of the "pid" field.
 	Pid uint16 `json:"pid,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
-	CreatedTime time.Time `json:"created_time,omitempty"`
+	CreatedTime *time.Time `json:"created_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RolePermissionQuery when eager-loading is set.
 	Edges        RolePermissionEdges `json:"edges"`
@@ -106,7 +106,8 @@ func (rp *RolePermission) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_time", values[i])
 			} else if value.Valid {
-				rp.CreatedTime = value.Time
+				rp.CreatedTime = new(time.Time)
+				*rp.CreatedTime = value.Time
 			}
 		default:
 			rp.selectValues.Set(columns[i], values[i])
@@ -159,8 +160,10 @@ func (rp *RolePermission) String() string {
 	builder.WriteString("pid=")
 	builder.WriteString(fmt.Sprintf("%v", rp.Pid))
 	builder.WriteString(", ")
-	builder.WriteString("created_time=")
-	builder.WriteString(rp.CreatedTime.Format(time.ANSIC))
+	if v := rp.CreatedTime; v != nil {
+		builder.WriteString("created_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

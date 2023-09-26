@@ -22,7 +22,7 @@ type UserRole struct {
 	// Rid holds the value of the "rid" field.
 	Rid uint8 `json:"rid,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
-	CreatedTime time.Time `json:"created_time,omitempty"`
+	CreatedTime *time.Time `json:"created_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserRoleQuery when eager-loading is set.
 	Edges        UserRoleEdges `json:"edges"`
@@ -106,7 +106,8 @@ func (ur *UserRole) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_time", values[i])
 			} else if value.Valid {
-				ur.CreatedTime = value.Time
+				ur.CreatedTime = new(time.Time)
+				*ur.CreatedTime = value.Time
 			}
 		default:
 			ur.selectValues.Set(columns[i], values[i])
@@ -159,8 +160,10 @@ func (ur *UserRole) String() string {
 	builder.WriteString("rid=")
 	builder.WriteString(fmt.Sprintf("%v", ur.Rid))
 	builder.WriteString(", ")
-	builder.WriteString("created_time=")
-	builder.WriteString(ur.CreatedTime.Format(time.ANSIC))
+	if v := ur.CreatedTime; v != nil {
+		builder.WriteString("created_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

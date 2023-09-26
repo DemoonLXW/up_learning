@@ -28,6 +28,7 @@ func (UserRole) Fields() []ent.Field {
 		field.Uint32("uid"),
 		field.Uint8("rid"),
 		field.Time("created_time").
+			Nillable().
 			Default(time.Now),
 	}
 }

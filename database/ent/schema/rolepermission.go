@@ -28,6 +28,7 @@ func (RolePermission) Fields() []ent.Field {
 		field.Uint8("rid"),
 		field.Uint16("pid"),
 		field.Time("created_time").
+			Nillable().
 			Default(time.Now),
 	}
 }

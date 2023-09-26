@@ -35,14 +35,14 @@ func (Menu) Fields() []ent.Field {
 			Optional(),
 		field.Uint8("rid"),
 		field.Time("created_time").
-			Default(time.Now).
-			Nillable(),
+			Nillable().
+			Default(time.Now),
 		field.Time("deleted_time").
-			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			Nillable(),
+			Nillable().
+			Optional(),
 		field.Time("modified_time").
-			Default(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			Nillable(),
+			Nillable().
+			Optional(),
 	}
 }
 

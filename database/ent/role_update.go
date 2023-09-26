@@ -99,6 +99,12 @@ func (ru *RoleUpdate) SetNillableModifiedTime(t *time.Time) *RoleUpdate {
 	return ru
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (ru *RoleUpdate) ClearModifiedTime() *RoleUpdate {
+	ru.mutation.ClearModifiedTime()
+	return ru
+}
+
 // SetDeletedTime sets the "deleted_time" field.
 func (ru *RoleUpdate) SetDeletedTime(t time.Time) *RoleUpdate {
 	ru.mutation.SetDeletedTime(t)
@@ -110,6 +116,12 @@ func (ru *RoleUpdate) SetNillableDeletedTime(t *time.Time) *RoleUpdate {
 	if t != nil {
 		ru.SetDeletedTime(*t)
 	}
+	return ru
+}
+
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (ru *RoleUpdate) ClearDeletedTime() *RoleUpdate {
+	ru.mutation.ClearDeletedTime()
 	return ru
 }
 
@@ -293,8 +305,14 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ru.mutation.ModifiedTime(); ok {
 		_spec.SetField(role.FieldModifiedTime, field.TypeTime, value)
 	}
+	if ru.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(role.FieldModifiedTime, field.TypeTime)
+	}
 	if value, ok := ru.mutation.DeletedTime(); ok {
 		_spec.SetField(role.FieldDeletedTime, field.TypeTime, value)
+	}
+	if ru.mutation.DeletedTimeCleared() {
+		_spec.ClearField(role.FieldDeletedTime, field.TypeTime)
 	}
 	if ru.mutation.PermissionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -543,6 +561,12 @@ func (ruo *RoleUpdateOne) SetNillableModifiedTime(t *time.Time) *RoleUpdateOne {
 	return ruo
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (ruo *RoleUpdateOne) ClearModifiedTime() *RoleUpdateOne {
+	ruo.mutation.ClearModifiedTime()
+	return ruo
+}
+
 // SetDeletedTime sets the "deleted_time" field.
 func (ruo *RoleUpdateOne) SetDeletedTime(t time.Time) *RoleUpdateOne {
 	ruo.mutation.SetDeletedTime(t)
@@ -554,6 +578,12 @@ func (ruo *RoleUpdateOne) SetNillableDeletedTime(t *time.Time) *RoleUpdateOne {
 	if t != nil {
 		ruo.SetDeletedTime(*t)
 	}
+	return ruo
+}
+
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (ruo *RoleUpdateOne) ClearDeletedTime() *RoleUpdateOne {
+	ruo.mutation.ClearDeletedTime()
 	return ruo
 }
 
@@ -767,8 +797,14 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 	if value, ok := ruo.mutation.ModifiedTime(); ok {
 		_spec.SetField(role.FieldModifiedTime, field.TypeTime, value)
 	}
+	if ruo.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(role.FieldModifiedTime, field.TypeTime)
+	}
 	if value, ok := ruo.mutation.DeletedTime(); ok {
 		_spec.SetField(role.FieldDeletedTime, field.TypeTime, value)
+	}
+	if ruo.mutation.DeletedTimeCleared() {
+		_spec.ClearField(role.FieldDeletedTime, field.TypeTime)
 	}
 	if ruo.mutation.PermissionsCleared() {
 		edge := &sqlgraph.EdgeSpec{

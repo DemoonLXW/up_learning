@@ -138,14 +138,6 @@ func (mc *MenuCreate) defaults() {
 		v := menu.DefaultCreatedTime()
 		mc.mutation.SetCreatedTime(v)
 	}
-	if _, ok := mc.mutation.DeletedTime(); !ok {
-		v := menu.DefaultDeletedTime
-		mc.mutation.SetDeletedTime(v)
-	}
-	if _, ok := mc.mutation.ModifiedTime(); !ok {
-		v := menu.DefaultModifiedTime
-		mc.mutation.SetModifiedTime(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -163,12 +155,6 @@ func (mc *MenuCreate) check() error {
 	}
 	if _, ok := mc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "Menu.created_time"`)}
-	}
-	if _, ok := mc.mutation.DeletedTime(); !ok {
-		return &ValidationError{Name: "deleted_time", err: errors.New(`ent: missing required field "Menu.deleted_time"`)}
-	}
-	if _, ok := mc.mutation.ModifiedTime(); !ok {
-		return &ValidationError{Name: "modified_time", err: errors.New(`ent: missing required field "Menu.modified_time"`)}
 	}
 	if _, ok := mc.mutation.RoleID(); !ok {
 		return &ValidationError{Name: "role", err: errors.New(`ent: missing required edge "Menu.role"`)}

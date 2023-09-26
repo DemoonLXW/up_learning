@@ -72,14 +72,6 @@ func init() {
 	menuDescCreatedTime := menuFields[4].Descriptor()
 	// menu.DefaultCreatedTime holds the default value on creation for the created_time field.
 	menu.DefaultCreatedTime = menuDescCreatedTime.Default.(func() time.Time)
-	// menuDescDeletedTime is the schema descriptor for deleted_time field.
-	menuDescDeletedTime := menuFields[5].Descriptor()
-	// menu.DefaultDeletedTime holds the default value on creation for the deleted_time field.
-	menu.DefaultDeletedTime = menuDescDeletedTime.Default.(time.Time)
-	// menuDescModifiedTime is the schema descriptor for modified_time field.
-	menuDescModifiedTime := menuFields[6].Descriptor()
-	// menu.DefaultModifiedTime holds the default value on creation for the modified_time field.
-	menu.DefaultModifiedTime = menuDescModifiedTime.Default.(time.Time)
 	permissionFields := schema.Permission{}.Fields()
 	_ = permissionFields
 	// permissionDescAction is the schema descriptor for action field.
@@ -108,14 +100,6 @@ func init() {
 	roleDescCreatedTime := roleFields[4].Descriptor()
 	// role.DefaultCreatedTime holds the default value on creation for the created_time field.
 	role.DefaultCreatedTime = roleDescCreatedTime.Default.(func() time.Time)
-	// roleDescModifiedTime is the schema descriptor for modified_time field.
-	roleDescModifiedTime := roleFields[5].Descriptor()
-	// role.DefaultModifiedTime holds the default value on creation for the modified_time field.
-	role.DefaultModifiedTime = roleDescModifiedTime.Default.(time.Time)
-	// roleDescDeletedTime is the schema descriptor for deleted_time field.
-	roleDescDeletedTime := roleFields[6].Descriptor()
-	// role.DefaultDeletedTime holds the default value on creation for the deleted_time field.
-	role.DefaultDeletedTime = roleDescDeletedTime.Default.(time.Time)
 	rolepermissionFields := schema.RolePermission{}.Fields()
 	_ = rolepermissionFields
 	// rolepermissionDescCreatedTime is the schema descriptor for created_time field.

@@ -2904,9 +2904,22 @@ func (m *MenuMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err er
 	return oldValue.DeletedTime, nil
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (m *MenuMutation) ClearDeletedTime() {
+	m.deleted_time = nil
+	m.clearedFields[menu.FieldDeletedTime] = struct{}{}
+}
+
+// DeletedTimeCleared returns if the "deleted_time" field was cleared in this mutation.
+func (m *MenuMutation) DeletedTimeCleared() bool {
+	_, ok := m.clearedFields[menu.FieldDeletedTime]
+	return ok
+}
+
 // ResetDeletedTime resets all changes to the "deleted_time" field.
 func (m *MenuMutation) ResetDeletedTime() {
 	m.deleted_time = nil
+	delete(m.clearedFields, menu.FieldDeletedTime)
 }
 
 // SetModifiedTime sets the "modified_time" field.
@@ -2940,9 +2953,22 @@ func (m *MenuMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err e
 	return oldValue.ModifiedTime, nil
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (m *MenuMutation) ClearModifiedTime() {
+	m.modified_time = nil
+	m.clearedFields[menu.FieldModifiedTime] = struct{}{}
+}
+
+// ModifiedTimeCleared returns if the "modified_time" field was cleared in this mutation.
+func (m *MenuMutation) ModifiedTimeCleared() bool {
+	_, ok := m.clearedFields[menu.FieldModifiedTime]
+	return ok
+}
+
 // ResetModifiedTime resets all changes to the "modified_time" field.
 func (m *MenuMutation) ResetModifiedTime() {
 	m.modified_time = nil
+	delete(m.clearedFields, menu.FieldModifiedTime)
 }
 
 // SetRoleID sets the "role" edge to the Role entity by id.
@@ -3165,6 +3191,12 @@ func (m *MenuMutation) ClearedFields() []string {
 	if m.FieldCleared(menu.FieldJSONMenu) {
 		fields = append(fields, menu.FieldJSONMenu)
 	}
+	if m.FieldCleared(menu.FieldDeletedTime) {
+		fields = append(fields, menu.FieldDeletedTime)
+	}
+	if m.FieldCleared(menu.FieldModifiedTime) {
+		fields = append(fields, menu.FieldModifiedTime)
+	}
 	return fields
 }
 
@@ -3181,6 +3213,12 @@ func (m *MenuMutation) ClearField(name string) error {
 	switch name {
 	case menu.FieldJSONMenu:
 		m.ClearJSONMenu()
+		return nil
+	case menu.FieldDeletedTime:
+		m.ClearDeletedTime()
+		return nil
+	case menu.FieldModifiedTime:
+		m.ClearModifiedTime()
 		return nil
 	}
 	return fmt.Errorf("unknown Menu nullable field %s", name)
@@ -4310,7 +4348,7 @@ func (m *RoleMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the Role entity.
 // If the Role object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoleMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
+func (m *RoleMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -4346,7 +4384,7 @@ func (m *RoleMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the Role entity.
 // If the Role object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoleMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
+func (m *RoleMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -4360,9 +4398,22 @@ func (m *RoleMutation) OldModifiedTime(ctx context.Context) (v time.Time, err er
 	return oldValue.ModifiedTime, nil
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (m *RoleMutation) ClearModifiedTime() {
+	m.modified_time = nil
+	m.clearedFields[role.FieldModifiedTime] = struct{}{}
+}
+
+// ModifiedTimeCleared returns if the "modified_time" field was cleared in this mutation.
+func (m *RoleMutation) ModifiedTimeCleared() bool {
+	_, ok := m.clearedFields[role.FieldModifiedTime]
+	return ok
+}
+
 // ResetModifiedTime resets all changes to the "modified_time" field.
 func (m *RoleMutation) ResetModifiedTime() {
 	m.modified_time = nil
+	delete(m.clearedFields, role.FieldModifiedTime)
 }
 
 // SetDeletedTime sets the "deleted_time" field.
@@ -4382,7 +4433,7 @@ func (m *RoleMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the Role entity.
 // If the Role object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RoleMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
+func (m *RoleMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -4396,9 +4447,22 @@ func (m *RoleMutation) OldDeletedTime(ctx context.Context) (v time.Time, err err
 	return oldValue.DeletedTime, nil
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (m *RoleMutation) ClearDeletedTime() {
+	m.deleted_time = nil
+	m.clearedFields[role.FieldDeletedTime] = struct{}{}
+}
+
+// DeletedTimeCleared returns if the "deleted_time" field was cleared in this mutation.
+func (m *RoleMutation) DeletedTimeCleared() bool {
+	_, ok := m.clearedFields[role.FieldDeletedTime]
+	return ok
+}
+
 // ResetDeletedTime resets all changes to the "deleted_time" field.
 func (m *RoleMutation) ResetDeletedTime() {
 	m.deleted_time = nil
+	delete(m.clearedFields, role.FieldDeletedTime)
 }
 
 // AddPermissionIDs adds the "permissions" edge to the Permission entity by ids.
@@ -4741,6 +4805,12 @@ func (m *RoleMutation) ClearedFields() []string {
 	if m.FieldCleared(role.FieldDescription) {
 		fields = append(fields, role.FieldDescription)
 	}
+	if m.FieldCleared(role.FieldModifiedTime) {
+		fields = append(fields, role.FieldModifiedTime)
+	}
+	if m.FieldCleared(role.FieldDeletedTime) {
+		fields = append(fields, role.FieldDeletedTime)
+	}
 	return fields
 }
 
@@ -4757,6 +4827,12 @@ func (m *RoleMutation) ClearField(name string) error {
 	switch name {
 	case role.FieldDescription:
 		m.ClearDescription()
+		return nil
+	case role.FieldModifiedTime:
+		m.ClearModifiedTime()
+		return nil
+	case role.FieldDeletedTime:
+		m.ClearDeletedTime()
 		return nil
 	}
 	return fmt.Errorf("unknown Role nullable field %s", name)
