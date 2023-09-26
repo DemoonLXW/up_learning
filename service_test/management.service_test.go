@@ -486,7 +486,7 @@ func TestCreateSchool(t *testing.T) {
 		Remark:              "",
 	}
 
-	schools := []*entity.ToAddSchool{&school1, &school2, &school4, &school5}
+	schools := []*entity.ToAddSchool{&school2, &school1, &school5, &school4}
 
 	err = serv.CreateSchool(schools)
 	assert.Nil(t, err)

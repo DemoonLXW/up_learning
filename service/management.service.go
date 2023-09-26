@@ -749,7 +749,6 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId 
 		func(s *sql.Selector) {
 			s.Where(sql.IsNull(role.FieldDeletedTime))
 		},
-		// role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 		role.IsDisabledEQ(false),
 		role.IDEQ(roleId),
 	)).First(ctx)
@@ -766,7 +765,6 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId 
 	length := len(toCreates)
 
 	for ; current < length; current++ {
-		// id, err := tx.User.Query().Where(user.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
 		id, err := tx.User.Query().Where(func(s *sql.Selector) {
 			s.Where(sql.NotNull(user.FieldDeletedTime))
 		}).FirstID(ctx)
@@ -779,7 +777,6 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId 
 
 		num, err := tx.User.Update().Where(user.And(
 			user.IDEQ(id),
-			// user.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 			func(s *sql.Selector) {
 				s.Where(sql.NotNull(user.FieldDeletedTime))
 			},
@@ -787,8 +784,6 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId 
 			SetCreatedTime(time.Now()).
 			ClearModifiedTime().
 			ClearDeletedTime().
-			// SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			// SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
 			SetAccount(*toCreates[current].Account).
 			SetUsername(*toCreates[current].Username).
 			SetIntroduction("").
@@ -991,7 +986,9 @@ func (serv *ManagementService) CreateSchool(toCreates []*entity.ToAddSchool) err
 	current := 0
 	length := len(toCreates)
 	for ; current < length; current++ {
-		id, err := tx.School.Query().Where(school.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+		id, err := tx.School.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(school.FieldDeletedTime))
+		}).FirstID(ctx)
 		if err != nil {
 			if !ent.IsNotFound(err) {
 				return fmt.Errorf("create school find a deleted school id query failed: %w", err)
@@ -1001,11 +998,13 @@ func (serv *ManagementService) CreateSchool(toCreates []*entity.ToAddSchool) err
 
 		num, err := tx.School.Update().Where(school.And(
 			school.IDEQ(id),
-			school.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(school.FieldDeletedTime))
+			},
 		)).
 			SetCreatedTime(time.Now()).
-			SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			ClearModifiedTime().
+			ClearDeletedTime().
 			SetIsDisabled(false).
 			SetCode(toCreates[current].Code).
 			SetName(toCreates[current].Name).
