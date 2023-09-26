@@ -31,19 +31,19 @@ func TestCreatePermission(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	action1 := "import school"
-	description1 := "import school description"
+	action1 := "action00"
+	description1 := "i description"
 	permission1 := entity.ToAddPermission{
 		Action:      &action1,
 		Description: &description1,
 	}
 
-	// action2 := "action12"
-	// description2 := "action12 description"
-	// permission2 := entity.ToAddPermission{
-	// 	Action:      &action2,
-	// 	Description: &description2,
-	// }
+	action2 := "action11"
+	description2 := "12 description"
+	permission2 := entity.ToAddPermission{
+		Action:      &action2,
+		Description: &description2,
+	}
 	// action3 := "action13"
 	// description3 := "action13 description"
 	// permission3 := entity.ToAddPermission{
@@ -57,25 +57,22 @@ func TestCreatePermission(t *testing.T) {
 	// 	Description: &description4,
 	// }
 	// err = serv.CreatePermission([]*entity.ToAddPermission{&permission1, &permission2, &permission3, &permission4})
-	err = serv.CreatePermission([]*entity.ToAddPermission{&permission1})
+	err = serv.CreatePermission([]*entity.ToAddPermission{&permission1, &permission2})
 	assert.Nil(t, err)
 
 }
 
 func TestUpdatePermission(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	serv := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	serv.DB = db
 
 	// action := "test update permssion in service hhhhhh"
-	// description := "test"
+	description := ""
 	// disabled := true
 	permission := entity.ToModifyPermission{
-		ID: 3,
+		ID: 8,
 		// Action:      &action,
-		// Description: &description,
+		Description: &description,
 		// IsDisabled:  &disabled,
 	}
 	err = serv.UpdatePermission(&permission)
@@ -84,30 +81,27 @@ func TestUpdatePermission(t *testing.T) {
 }
 
 func TestRetrievePermission(t *testing.T) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	dao := new(service.ManagementService)
-	db, err := injection.ProvideDataBase()
+	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
-	dao.DB = db
 
-	current := 2
-	pageSize := 3
+	// current := 2
+	// pageSize := 3
 	order := true
-	disabled := false
-	permissons, err := dao.RetrievePermission(&current, &pageSize, "", "id", &order, &disabled)
+	// disabled := false
+	permissons, err := serv.RetrievePermission(nil, nil, "", "id", &order, nil)
 	assert.Nil(t, err)
-	for _, v := range permissons {
+	// for _, v := range permissons {
 
-		fmt.Println(v)
-	}
-	assert.Len(t, permissons, 3)
+	// 	fmt.Println(v)
+	// }
+	assert.Len(t, permissons, 14)
 }
 
 func TestDeletePermission(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	IDs := []uint16{9, 11, 13, 14}
+	IDs := []uint16{15}
 	err = serv.DeletePermission(IDs)
 	assert.Nil(t, err)
 
@@ -255,45 +249,19 @@ func TestGetTotalRetrievedPermissions(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	delete := false
-	total, err := serv.GetTotalRetrievedPermissions("created", &delete)
+	// delete := false
+	total, err := serv.GetTotalRetrievedPermissions("", nil)
 	assert.Nil(t, err)
-	assert.Equal(t, 1, total)
-}
-
-func TestUpdateDeletedPermission(t *testing.T) {
-	serv, err := CreateTestManagementService()
-	assert.Nil(t, err)
-
-	action := "test1 modify deleted permission"
-	description := "deleted permission description"
-	isDisabled := false
-	p := &entity.ToModifyPermission{
-		ID:          8,
-		Action:      &action,
-		Description: &description,
-		IsDisabled:  &isDisabled,
-	}
-	err = serv.UpdateDeletedPermission(p)
-	assert.Nil(t, err)
-}
-
-func TestFindADeletedPermissionID(t *testing.T) {
-	serv, err := CreateTestManagementService()
-	assert.Nil(t, err)
-
-	id, err := serv.FindADeletedPermissionID()
-	assert.Nil(t, err)
-	fmt.Println(id)
+	assert.Equal(t, 14, total)
 }
 
 func TestFindOnePermissionById(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	role, err := serv.FindOnePermissionById(3)
+	p, err := serv.FindOnePermissionById(14)
 	assert.Nil(t, err)
-	fmt.Println(role)
+	fmt.Println(p)
 
 }
 

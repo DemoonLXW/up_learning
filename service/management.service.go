@@ -37,7 +37,9 @@ func (serv *ManagementService) CreatePermission(toCreates []*entity.ToAddPermiss
 	current := 0
 	length := len(toCreates)
 	for ; current < length; current++ {
-		id, err := tx.Permission.Query().Where(permission.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+		id, err := tx.Permission.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(permission.FieldDeletedTime))
+		}).FirstID(ctx)
 		if err != nil {
 			if !ent.IsNotFound(err) {
 				return fmt.Errorf("create permission find a deleted permission id query failed: %w", err)
@@ -47,11 +49,13 @@ func (serv *ManagementService) CreatePermission(toCreates []*entity.ToAddPermiss
 
 		num, err := tx.Permission.Update().Where(permission.And(
 			permission.IDEQ(id),
-			permission.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(permission.FieldDeletedTime))
+			},
 		)).
 			SetCreatedTime(time.Now()).
-			SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			ClearModifiedTime().
+			ClearDeletedTime().
 			SetAction(*toCreates[current].Action).
 			SetDescription(*toCreates[current].Description).
 			SetIsDisabled(false).
@@ -99,7 +103,12 @@ func (serv *ManagementService) UpdatePermission(toUpdate *entity.ToModifyPermiss
 		return fmt.Errorf("update permission start a transaction failed: %w", err)
 	}
 
-	updater := tx.Permission.Update().Where(permission.IDEQ(toUpdate.ID), permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)))
+	updater := tx.Permission.Update().Where(
+		permission.IDEQ(toUpdate.ID),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(permission.FieldDeletedTime))
+		},
+	)
 	mutation := updater.Mutation()
 	// Action can not be modified, should be fixed
 	// if toUpdate.Action != nil {
@@ -140,11 +149,11 @@ func (serv *ManagementService) RetrievePermission(current, pageSize *int, like, 
 					permission.DescriptionContains(like),
 				),
 				func(s *sql.Selector) {
+					s.Where(sql.IsNull(permission.FieldDeletedTime))
 					if isDisabled != nil {
 						s.Where(sql.EQ(permission.FieldIsDisabled, *isDisabled))
 					}
 				},
-				permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 			),
 		).
 		Order(func(s *sql.Selector) {
@@ -182,7 +191,9 @@ func (serv *ManagementService) DeletePermission(toDeleteIDs []uint16) error {
 
 	original, err := tx.Permission.Query().Where(permission.And(
 		permission.IDIn(toDeleteIDs...),
-		permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(permission.FieldDeletedTime))
+		},
 	)).All(ctx)
 	if err != nil || len(original) != len(toDeleteIDs) {
 		return fmt.Errorf("delete permissions not found permissions failed: %w", err)
@@ -192,9 +203,12 @@ func (serv *ManagementService) DeletePermission(toDeleteIDs []uint16) error {
 		num, err := tx.Permission.Update().
 			Where(permission.And(
 				permission.IDEQ(v.ID),
-				permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+				func(s *sql.Selector) {
+					s.Where(sql.IsNull(permission.FieldDeletedTime))
+				},
 			)).
 			SetDeletedTime(time.Now()).
+			ClearModifiedTime().
 			SetAction("*" + v.Action).
 			ClearRoles().
 			Save(ctx)
@@ -497,11 +511,11 @@ func (serv *ManagementService) GetTotalRetrievedPermissions(like string, isDisab
 					permission.DescriptionContains(like),
 				),
 				func(s *sql.Selector) {
+					s.Where(sql.IsNull(permission.FieldDeletedTime))
 					if isDisabled != nil {
 						s.Where(sql.EQ(permission.FieldIsDisabled, *isDisabled))
 					}
 				},
-				permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 			),
 		).Count(ctx)
 
@@ -512,55 +526,13 @@ func (serv *ManagementService) GetTotalRetrievedPermissions(like string, isDisab
 	return total, nil
 }
 
-func (serv *ManagementService) UpdateDeletedPermission(toUpdate *entity.ToModifyPermission) error {
-	ctx := context.Background()
-
-	tx, err := serv.DB.Tx(ctx)
-	if err != nil {
-		return fmt.Errorf("update deleted permission start a transaction failed: %w", err)
-	}
-
-	num, err := tx.Permission.Update().Where(permission.And(
-		permission.IDEQ(toUpdate.ID),
-		permission.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
-	)).
-		SetCreatedTime(time.Now()).
-		SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-		SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-		SetAction(*toUpdate.Action).
-		SetDescription(*toUpdate.Description).
-		SetIsDisabled(*toUpdate.IsDisabled).
-		Save(ctx)
-	if err != nil {
-		return rollback(tx, "update deleted permission", err)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return fmt.Errorf("update deleted permission transaction commit failed: %w", err)
-	}
-	if num == 0 {
-		return fmt.Errorf("update deleted permission affect 0 row")
-	}
-
-	return nil
-}
-
-func (serv *ManagementService) FindADeletedPermissionID() (uint16, error) {
-	ctx := context.Background()
-
-	id, err := serv.DB.Permission.Query().Where(permission.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
-	if err != nil {
-		return 0, fmt.Errorf("find a deleted permission id query failed: %w", err)
-	}
-	return id, nil
-}
-
 func (serv *ManagementService) FindOnePermissionById(id uint16) (*ent.Permission, error) {
 	ctx := context.Background()
 	p, err := serv.DB.Permission.Query().Where(
 		permission.IDEQ(id),
-		permission.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(permission.FieldDeletedTime))
+		},
 	).First(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("permission find one by id failed: %w", err)
@@ -691,7 +663,6 @@ func (serv *ManagementService) RetrieveUser(current, pageSize *int, like, sort s
 				s.Where(sql.EQ(user.FieldIsDisabled, *isDisabled))
 			}
 		},
-		// user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 	)).
 		Order(func(s *sql.Selector) {
 			isSorted := sort != "" && (sort == user.FieldID || sort == user.FieldAccount || sort == user.FieldUsername || sort == user.FieldEmail || sort == user.FieldPhone || sort == user.FieldIsDisabled)
@@ -732,7 +703,6 @@ func (serv *ManagementService) GetTotalRetrievedUsers(like string, isDisabled *b
 				s.Where(sql.EQ(user.FieldIsDisabled, *isDisabled))
 			}
 		},
-		// user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 	)).Count(ctx)
 
 	if err != nil {
