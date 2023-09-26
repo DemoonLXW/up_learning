@@ -78,14 +78,6 @@ func init() {
 	fileDescCreatedTime := fileFields[6].Descriptor()
 	// file.DefaultCreatedTime holds the default value on creation for the created_time field.
 	file.DefaultCreatedTime = fileDescCreatedTime.Default.(func() time.Time)
-	// fileDescDeletedTime is the schema descriptor for deleted_time field.
-	fileDescDeletedTime := fileFields[7].Descriptor()
-	// file.DefaultDeletedTime holds the default value on creation for the deleted_time field.
-	file.DefaultDeletedTime = fileDescDeletedTime.Default.(time.Time)
-	// fileDescModifiedTime is the schema descriptor for modified_time field.
-	fileDescModifiedTime := fileFields[8].Descriptor()
-	// file.DefaultModifiedTime holds the default value on creation for the modified_time field.
-	file.DefaultModifiedTime = fileDescModifiedTime.Default.(time.Time)
 	menuFields := schema.Menu{}.Fields()
 	_ = menuFields
 	// menuDescName is the schema descriptor for name field.
@@ -164,14 +156,6 @@ func init() {
 	samplefileDescCreatedTime := samplefileFields[4].Descriptor()
 	// samplefile.DefaultCreatedTime holds the default value on creation for the created_time field.
 	samplefile.DefaultCreatedTime = samplefileDescCreatedTime.Default.(func() time.Time)
-	// samplefileDescDeletedTime is the schema descriptor for deleted_time field.
-	samplefileDescDeletedTime := samplefileFields[5].Descriptor()
-	// samplefile.DefaultDeletedTime holds the default value on creation for the deleted_time field.
-	samplefile.DefaultDeletedTime = samplefileDescDeletedTime.Default.(time.Time)
-	// samplefileDescModifiedTime is the schema descriptor for modified_time field.
-	samplefileDescModifiedTime := samplefileFields[6].Descriptor()
-	// samplefile.DefaultModifiedTime holds the default value on creation for the modified_time field.
-	samplefile.DefaultModifiedTime = samplefileDescModifiedTime.Default.(time.Time)
 	schoolFields := schema.School{}.Fields()
 	_ = schoolFields
 	// schoolDescIsDisabled is the schema descriptor for is_disabled field.

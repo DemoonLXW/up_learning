@@ -71,7 +71,7 @@ func Path(v string) predicate.File {
 }
 
 // Size applies equality check predicate on the "size" field. It's identical to SizeEQ.
-func Size(v string) predicate.File {
+func Size(v int64) predicate.File {
 	return predicate.File(sql.FieldEQ(FieldSize, v))
 }
 
@@ -246,68 +246,53 @@ func PathContainsFold(v string) predicate.File {
 }
 
 // SizeEQ applies the EQ predicate on the "size" field.
-func SizeEQ(v string) predicate.File {
+func SizeEQ(v int64) predicate.File {
 	return predicate.File(sql.FieldEQ(FieldSize, v))
 }
 
 // SizeNEQ applies the NEQ predicate on the "size" field.
-func SizeNEQ(v string) predicate.File {
+func SizeNEQ(v int64) predicate.File {
 	return predicate.File(sql.FieldNEQ(FieldSize, v))
 }
 
 // SizeIn applies the In predicate on the "size" field.
-func SizeIn(vs ...string) predicate.File {
+func SizeIn(vs ...int64) predicate.File {
 	return predicate.File(sql.FieldIn(FieldSize, vs...))
 }
 
 // SizeNotIn applies the NotIn predicate on the "size" field.
-func SizeNotIn(vs ...string) predicate.File {
+func SizeNotIn(vs ...int64) predicate.File {
 	return predicate.File(sql.FieldNotIn(FieldSize, vs...))
 }
 
 // SizeGT applies the GT predicate on the "size" field.
-func SizeGT(v string) predicate.File {
+func SizeGT(v int64) predicate.File {
 	return predicate.File(sql.FieldGT(FieldSize, v))
 }
 
 // SizeGTE applies the GTE predicate on the "size" field.
-func SizeGTE(v string) predicate.File {
+func SizeGTE(v int64) predicate.File {
 	return predicate.File(sql.FieldGTE(FieldSize, v))
 }
 
 // SizeLT applies the LT predicate on the "size" field.
-func SizeLT(v string) predicate.File {
+func SizeLT(v int64) predicate.File {
 	return predicate.File(sql.FieldLT(FieldSize, v))
 }
 
 // SizeLTE applies the LTE predicate on the "size" field.
-func SizeLTE(v string) predicate.File {
+func SizeLTE(v int64) predicate.File {
 	return predicate.File(sql.FieldLTE(FieldSize, v))
 }
 
-// SizeContains applies the Contains predicate on the "size" field.
-func SizeContains(v string) predicate.File {
-	return predicate.File(sql.FieldContains(FieldSize, v))
+// SizeIsNil applies the IsNil predicate on the "size" field.
+func SizeIsNil() predicate.File {
+	return predicate.File(sql.FieldIsNull(FieldSize))
 }
 
-// SizeHasPrefix applies the HasPrefix predicate on the "size" field.
-func SizeHasPrefix(v string) predicate.File {
-	return predicate.File(sql.FieldHasPrefix(FieldSize, v))
-}
-
-// SizeHasSuffix applies the HasSuffix predicate on the "size" field.
-func SizeHasSuffix(v string) predicate.File {
-	return predicate.File(sql.FieldHasSuffix(FieldSize, v))
-}
-
-// SizeEqualFold applies the EqualFold predicate on the "size" field.
-func SizeEqualFold(v string) predicate.File {
-	return predicate.File(sql.FieldEqualFold(FieldSize, v))
-}
-
-// SizeContainsFold applies the ContainsFold predicate on the "size" field.
-func SizeContainsFold(v string) predicate.File {
-	return predicate.File(sql.FieldContainsFold(FieldSize, v))
+// SizeNotNil applies the NotNil predicate on the "size" field.
+func SizeNotNil() predicate.File {
+	return predicate.File(sql.FieldNotNull(FieldSize))
 }
 
 // IsDisabledEQ applies the EQ predicate on the "is_disabled" field.
@@ -400,6 +385,16 @@ func DeletedTimeLTE(v time.Time) predicate.File {
 	return predicate.File(sql.FieldLTE(FieldDeletedTime, v))
 }
 
+// DeletedTimeIsNil applies the IsNil predicate on the "deleted_time" field.
+func DeletedTimeIsNil() predicate.File {
+	return predicate.File(sql.FieldIsNull(FieldDeletedTime))
+}
+
+// DeletedTimeNotNil applies the NotNil predicate on the "deleted_time" field.
+func DeletedTimeNotNil() predicate.File {
+	return predicate.File(sql.FieldNotNull(FieldDeletedTime))
+}
+
 // ModifiedTimeEQ applies the EQ predicate on the "modified_time" field.
 func ModifiedTimeEQ(v time.Time) predicate.File {
 	return predicate.File(sql.FieldEQ(FieldModifiedTime, v))
@@ -438,6 +433,16 @@ func ModifiedTimeLT(v time.Time) predicate.File {
 // ModifiedTimeLTE applies the LTE predicate on the "modified_time" field.
 func ModifiedTimeLTE(v time.Time) predicate.File {
 	return predicate.File(sql.FieldLTE(FieldModifiedTime, v))
+}
+
+// ModifiedTimeIsNil applies the IsNil predicate on the "modified_time" field.
+func ModifiedTimeIsNil() predicate.File {
+	return predicate.File(sql.FieldIsNull(FieldModifiedTime))
+}
+
+// ModifiedTimeNotNil applies the NotNil predicate on the "modified_time" field.
+func ModifiedTimeNotNil() predicate.File {
+	return predicate.File(sql.FieldNotNull(FieldModifiedTime))
 }
 
 // HasCreator applies the HasEdge predicate on the "creator" edge.

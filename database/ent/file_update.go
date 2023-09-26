@@ -49,8 +49,29 @@ func (fu *FileUpdate) SetPath(s string) *FileUpdate {
 }
 
 // SetSize sets the "size" field.
-func (fu *FileUpdate) SetSize(s string) *FileUpdate {
-	fu.mutation.SetSize(s)
+func (fu *FileUpdate) SetSize(i int64) *FileUpdate {
+	fu.mutation.ResetSize()
+	fu.mutation.SetSize(i)
+	return fu
+}
+
+// SetNillableSize sets the "size" field if the given value is not nil.
+func (fu *FileUpdate) SetNillableSize(i *int64) *FileUpdate {
+	if i != nil {
+		fu.SetSize(*i)
+	}
+	return fu
+}
+
+// AddSize adds i to the "size" field.
+func (fu *FileUpdate) AddSize(i int64) *FileUpdate {
+	fu.mutation.AddSize(i)
+	return fu
+}
+
+// ClearSize clears the value of the "size" field.
+func (fu *FileUpdate) ClearSize() *FileUpdate {
+	fu.mutation.ClearSize()
 	return fu
 }
 
@@ -96,6 +117,12 @@ func (fu *FileUpdate) SetNillableDeletedTime(t *time.Time) *FileUpdate {
 	return fu
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (fu *FileUpdate) ClearDeletedTime() *FileUpdate {
+	fu.mutation.ClearDeletedTime()
+	return fu
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (fu *FileUpdate) SetModifiedTime(t time.Time) *FileUpdate {
 	fu.mutation.SetModifiedTime(t)
@@ -107,6 +134,12 @@ func (fu *FileUpdate) SetNillableModifiedTime(t *time.Time) *FileUpdate {
 	if t != nil {
 		fu.SetModifiedTime(*t)
 	}
+	return fu
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (fu *FileUpdate) ClearModifiedTime() *FileUpdate {
+	fu.mutation.ClearModifiedTime()
 	return fu
 }
 
@@ -221,7 +254,13 @@ func (fu *FileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(file.FieldPath, field.TypeString, value)
 	}
 	if value, ok := fu.mutation.Size(); ok {
-		_spec.SetField(file.FieldSize, field.TypeString, value)
+		_spec.SetField(file.FieldSize, field.TypeInt64, value)
+	}
+	if value, ok := fu.mutation.AddedSize(); ok {
+		_spec.AddField(file.FieldSize, field.TypeInt64, value)
+	}
+	if fu.mutation.SizeCleared() {
+		_spec.ClearField(file.FieldSize, field.TypeInt64)
 	}
 	if value, ok := fu.mutation.IsDisabled(); ok {
 		_spec.SetField(file.FieldIsDisabled, field.TypeBool, value)
@@ -232,8 +271,14 @@ func (fu *FileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := fu.mutation.DeletedTime(); ok {
 		_spec.SetField(file.FieldDeletedTime, field.TypeTime, value)
 	}
+	if fu.mutation.DeletedTimeCleared() {
+		_spec.ClearField(file.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := fu.mutation.ModifiedTime(); ok {
 		_spec.SetField(file.FieldModifiedTime, field.TypeTime, value)
+	}
+	if fu.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(file.FieldModifiedTime, field.TypeTime)
 	}
 	if fu.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -332,8 +377,29 @@ func (fuo *FileUpdateOne) SetPath(s string) *FileUpdateOne {
 }
 
 // SetSize sets the "size" field.
-func (fuo *FileUpdateOne) SetSize(s string) *FileUpdateOne {
-	fuo.mutation.SetSize(s)
+func (fuo *FileUpdateOne) SetSize(i int64) *FileUpdateOne {
+	fuo.mutation.ResetSize()
+	fuo.mutation.SetSize(i)
+	return fuo
+}
+
+// SetNillableSize sets the "size" field if the given value is not nil.
+func (fuo *FileUpdateOne) SetNillableSize(i *int64) *FileUpdateOne {
+	if i != nil {
+		fuo.SetSize(*i)
+	}
+	return fuo
+}
+
+// AddSize adds i to the "size" field.
+func (fuo *FileUpdateOne) AddSize(i int64) *FileUpdateOne {
+	fuo.mutation.AddSize(i)
+	return fuo
+}
+
+// ClearSize clears the value of the "size" field.
+func (fuo *FileUpdateOne) ClearSize() *FileUpdateOne {
+	fuo.mutation.ClearSize()
 	return fuo
 }
 
@@ -379,6 +445,12 @@ func (fuo *FileUpdateOne) SetNillableDeletedTime(t *time.Time) *FileUpdateOne {
 	return fuo
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (fuo *FileUpdateOne) ClearDeletedTime() *FileUpdateOne {
+	fuo.mutation.ClearDeletedTime()
+	return fuo
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (fuo *FileUpdateOne) SetModifiedTime(t time.Time) *FileUpdateOne {
 	fuo.mutation.SetModifiedTime(t)
@@ -390,6 +462,12 @@ func (fuo *FileUpdateOne) SetNillableModifiedTime(t *time.Time) *FileUpdateOne {
 	if t != nil {
 		fuo.SetModifiedTime(*t)
 	}
+	return fuo
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (fuo *FileUpdateOne) ClearModifiedTime() *FileUpdateOne {
+	fuo.mutation.ClearModifiedTime()
 	return fuo
 }
 
@@ -534,7 +612,13 @@ func (fuo *FileUpdateOne) sqlSave(ctx context.Context) (_node *File, err error) 
 		_spec.SetField(file.FieldPath, field.TypeString, value)
 	}
 	if value, ok := fuo.mutation.Size(); ok {
-		_spec.SetField(file.FieldSize, field.TypeString, value)
+		_spec.SetField(file.FieldSize, field.TypeInt64, value)
+	}
+	if value, ok := fuo.mutation.AddedSize(); ok {
+		_spec.AddField(file.FieldSize, field.TypeInt64, value)
+	}
+	if fuo.mutation.SizeCleared() {
+		_spec.ClearField(file.FieldSize, field.TypeInt64)
 	}
 	if value, ok := fuo.mutation.IsDisabled(); ok {
 		_spec.SetField(file.FieldIsDisabled, field.TypeBool, value)
@@ -545,8 +629,14 @@ func (fuo *FileUpdateOne) sqlSave(ctx context.Context) (_node *File, err error) 
 	if value, ok := fuo.mutation.DeletedTime(); ok {
 		_spec.SetField(file.FieldDeletedTime, field.TypeTime, value)
 	}
+	if fuo.mutation.DeletedTimeCleared() {
+		_spec.ClearField(file.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := fuo.mutation.ModifiedTime(); ok {
 		_spec.SetField(file.FieldModifiedTime, field.TypeTime, value)
+	}
+	if fuo.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(file.FieldModifiedTime, field.TypeTime)
 	}
 	if fuo.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{

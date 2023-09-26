@@ -149,14 +149,6 @@ func (sfc *SampleFileCreate) defaults() {
 		v := samplefile.DefaultCreatedTime()
 		sfc.mutation.SetCreatedTime(v)
 	}
-	if _, ok := sfc.mutation.DeletedTime(); !ok {
-		v := samplefile.DefaultDeletedTime
-		sfc.mutation.SetDeletedTime(v)
-	}
-	if _, ok := sfc.mutation.ModifiedTime(); !ok {
-		v := samplefile.DefaultModifiedTime
-		sfc.mutation.SetModifiedTime(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -172,12 +164,6 @@ func (sfc *SampleFileCreate) check() error {
 	}
 	if _, ok := sfc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "SampleFile.created_time"`)}
-	}
-	if _, ok := sfc.mutation.DeletedTime(); !ok {
-		return &ValidationError{Name: "deleted_time", err: errors.New(`ent: missing required field "SampleFile.deleted_time"`)}
-	}
-	if _, ok := sfc.mutation.ModifiedTime(); !ok {
-		return &ValidationError{Name: "modified_time", err: errors.New(`ent: missing required field "SampleFile.modified_time"`)}
 	}
 	if _, ok := sfc.mutation.FileID(); !ok {
 		return &ValidationError{Name: "file", err: errors.New(`ent: missing required edge "SampleFile.file"`)}
@@ -224,15 +210,15 @@ func (sfc *SampleFileCreate) createSpec() (*SampleFile, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := sfc.mutation.CreatedTime(); ok {
 		_spec.SetField(samplefile.FieldCreatedTime, field.TypeTime, value)
-		_node.CreatedTime = value
+		_node.CreatedTime = &value
 	}
 	if value, ok := sfc.mutation.DeletedTime(); ok {
 		_spec.SetField(samplefile.FieldDeletedTime, field.TypeTime, value)
-		_node.DeletedTime = value
+		_node.DeletedTime = &value
 	}
 	if value, ok := sfc.mutation.ModifiedTime(); ok {
 		_spec.SetField(samplefile.FieldModifiedTime, field.TypeTime, value)
-		_node.ModifiedTime = value
+		_node.ModifiedTime = &value
 	}
 	if nodes := sfc.mutation.FileIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

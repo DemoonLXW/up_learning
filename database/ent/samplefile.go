@@ -25,11 +25,11 @@ type SampleFile struct {
 	// IsDisabled holds the value of the "is_disabled" field.
 	IsDisabled bool `json:"is_disabled,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
-	CreatedTime time.Time `json:"created_time,omitempty"`
+	CreatedTime *time.Time `json:"created_time,omitempty"`
 	// DeletedTime holds the value of the "deleted_time" field.
-	DeletedTime time.Time `json:"deleted_time,omitempty"`
+	DeletedTime *time.Time `json:"deleted_time,omitempty"`
 	// ModifiedTime holds the value of the "modified_time" field.
-	ModifiedTime time.Time `json:"modified_time,omitempty"`
+	ModifiedTime *time.Time `json:"modified_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SampleFileQuery when eager-loading is set.
 	Edges        SampleFileEdges `json:"edges"`
@@ -114,19 +114,22 @@ func (sf *SampleFile) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_time", values[i])
 			} else if value.Valid {
-				sf.CreatedTime = value.Time
+				sf.CreatedTime = new(time.Time)
+				*sf.CreatedTime = value.Time
 			}
 		case samplefile.FieldDeletedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_time", values[i])
 			} else if value.Valid {
-				sf.DeletedTime = value.Time
+				sf.DeletedTime = new(time.Time)
+				*sf.DeletedTime = value.Time
 			}
 		case samplefile.FieldModifiedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field modified_time", values[i])
 			} else if value.Valid {
-				sf.ModifiedTime = value.Time
+				sf.ModifiedTime = new(time.Time)
+				*sf.ModifiedTime = value.Time
 			}
 		default:
 			sf.selectValues.Set(columns[i], values[i])
@@ -178,14 +181,20 @@ func (sf *SampleFile) String() string {
 	builder.WriteString("is_disabled=")
 	builder.WriteString(fmt.Sprintf("%v", sf.IsDisabled))
 	builder.WriteString(", ")
-	builder.WriteString("created_time=")
-	builder.WriteString(sf.CreatedTime.Format(time.ANSIC))
+	if v := sf.CreatedTime; v != nil {
+		builder.WriteString("created_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("deleted_time=")
-	builder.WriteString(sf.DeletedTime.Format(time.ANSIC))
+	if v := sf.DeletedTime; v != nil {
+		builder.WriteString("deleted_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("modified_time=")
-	builder.WriteString(sf.ModifiedTime.Format(time.ANSIC))
+	if v := sf.ModifiedTime; v != nil {
+		builder.WriteString("modified_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

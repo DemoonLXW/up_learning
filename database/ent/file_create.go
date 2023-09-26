@@ -41,8 +41,16 @@ func (fc *FileCreate) SetPath(s string) *FileCreate {
 }
 
 // SetSize sets the "size" field.
-func (fc *FileCreate) SetSize(s string) *FileCreate {
-	fc.mutation.SetSize(s)
+func (fc *FileCreate) SetSize(i int64) *FileCreate {
+	fc.mutation.SetSize(i)
+	return fc
+}
+
+// SetNillableSize sets the "size" field if the given value is not nil.
+func (fc *FileCreate) SetNillableSize(i *int64) *FileCreate {
+	if i != nil {
+		fc.SetSize(*i)
+	}
 	return fc
 }
 
@@ -181,14 +189,6 @@ func (fc *FileCreate) defaults() {
 		v := file.DefaultCreatedTime()
 		fc.mutation.SetCreatedTime(v)
 	}
-	if _, ok := fc.mutation.DeletedTime(); !ok {
-		v := file.DefaultDeletedTime
-		fc.mutation.SetDeletedTime(v)
-	}
-	if _, ok := fc.mutation.ModifiedTime(); !ok {
-		v := file.DefaultModifiedTime
-		fc.mutation.SetModifiedTime(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -212,20 +212,11 @@ func (fc *FileCreate) check() error {
 			return &ValidationError{Name: "path", err: fmt.Errorf(`ent: validator failed for field "File.path": %w`, err)}
 		}
 	}
-	if _, ok := fc.mutation.Size(); !ok {
-		return &ValidationError{Name: "size", err: errors.New(`ent: missing required field "File.size"`)}
-	}
 	if _, ok := fc.mutation.IsDisabled(); !ok {
 		return &ValidationError{Name: "is_disabled", err: errors.New(`ent: missing required field "File.is_disabled"`)}
 	}
 	if _, ok := fc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "File.created_time"`)}
-	}
-	if _, ok := fc.mutation.DeletedTime(); !ok {
-		return &ValidationError{Name: "deleted_time", err: errors.New(`ent: missing required field "File.deleted_time"`)}
-	}
-	if _, ok := fc.mutation.ModifiedTime(); !ok {
-		return &ValidationError{Name: "modified_time", err: errors.New(`ent: missing required field "File.modified_time"`)}
 	}
 	if _, ok := fc.mutation.CreatorID(); !ok {
 		return &ValidationError{Name: "creator", err: errors.New(`ent: missing required edge "File.creator"`)}
@@ -271,7 +262,7 @@ func (fc *FileCreate) createSpec() (*File, *sqlgraph.CreateSpec) {
 		_node.Path = value
 	}
 	if value, ok := fc.mutation.Size(); ok {
-		_spec.SetField(file.FieldSize, field.TypeString, value)
+		_spec.SetField(file.FieldSize, field.TypeInt64, value)
 		_node.Size = value
 	}
 	if value, ok := fc.mutation.IsDisabled(); ok {
@@ -280,15 +271,15 @@ func (fc *FileCreate) createSpec() (*File, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := fc.mutation.CreatedTime(); ok {
 		_spec.SetField(file.FieldCreatedTime, field.TypeTime, value)
-		_node.CreatedTime = value
+		_node.CreatedTime = &value
 	}
 	if value, ok := fc.mutation.DeletedTime(); ok {
 		_spec.SetField(file.FieldDeletedTime, field.TypeTime, value)
-		_node.DeletedTime = value
+		_node.DeletedTime = &value
 	}
 	if value, ok := fc.mutation.ModifiedTime(); ok {
 		_spec.SetField(file.FieldModifiedTime, field.TypeTime, value)
-		_node.ModifiedTime = value
+		_node.ModifiedTime = &value
 	}
 	if nodes := fc.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

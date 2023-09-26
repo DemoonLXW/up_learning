@@ -1570,7 +1570,8 @@ type FileMutation struct {
 	id             *uint32
 	name           *string
 	_path          *string
-	size           *string
+	size           *int64
+	addsize        *int64
 	is_disabled    *bool
 	created_time   *time.Time
 	deleted_time   *time.Time
@@ -1798,12 +1799,13 @@ func (m *FileMutation) ResetPath() {
 }
 
 // SetSize sets the "size" field.
-func (m *FileMutation) SetSize(s string) {
-	m.size = &s
+func (m *FileMutation) SetSize(i int64) {
+	m.size = &i
+	m.addsize = nil
 }
 
 // Size returns the value of the "size" field in the mutation.
-func (m *FileMutation) Size() (r string, exists bool) {
+func (m *FileMutation) Size() (r int64, exists bool) {
 	v := m.size
 	if v == nil {
 		return
@@ -1814,7 +1816,7 @@ func (m *FileMutation) Size() (r string, exists bool) {
 // OldSize returns the old "size" field's value of the File entity.
 // If the File object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FileMutation) OldSize(ctx context.Context) (v string, err error) {
+func (m *FileMutation) OldSize(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSize is only allowed on UpdateOne operations")
 	}
@@ -1828,9 +1830,42 @@ func (m *FileMutation) OldSize(ctx context.Context) (v string, err error) {
 	return oldValue.Size, nil
 }
 
+// AddSize adds i to the "size" field.
+func (m *FileMutation) AddSize(i int64) {
+	if m.addsize != nil {
+		*m.addsize += i
+	} else {
+		m.addsize = &i
+	}
+}
+
+// AddedSize returns the value that was added to the "size" field in this mutation.
+func (m *FileMutation) AddedSize() (r int64, exists bool) {
+	v := m.addsize
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSize clears the value of the "size" field.
+func (m *FileMutation) ClearSize() {
+	m.size = nil
+	m.addsize = nil
+	m.clearedFields[file.FieldSize] = struct{}{}
+}
+
+// SizeCleared returns if the "size" field was cleared in this mutation.
+func (m *FileMutation) SizeCleared() bool {
+	_, ok := m.clearedFields[file.FieldSize]
+	return ok
+}
+
 // ResetSize resets all changes to the "size" field.
 func (m *FileMutation) ResetSize() {
 	m.size = nil
+	m.addsize = nil
+	delete(m.clearedFields, file.FieldSize)
 }
 
 // SetIsDisabled sets the "is_disabled" field.
@@ -1886,7 +1921,7 @@ func (m *FileMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the File entity.
 // If the File object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FileMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
+func (m *FileMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -1922,7 +1957,7 @@ func (m *FileMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the File entity.
 // If the File object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FileMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
+func (m *FileMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -1936,9 +1971,22 @@ func (m *FileMutation) OldDeletedTime(ctx context.Context) (v time.Time, err err
 	return oldValue.DeletedTime, nil
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (m *FileMutation) ClearDeletedTime() {
+	m.deleted_time = nil
+	m.clearedFields[file.FieldDeletedTime] = struct{}{}
+}
+
+// DeletedTimeCleared returns if the "deleted_time" field was cleared in this mutation.
+func (m *FileMutation) DeletedTimeCleared() bool {
+	_, ok := m.clearedFields[file.FieldDeletedTime]
+	return ok
+}
+
 // ResetDeletedTime resets all changes to the "deleted_time" field.
 func (m *FileMutation) ResetDeletedTime() {
 	m.deleted_time = nil
+	delete(m.clearedFields, file.FieldDeletedTime)
 }
 
 // SetModifiedTime sets the "modified_time" field.
@@ -1958,7 +2006,7 @@ func (m *FileMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the File entity.
 // If the File object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FileMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
+func (m *FileMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -1972,9 +2020,22 @@ func (m *FileMutation) OldModifiedTime(ctx context.Context) (v time.Time, err er
 	return oldValue.ModifiedTime, nil
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (m *FileMutation) ClearModifiedTime() {
+	m.modified_time = nil
+	m.clearedFields[file.FieldModifiedTime] = struct{}{}
+}
+
+// ModifiedTimeCleared returns if the "modified_time" field was cleared in this mutation.
+func (m *FileMutation) ModifiedTimeCleared() bool {
+	_, ok := m.clearedFields[file.FieldModifiedTime]
+	return ok
+}
+
 // ResetModifiedTime resets all changes to the "modified_time" field.
 func (m *FileMutation) ResetModifiedTime() {
 	m.modified_time = nil
+	delete(m.clearedFields, file.FieldModifiedTime)
 }
 
 // SetCreatorID sets the "creator" edge to the User entity by id.
@@ -2194,7 +2255,7 @@ func (m *FileMutation) SetField(name string, value ent.Value) error {
 		m.SetPath(v)
 		return nil
 	case file.FieldSize:
-		v, ok := value.(string)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2236,6 +2297,9 @@ func (m *FileMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *FileMutation) AddedFields() []string {
 	var fields []string
+	if m.addsize != nil {
+		fields = append(fields, file.FieldSize)
+	}
 	return fields
 }
 
@@ -2244,6 +2308,8 @@ func (m *FileMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *FileMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case file.FieldSize:
+		return m.AddedSize()
 	}
 	return nil, false
 }
@@ -2253,6 +2319,13 @@ func (m *FileMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *FileMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case file.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSize(v)
+		return nil
 	}
 	return fmt.Errorf("unknown File numeric field %s", name)
 }
@@ -2260,7 +2333,17 @@ func (m *FileMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *FileMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(file.FieldSize) {
+		fields = append(fields, file.FieldSize)
+	}
+	if m.FieldCleared(file.FieldDeletedTime) {
+		fields = append(fields, file.FieldDeletedTime)
+	}
+	if m.FieldCleared(file.FieldModifiedTime) {
+		fields = append(fields, file.FieldModifiedTime)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2273,6 +2356,17 @@ func (m *FileMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *FileMutation) ClearField(name string) error {
+	switch name {
+	case file.FieldSize:
+		m.ClearSize()
+		return nil
+	case file.FieldDeletedTime:
+		m.ClearDeletedTime()
+		return nil
+	case file.FieldModifiedTime:
+		m.ClearModifiedTime()
+		return nil
+	}
 	return fmt.Errorf("unknown File nullable field %s", name)
 }
 
@@ -5399,7 +5493,7 @@ func (m *SampleFileMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the SampleFile entity.
 // If the SampleFile object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SampleFileMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
+func (m *SampleFileMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -5435,7 +5529,7 @@ func (m *SampleFileMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the SampleFile entity.
 // If the SampleFile object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SampleFileMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
+func (m *SampleFileMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -5449,9 +5543,22 @@ func (m *SampleFileMutation) OldDeletedTime(ctx context.Context) (v time.Time, e
 	return oldValue.DeletedTime, nil
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (m *SampleFileMutation) ClearDeletedTime() {
+	m.deleted_time = nil
+	m.clearedFields[samplefile.FieldDeletedTime] = struct{}{}
+}
+
+// DeletedTimeCleared returns if the "deleted_time" field was cleared in this mutation.
+func (m *SampleFileMutation) DeletedTimeCleared() bool {
+	_, ok := m.clearedFields[samplefile.FieldDeletedTime]
+	return ok
+}
+
 // ResetDeletedTime resets all changes to the "deleted_time" field.
 func (m *SampleFileMutation) ResetDeletedTime() {
 	m.deleted_time = nil
+	delete(m.clearedFields, samplefile.FieldDeletedTime)
 }
 
 // SetModifiedTime sets the "modified_time" field.
@@ -5471,7 +5578,7 @@ func (m *SampleFileMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the SampleFile entity.
 // If the SampleFile object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SampleFileMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
+func (m *SampleFileMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -5485,9 +5592,22 @@ func (m *SampleFileMutation) OldModifiedTime(ctx context.Context) (v time.Time, 
 	return oldValue.ModifiedTime, nil
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (m *SampleFileMutation) ClearModifiedTime() {
+	m.modified_time = nil
+	m.clearedFields[samplefile.FieldModifiedTime] = struct{}{}
+}
+
+// ModifiedTimeCleared returns if the "modified_time" field was cleared in this mutation.
+func (m *SampleFileMutation) ModifiedTimeCleared() bool {
+	_, ok := m.clearedFields[samplefile.FieldModifiedTime]
+	return ok
+}
+
 // ResetModifiedTime resets all changes to the "modified_time" field.
 func (m *SampleFileMutation) ResetModifiedTime() {
 	m.modified_time = nil
+	delete(m.clearedFields, samplefile.FieldModifiedTime)
 }
 
 // SetFileID sets the "file" edge to the File entity by id.
@@ -5706,7 +5826,14 @@ func (m *SampleFileMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *SampleFileMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(samplefile.FieldDeletedTime) {
+		fields = append(fields, samplefile.FieldDeletedTime)
+	}
+	if m.FieldCleared(samplefile.FieldModifiedTime) {
+		fields = append(fields, samplefile.FieldModifiedTime)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -5719,6 +5846,14 @@ func (m *SampleFileMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *SampleFileMutation) ClearField(name string) error {
+	switch name {
+	case samplefile.FieldDeletedTime:
+		m.ClearDeletedTime()
+		return nil
+	case samplefile.FieldModifiedTime:
+		m.ClearModifiedTime()
+		return nil
+	}
 	return fmt.Errorf("unknown SampleFile nullable field %s", name)
 }
 

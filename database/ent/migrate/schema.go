@@ -62,11 +62,11 @@ var (
 		{Name: "id", Type: field.TypeUint32, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "path", Type: field.TypeString},
-		{Name: "size", Type: field.TypeString},
+		{Name: "size", Type: field.TypeInt64, Nullable: true},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime},
-		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
 		{Name: "uid", Type: field.TypeUint32},
 	}
 	// FileTable holds the schema information for the "file" table.
@@ -171,8 +171,8 @@ var (
 		{Name: "type", Type: field.TypeString, Unique: true},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime},
-		{Name: "modified_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
 		{Name: "fid", Type: field.TypeUint32, Unique: true},
 	}
 	// SampleFileTable holds the schema information for the "sample_file" table.

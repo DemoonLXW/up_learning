@@ -83,6 +83,12 @@ func (sfu *SampleFileUpdate) SetNillableDeletedTime(t *time.Time) *SampleFileUpd
 	return sfu
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (sfu *SampleFileUpdate) ClearDeletedTime() *SampleFileUpdate {
+	sfu.mutation.ClearDeletedTime()
+	return sfu
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (sfu *SampleFileUpdate) SetModifiedTime(t time.Time) *SampleFileUpdate {
 	sfu.mutation.SetModifiedTime(t)
@@ -94,6 +100,12 @@ func (sfu *SampleFileUpdate) SetNillableModifiedTime(t *time.Time) *SampleFileUp
 	if t != nil {
 		sfu.SetModifiedTime(*t)
 	}
+	return sfu
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (sfu *SampleFileUpdate) ClearModifiedTime() *SampleFileUpdate {
+	sfu.mutation.ClearModifiedTime()
 	return sfu
 }
 
@@ -178,8 +190,14 @@ func (sfu *SampleFileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := sfu.mutation.DeletedTime(); ok {
 		_spec.SetField(samplefile.FieldDeletedTime, field.TypeTime, value)
 	}
+	if sfu.mutation.DeletedTimeCleared() {
+		_spec.ClearField(samplefile.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := sfu.mutation.ModifiedTime(); ok {
 		_spec.SetField(samplefile.FieldModifiedTime, field.TypeTime, value)
+	}
+	if sfu.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(samplefile.FieldModifiedTime, field.TypeTime)
 	}
 	if sfu.mutation.FileCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -284,6 +302,12 @@ func (sfuo *SampleFileUpdateOne) SetNillableDeletedTime(t *time.Time) *SampleFil
 	return sfuo
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (sfuo *SampleFileUpdateOne) ClearDeletedTime() *SampleFileUpdateOne {
+	sfuo.mutation.ClearDeletedTime()
+	return sfuo
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (sfuo *SampleFileUpdateOne) SetModifiedTime(t time.Time) *SampleFileUpdateOne {
 	sfuo.mutation.SetModifiedTime(t)
@@ -295,6 +319,12 @@ func (sfuo *SampleFileUpdateOne) SetNillableModifiedTime(t *time.Time) *SampleFi
 	if t != nil {
 		sfuo.SetModifiedTime(*t)
 	}
+	return sfuo
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (sfuo *SampleFileUpdateOne) ClearModifiedTime() *SampleFileUpdateOne {
+	sfuo.mutation.ClearModifiedTime()
 	return sfuo
 }
 
@@ -409,8 +439,14 @@ func (sfuo *SampleFileUpdateOne) sqlSave(ctx context.Context) (_node *SampleFile
 	if value, ok := sfuo.mutation.DeletedTime(); ok {
 		_spec.SetField(samplefile.FieldDeletedTime, field.TypeTime, value)
 	}
+	if sfuo.mutation.DeletedTimeCleared() {
+		_spec.ClearField(samplefile.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := sfuo.mutation.ModifiedTime(); ok {
 		_spec.SetField(samplefile.FieldModifiedTime, field.TypeTime, value)
+	}
+	if sfuo.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(samplefile.FieldModifiedTime, field.TypeTime)
 	}
 	if sfuo.mutation.FileCleared() {
 		edge := &sqlgraph.EdgeSpec{

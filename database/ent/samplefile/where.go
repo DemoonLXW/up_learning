@@ -260,6 +260,16 @@ func DeletedTimeLTE(v time.Time) predicate.SampleFile {
 	return predicate.SampleFile(sql.FieldLTE(FieldDeletedTime, v))
 }
 
+// DeletedTimeIsNil applies the IsNil predicate on the "deleted_time" field.
+func DeletedTimeIsNil() predicate.SampleFile {
+	return predicate.SampleFile(sql.FieldIsNull(FieldDeletedTime))
+}
+
+// DeletedTimeNotNil applies the NotNil predicate on the "deleted_time" field.
+func DeletedTimeNotNil() predicate.SampleFile {
+	return predicate.SampleFile(sql.FieldNotNull(FieldDeletedTime))
+}
+
 // ModifiedTimeEQ applies the EQ predicate on the "modified_time" field.
 func ModifiedTimeEQ(v time.Time) predicate.SampleFile {
 	return predicate.SampleFile(sql.FieldEQ(FieldModifiedTime, v))
@@ -298,6 +308,16 @@ func ModifiedTimeLT(v time.Time) predicate.SampleFile {
 // ModifiedTimeLTE applies the LTE predicate on the "modified_time" field.
 func ModifiedTimeLTE(v time.Time) predicate.SampleFile {
 	return predicate.SampleFile(sql.FieldLTE(FieldModifiedTime, v))
+}
+
+// ModifiedTimeIsNil applies the IsNil predicate on the "modified_time" field.
+func ModifiedTimeIsNil() predicate.SampleFile {
+	return predicate.SampleFile(sql.FieldIsNull(FieldModifiedTime))
+}
+
+// ModifiedTimeNotNil applies the NotNil predicate on the "modified_time" field.
+func ModifiedTimeNotNil() predicate.SampleFile {
+	return predicate.SampleFile(sql.FieldNotNull(FieldModifiedTime))
 }
 
 // HasFile applies the HasEdge predicate on the "file" edge.

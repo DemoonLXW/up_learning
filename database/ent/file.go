@@ -26,15 +26,15 @@ type File struct {
 	// Path holds the value of the "path" field.
 	Path string `json:"path,omitempty"`
 	// Size holds the value of the "size" field.
-	Size string `json:"size,omitempty"`
+	Size int64 `json:"size,omitempty"`
 	// IsDisabled holds the value of the "is_disabled" field.
 	IsDisabled bool `json:"is_disabled,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
-	CreatedTime time.Time `json:"created_time,omitempty"`
+	CreatedTime *time.Time `json:"created_time,omitempty"`
 	// DeletedTime holds the value of the "deleted_time" field.
-	DeletedTime time.Time `json:"deleted_time,omitempty"`
+	DeletedTime *time.Time `json:"deleted_time,omitempty"`
 	// ModifiedTime holds the value of the "modified_time" field.
-	ModifiedTime time.Time `json:"modified_time,omitempty"`
+	ModifiedTime *time.Time `json:"modified_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FileQuery when eager-loading is set.
 	Edges        FileEdges `json:"edges"`
@@ -85,9 +85,9 @@ func (*File) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case file.FieldIsDisabled:
 			values[i] = new(sql.NullBool)
-		case file.FieldID, file.FieldUID:
+		case file.FieldID, file.FieldUID, file.FieldSize:
 			values[i] = new(sql.NullInt64)
-		case file.FieldName, file.FieldPath, file.FieldSize:
+		case file.FieldName, file.FieldPath:
 			values[i] = new(sql.NullString)
 		case file.FieldCreatedTime, file.FieldDeletedTime, file.FieldModifiedTime:
 			values[i] = new(sql.NullTime)
@@ -131,10 +131,10 @@ func (f *File) assignValues(columns []string, values []any) error {
 				f.Path = value.String
 			}
 		case file.FieldSize:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field size", values[i])
 			} else if value.Valid {
-				f.Size = value.String
+				f.Size = value.Int64
 			}
 		case file.FieldIsDisabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -146,19 +146,22 @@ func (f *File) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_time", values[i])
 			} else if value.Valid {
-				f.CreatedTime = value.Time
+				f.CreatedTime = new(time.Time)
+				*f.CreatedTime = value.Time
 			}
 		case file.FieldDeletedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_time", values[i])
 			} else if value.Valid {
-				f.DeletedTime = value.Time
+				f.DeletedTime = new(time.Time)
+				*f.DeletedTime = value.Time
 			}
 		case file.FieldModifiedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field modified_time", values[i])
 			} else if value.Valid {
-				f.ModifiedTime = value.Time
+				f.ModifiedTime = new(time.Time)
+				*f.ModifiedTime = value.Time
 			}
 		default:
 			f.selectValues.Set(columns[i], values[i])
@@ -216,19 +219,25 @@ func (f *File) String() string {
 	builder.WriteString(f.Path)
 	builder.WriteString(", ")
 	builder.WriteString("size=")
-	builder.WriteString(f.Size)
+	builder.WriteString(fmt.Sprintf("%v", f.Size))
 	builder.WriteString(", ")
 	builder.WriteString("is_disabled=")
 	builder.WriteString(fmt.Sprintf("%v", f.IsDisabled))
 	builder.WriteString(", ")
-	builder.WriteString("created_time=")
-	builder.WriteString(f.CreatedTime.Format(time.ANSIC))
+	if v := f.CreatedTime; v != nil {
+		builder.WriteString("created_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("deleted_time=")
-	builder.WriteString(f.DeletedTime.Format(time.ANSIC))
+	if v := f.DeletedTime; v != nil {
+		builder.WriteString("deleted_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("modified_time=")
-	builder.WriteString(f.ModifiedTime.Format(time.ANSIC))
+	if v := f.ModifiedTime; v != nil {
+		builder.WriteString("modified_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }
