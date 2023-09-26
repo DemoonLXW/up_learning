@@ -88,7 +88,14 @@ func (serv *AuthService) Login(account, password string) (*ent.User, string, err
 				s.Where(sql.IsNull(user.FieldDeletedTime))
 			},
 		),
-	).WithRoles().First(ctx)
+	).WithRoles(func(rq *ent.RoleQuery) {
+		rq.Where(role.And(
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(role.FieldDeletedTime))
+			},
+			role.IsDisabledEQ(false),
+		))
+	}).First(ctx)
 	if err != nil {
 		return nil, "", fmt.Errorf("user login check credential failed: %w", err)
 	}

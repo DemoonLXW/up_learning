@@ -526,6 +526,7 @@ func (serv *ManagementService) FindPermissionsByRoleIds(ids []uint8) ([]*ent.Per
 		func(s *sql.Selector) {
 			s.Where(sql.IsNull(role.FieldDeletedTime))
 		},
+		// No isDisabled = false because roles include both two states (disabled or not)
 	)).WithPermissions(func(q *ent.PermissionQuery) {
 		q.Where(permission.And(
 			func(s *sql.Selector) {
