@@ -1101,11 +1101,11 @@ func (serv *ManagementService) GetTotalRetrievedSchools(like string, isDisabled 
 				school.NameContains(like),
 			),
 			func(s *sql.Selector) {
+				s.Where(sql.IsNull(school.FieldDeletedTime))
 				if isDisabled != nil {
 					s.Where(sql.EQ(school.FieldIsDisabled, *isDisabled))
 				}
 			},
-			school.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 		)).Count(ctx)
 
 	if err != nil {

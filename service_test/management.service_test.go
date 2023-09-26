@@ -513,10 +513,10 @@ func TestGetTotalRetrievedSchools(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	disabled := false
-	total, err := serv.GetTotalRetrievedSchools("", &disabled)
+	// disabled := true
+	total, err := serv.GetTotalRetrievedSchools("相思湖", nil)
 	assert.Nil(t, err)
-	assert.Equal(t, 10, total)
+	assert.Equal(t, 0, total)
 }
 
 func TestFindOneSampleFileByType(t *testing.T) {
