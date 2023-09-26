@@ -8479,7 +8479,7 @@ func (m *UserMutation) CreatedTime() (r time.Time, exists bool) {
 // OldCreatedTime returns the old "created_time" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldCreatedTime(ctx context.Context) (v time.Time, err error) {
+func (m *UserMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
 	}
@@ -8515,7 +8515,7 @@ func (m *UserMutation) DeletedTime() (r time.Time, exists bool) {
 // OldDeletedTime returns the old "deleted_time" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldDeletedTime(ctx context.Context) (v time.Time, err error) {
+func (m *UserMutation) OldDeletedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedTime is only allowed on UpdateOne operations")
 	}
@@ -8529,9 +8529,22 @@ func (m *UserMutation) OldDeletedTime(ctx context.Context) (v time.Time, err err
 	return oldValue.DeletedTime, nil
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (m *UserMutation) ClearDeletedTime() {
+	m.deleted_time = nil
+	m.clearedFields[user.FieldDeletedTime] = struct{}{}
+}
+
+// DeletedTimeCleared returns if the "deleted_time" field was cleared in this mutation.
+func (m *UserMutation) DeletedTimeCleared() bool {
+	_, ok := m.clearedFields[user.FieldDeletedTime]
+	return ok
+}
+
 // ResetDeletedTime resets all changes to the "deleted_time" field.
 func (m *UserMutation) ResetDeletedTime() {
 	m.deleted_time = nil
+	delete(m.clearedFields, user.FieldDeletedTime)
 }
 
 // SetModifiedTime sets the "modified_time" field.
@@ -8551,7 +8564,7 @@ func (m *UserMutation) ModifiedTime() (r time.Time, exists bool) {
 // OldModifiedTime returns the old "modified_time" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldModifiedTime(ctx context.Context) (v time.Time, err error) {
+func (m *UserMutation) OldModifiedTime(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldModifiedTime is only allowed on UpdateOne operations")
 	}
@@ -8565,9 +8578,22 @@ func (m *UserMutation) OldModifiedTime(ctx context.Context) (v time.Time, err er
 	return oldValue.ModifiedTime, nil
 }
 
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (m *UserMutation) ClearModifiedTime() {
+	m.modified_time = nil
+	m.clearedFields[user.FieldModifiedTime] = struct{}{}
+}
+
+// ModifiedTimeCleared returns if the "modified_time" field was cleared in this mutation.
+func (m *UserMutation) ModifiedTimeCleared() bool {
+	_, ok := m.clearedFields[user.FieldModifiedTime]
+	return ok
+}
+
 // ResetModifiedTime resets all changes to the "modified_time" field.
 func (m *UserMutation) ResetModifiedTime() {
 	m.modified_time = nil
+	delete(m.clearedFields, user.FieldModifiedTime)
 }
 
 // AddRoleIDs adds the "roles" edge to the Role entity by ids.
@@ -8975,6 +9001,12 @@ func (m *UserMutation) ClearedFields() []string {
 	if m.FieldCleared(user.FieldIntroduction) {
 		fields = append(fields, user.FieldIntroduction)
 	}
+	if m.FieldCleared(user.FieldDeletedTime) {
+		fields = append(fields, user.FieldDeletedTime)
+	}
+	if m.FieldCleared(user.FieldModifiedTime) {
+		fields = append(fields, user.FieldModifiedTime)
+	}
 	return fields
 }
 
@@ -9000,6 +9032,12 @@ func (m *UserMutation) ClearField(name string) error {
 		return nil
 	case user.FieldIntroduction:
 		m.ClearIntroduction()
+		return nil
+	case user.FieldDeletedTime:
+		m.ClearDeletedTime()
+		return nil
+	case user.FieldModifiedTime:
+		m.ClearModifiedTime()
 		return nil
 	}
 	return fmt.Errorf("unknown User nullable field %s", name)

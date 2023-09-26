@@ -165,6 +165,12 @@ func (uu *UserUpdate) SetNillableDeletedTime(t *time.Time) *UserUpdate {
 	return uu
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (uu *UserUpdate) ClearDeletedTime() *UserUpdate {
+	uu.mutation.ClearDeletedTime()
+	return uu
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (uu *UserUpdate) SetModifiedTime(t time.Time) *UserUpdate {
 	uu.mutation.SetModifiedTime(t)
@@ -176,6 +182,12 @@ func (uu *UserUpdate) SetNillableModifiedTime(t *time.Time) *UserUpdate {
 	if t != nil {
 		uu.SetModifiedTime(*t)
 	}
+	return uu
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (uu *UserUpdate) ClearModifiedTime() *UserUpdate {
+	uu.mutation.ClearModifiedTime()
 	return uu
 }
 
@@ -385,8 +397,14 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.DeletedTime(); ok {
 		_spec.SetField(user.FieldDeletedTime, field.TypeTime, value)
 	}
+	if uu.mutation.DeletedTimeCleared() {
+		_spec.ClearField(user.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := uu.mutation.ModifiedTime(); ok {
 		_spec.SetField(user.FieldModifiedTime, field.TypeTime, value)
+	}
+	if uu.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(user.FieldModifiedTime, field.TypeTime)
 	}
 	if uu.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -689,6 +707,12 @@ func (uuo *UserUpdateOne) SetNillableDeletedTime(t *time.Time) *UserUpdateOne {
 	return uuo
 }
 
+// ClearDeletedTime clears the value of the "deleted_time" field.
+func (uuo *UserUpdateOne) ClearDeletedTime() *UserUpdateOne {
+	uuo.mutation.ClearDeletedTime()
+	return uuo
+}
+
 // SetModifiedTime sets the "modified_time" field.
 func (uuo *UserUpdateOne) SetModifiedTime(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetModifiedTime(t)
@@ -700,6 +724,12 @@ func (uuo *UserUpdateOne) SetNillableModifiedTime(t *time.Time) *UserUpdateOne {
 	if t != nil {
 		uuo.SetModifiedTime(*t)
 	}
+	return uuo
+}
+
+// ClearModifiedTime clears the value of the "modified_time" field.
+func (uuo *UserUpdateOne) ClearModifiedTime() *UserUpdateOne {
+	uuo.mutation.ClearModifiedTime()
 	return uuo
 }
 
@@ -939,8 +969,14 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.DeletedTime(); ok {
 		_spec.SetField(user.FieldDeletedTime, field.TypeTime, value)
 	}
+	if uuo.mutation.DeletedTimeCleared() {
+		_spec.ClearField(user.FieldDeletedTime, field.TypeTime)
+	}
 	if value, ok := uuo.mutation.ModifiedTime(); ok {
 		_spec.SetField(user.FieldModifiedTime, field.TypeTime, value)
+	}
+	if uuo.mutation.ModifiedTimeCleared() {
+		_spec.ClearField(user.FieldModifiedTime, field.TypeTime)
 	}
 	if uuo.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{

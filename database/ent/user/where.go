@@ -625,6 +625,16 @@ func DeletedTimeLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldDeletedTime, v))
 }
 
+// DeletedTimeIsNil applies the IsNil predicate on the "deleted_time" field.
+func DeletedTimeIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldDeletedTime))
+}
+
+// DeletedTimeNotNil applies the NotNil predicate on the "deleted_time" field.
+func DeletedTimeNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldDeletedTime))
+}
+
 // ModifiedTimeEQ applies the EQ predicate on the "modified_time" field.
 func ModifiedTimeEQ(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldModifiedTime, v))
@@ -663,6 +673,16 @@ func ModifiedTimeLT(v time.Time) predicate.User {
 // ModifiedTimeLTE applies the LTE predicate on the "modified_time" field.
 func ModifiedTimeLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldModifiedTime, v))
+}
+
+// ModifiedTimeIsNil applies the IsNil predicate on the "modified_time" field.
+func ModifiedTimeIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldModifiedTime))
+}
+
+// ModifiedTimeNotNil applies the NotNil predicate on the "modified_time" field.
+func ModifiedTimeNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldModifiedTime))
 }
 
 // HasRoles applies the HasEdge predicate on the "roles" edge.

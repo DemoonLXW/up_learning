@@ -241,14 +241,6 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultCreatedTime()
 		uc.mutation.SetCreatedTime(v)
 	}
-	if _, ok := uc.mutation.DeletedTime(); !ok {
-		v := user.DefaultDeletedTime
-		uc.mutation.SetDeletedTime(v)
-	}
-	if _, ok := uc.mutation.ModifiedTime(); !ok {
-		v := user.DefaultModifiedTime
-		uc.mutation.SetModifiedTime(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -274,12 +266,6 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "User.created_time"`)}
-	}
-	if _, ok := uc.mutation.DeletedTime(); !ok {
-		return &ValidationError{Name: "deleted_time", err: errors.New(`ent: missing required field "User.deleted_time"`)}
-	}
-	if _, ok := uc.mutation.ModifiedTime(); !ok {
-		return &ValidationError{Name: "modified_time", err: errors.New(`ent: missing required field "User.modified_time"`)}
 	}
 	return nil
 }
@@ -343,15 +329,15 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := uc.mutation.CreatedTime(); ok {
 		_spec.SetField(user.FieldCreatedTime, field.TypeTime, value)
-		_node.CreatedTime = value
+		_node.CreatedTime = &value
 	}
 	if value, ok := uc.mutation.DeletedTime(); ok {
 		_spec.SetField(user.FieldDeletedTime, field.TypeTime, value)
-		_node.DeletedTime = value
+		_node.DeletedTime = &value
 	}
 	if value, ok := uc.mutation.ModifiedTime(); ok {
 		_spec.SetField(user.FieldModifiedTime, field.TypeTime, value)
-		_node.ModifiedTime = value
+		_node.ModifiedTime = &value
 	}
 	if nodes := uc.mutation.RolesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

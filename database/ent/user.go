@@ -32,11 +32,11 @@ type User struct {
 	// IsDisabled holds the value of the "is_disabled" field.
 	IsDisabled bool `json:"is_disabled,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
-	CreatedTime time.Time `json:"created_time,omitempty"`
+	CreatedTime *time.Time `json:"created_time,omitempty"`
 	// DeletedTime holds the value of the "deleted_time" field.
-	DeletedTime time.Time `json:"deleted_time,omitempty"`
+	DeletedTime *time.Time `json:"deleted_time,omitempty"`
 	// ModifiedTime holds the value of the "modified_time" field.
-	ModifiedTime time.Time `json:"modified_time,omitempty"`
+	ModifiedTime *time.Time `json:"modified_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -176,19 +176,22 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_time", values[i])
 			} else if value.Valid {
-				u.CreatedTime = value.Time
+				u.CreatedTime = new(time.Time)
+				*u.CreatedTime = value.Time
 			}
 		case user.FieldDeletedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_time", values[i])
 			} else if value.Valid {
-				u.DeletedTime = value.Time
+				u.DeletedTime = new(time.Time)
+				*u.DeletedTime = value.Time
 			}
 		case user.FieldModifiedTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field modified_time", values[i])
 			} else if value.Valid {
-				u.ModifiedTime = value.Time
+				u.ModifiedTime = new(time.Time)
+				*u.ModifiedTime = value.Time
 			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
@@ -271,14 +274,20 @@ func (u *User) String() string {
 	builder.WriteString("is_disabled=")
 	builder.WriteString(fmt.Sprintf("%v", u.IsDisabled))
 	builder.WriteString(", ")
-	builder.WriteString("created_time=")
-	builder.WriteString(u.CreatedTime.Format(time.ANSIC))
+	if v := u.CreatedTime; v != nil {
+		builder.WriteString("created_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("deleted_time=")
-	builder.WriteString(u.DeletedTime.Format(time.ANSIC))
+	if v := u.DeletedTime; v != nil {
+		builder.WriteString("deleted_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("modified_time=")
-	builder.WriteString(u.ModifiedTime.Format(time.ANSIC))
+	if v := u.ModifiedTime; v != nil {
+		builder.WriteString("modified_time=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

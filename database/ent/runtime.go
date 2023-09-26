@@ -218,14 +218,6 @@ func init() {
 	userDescCreatedTime := userFields[8].Descriptor()
 	// user.DefaultCreatedTime holds the default value on creation for the created_time field.
 	user.DefaultCreatedTime = userDescCreatedTime.Default.(func() time.Time)
-	// userDescDeletedTime is the schema descriptor for deleted_time field.
-	userDescDeletedTime := userFields[9].Descriptor()
-	// user.DefaultDeletedTime holds the default value on creation for the deleted_time field.
-	user.DefaultDeletedTime = userDescDeletedTime.Default.(time.Time)
-	// userDescModifiedTime is the schema descriptor for modified_time field.
-	userDescModifiedTime := userFields[10].Descriptor()
-	// user.DefaultModifiedTime holds the default value on creation for the modified_time field.
-	user.DefaultModifiedTime = userDescModifiedTime.Default.(time.Time)
 	userroleFields := schema.UserRole{}.Fields()
 	_ = userroleFields
 	// userroleDescCreatedTime is the schema descriptor for created_time field.
