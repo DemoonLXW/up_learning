@@ -686,11 +686,12 @@ func (serv *ManagementService) RetrieveUser(current, pageSize *int, like, sort s
 			user.PhoneContains(like),
 		),
 		func(s *sql.Selector) {
+			s.Where(sql.IsNull(user.FieldDeletedTime))
 			if isDisabled != nil {
 				s.Where(sql.EQ(user.FieldIsDisabled, *isDisabled))
 			}
 		},
-		user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		// user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 	)).
 		Order(func(s *sql.Selector) {
 			isSorted := sort != "" && (sort == user.FieldID || sort == user.FieldAccount || sort == user.FieldUsername || sort == user.FieldEmail || sort == user.FieldPhone || sort == user.FieldIsDisabled)
@@ -726,11 +727,12 @@ func (serv *ManagementService) GetTotalRetrievedUsers(like string, isDisabled *b
 			user.PhoneContains(like),
 		),
 		func(s *sql.Selector) {
+			s.Where(sql.IsNull(user.FieldDeletedTime))
 			if isDisabled != nil {
 				s.Where(sql.EQ(user.FieldIsDisabled, *isDisabled))
 			}
 		},
-		user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		// user.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 	)).Count(ctx)
 
 	if err != nil {
@@ -744,7 +746,10 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId 
 	ctx := context.Background()
 
 	r, err := serv.DB.Role.Query().Where(role.And(
-		role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(role.FieldDeletedTime))
+		},
+		// role.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 		role.IsDisabledEQ(false),
 		role.IDEQ(roleId),
 	)).First(ctx)
@@ -761,21 +766,29 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId 
 	length := len(toCreates)
 
 	for ; current < length; current++ {
-		id, err := tx.User.Query().Where(user.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+		// id, err := tx.User.Query().Where(user.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local))).FirstID(ctx)
+		id, err := tx.User.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(user.FieldDeletedTime))
+		}).FirstID(ctx)
 		if err != nil {
 			if !ent.IsNotFound(err) {
-				return fmt.Errorf("create user find a deleted permission id query failed: %w", err)
+				return fmt.Errorf("create user find a deleted user id query failed: %w", err)
 			}
 			break
 		}
 
 		num, err := tx.User.Update().Where(user.And(
 			user.IDEQ(id),
-			user.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			// user.DeletedTimeNEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(user.FieldDeletedTime))
+			},
 		)).
 			SetCreatedTime(time.Now()).
-			SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
-			SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			ClearModifiedTime().
+			ClearDeletedTime().
+			// SetModifiedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
+			// SetDeletedTime(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)).
 			SetAccount(*toCreates[current].Account).
 			SetUsername(*toCreates[current].Username).
 			SetIntroduction("").
@@ -813,7 +826,8 @@ func (serv *ManagementService) CreateUser(toCreates []*entity.ToAddUser, roleId 
 				SetUsername(*toCreates[current+i].Username).
 				SetPassword(*toCreates[current+i].Password).
 				SetIntroduction("").
-				AddRoles(r).Exec(ctx)
+				AddRoles(r).
+				Exec(ctx)
 			if err != nil {
 				return rollback(tx, "create users", err)
 			}

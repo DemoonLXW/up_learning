@@ -323,11 +323,11 @@ func TestRetrieveUser(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	current := 3
-	pageSize := 2
+	// current := 3
+	// pageSize := 2
 	order := false
-	// disabled := false
-	users, err := serv.RetrieveUser(&current, &pageSize, "", "id", &order, nil)
+	disabled := false
+	users, err := serv.RetrieveUser(nil, nil, "", "id", &order, &disabled)
 	assert.Nil(t, err)
 	for _, v := range users {
 		fmt.Println(v)
@@ -339,10 +339,10 @@ func TestGetTotalRetrievedUsers(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	// delete := false
-	total, err := serv.GetTotalRetrievedUsers("", nil)
+	disabled := false
+	total, err := serv.GetTotalRetrievedUsers("", &disabled)
 	assert.Nil(t, err)
-	assert.Equal(t, 3, total)
+	assert.Equal(t, 2, total)
 }
 
 func TestCreateUser(t *testing.T) {
@@ -351,16 +351,16 @@ func TestCreateUser(t *testing.T) {
 
 	password := "88888888"
 
-	account1 := "new account7"
-	username1 := "new username7"
+	account1 := "test account1"
+	username1 := "test username1"
 	user1 := entity.ToAddUser{
 		Account:  &account1,
 		Username: &username1,
 		Password: &password,
 	}
 
-	account2 := "new account9"
-	username2 := "new username9"
+	account2 := "test account2"
+	username2 := "test username2"
 	user2 := entity.ToAddUser{
 		Account:  &account2,
 		Username: &username2,
