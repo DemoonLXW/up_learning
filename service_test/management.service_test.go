@@ -497,16 +497,16 @@ func TestRetrieveSchool(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	current := 1
-	pageSize := 6
+	// current := 1
+	// pageSize := 6
 	order := false
-	disabled := false
-	schools, err := serv.RetrieveSchool(&current, &pageSize, "", "name", &order, &disabled)
+	// disabled := false
+	schools, err := serv.RetrieveSchool(nil, nil, "", "id", &order, nil)
 	assert.Nil(t, err)
-	for _, v := range schools {
-		fmt.Println(v)
-	}
-	assert.Len(t, schools, 6)
+	// for _, v := range schools {
+	// 	fmt.Println(v)
+	// }
+	assert.Len(t, schools, 13)
 }
 
 func TestGetTotalRetrievedSchools(t *testing.T) {

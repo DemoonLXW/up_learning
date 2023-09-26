@@ -1061,11 +1061,11 @@ func (serv *ManagementService) RetrieveSchool(current, pageSize *int, like, sort
 				school.NameContains(like),
 			),
 			func(s *sql.Selector) {
+				s.Where(sql.IsNull(school.FieldDeletedTime))
 				if isDisabled != nil {
 					s.Where(sql.EQ(school.FieldIsDisabled, *isDisabled))
 				}
 			},
-			school.DeletedTimeEQ(time.Date(1999, time.November, 11, 0, 0, 0, 0, time.Local)),
 		)).
 		Order(func(s *sql.Selector) {
 			isSorted := sort != "" && (sort == school.FieldID || sort == school.FieldCode || sort == school.FieldName ||
