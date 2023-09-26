@@ -455,5 +455,12 @@ func (cont *ManagementController) GetSampleOfSchoolImport(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	c.FileAttachment(f.Path, f.Name)
+
+	wd, err := os.Getwd()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.FileAttachment(wd+"/"+f.Path, f.Name)
 }
