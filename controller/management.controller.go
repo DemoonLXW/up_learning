@@ -447,3 +447,13 @@ func (cont *ManagementController) GetSchoolList(c *gin.Context) {
 	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) GetSampleOfSchoolImport(c *gin.Context) {
+
+	f, err := cont.Services.Management.FindOneSampleFileByType("import school")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.FileAttachment(f.Path, f.Name)
+}
