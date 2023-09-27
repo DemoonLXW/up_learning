@@ -45,20 +45,20 @@ type School struct {
 
 // SchoolEdges holds the relations/edges for other nodes in the graph.
 type SchoolEdges struct {
-	// Colleges holds the value of the colleges edge.
-	Colleges []*College `json:"colleges,omitempty"`
+	// Students holds the value of the students edge.
+	Students []*Student `json:"students,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// CollegesOrErr returns the Colleges value or an error if the edge
+// StudentsOrErr returns the Students value or an error if the edge
 // was not loaded in eager-loading.
-func (e SchoolEdges) CollegesOrErr() ([]*College, error) {
+func (e SchoolEdges) StudentsOrErr() ([]*Student, error) {
 	if e.loadedTypes[0] {
-		return e.Colleges, nil
+		return e.Students, nil
 	}
-	return nil, &NotLoadedError{edge: "colleges"}
+	return nil, &NotLoadedError{edge: "students"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -171,9 +171,9 @@ func (s *School) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
 }
 
-// QueryColleges queries the "colleges" edge of the School entity.
-func (s *School) QueryColleges() *CollegeQuery {
-	return NewSchoolClient(s.config).QueryColleges(s)
+// QueryStudents queries the "students" edge of the School entity.
+func (s *School) QueryStudents() *StudentQuery {
+	return NewSchoolClient(s.config).QueryStudents(s)
 }
 
 // Update returns a builder for updating this School.

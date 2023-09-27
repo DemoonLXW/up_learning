@@ -10,7 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/DemoonLXW/up_learning/database/ent/class"
+	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -28,9 +28,9 @@ func (sc *StudentCreate) SetUID(u uint32) *StudentCreate {
 	return sc
 }
 
-// SetCid sets the "cid" field.
-func (sc *StudentCreate) SetCid(u uint32) *StudentCreate {
-	sc.mutation.SetCid(u)
+// SetSid sets the "sid" field.
+func (sc *StudentCreate) SetSid(u uint16) *StudentCreate {
+	sc.mutation.SetSid(u)
 	return sc
 }
 
@@ -55,18 +55,6 @@ func (sc *StudentCreate) SetGender(u uint8) *StudentCreate {
 // SetBirthday sets the "birthday" field.
 func (sc *StudentCreate) SetBirthday(t time.Time) *StudentCreate {
 	sc.mutation.SetBirthday(t)
-	return sc
-}
-
-// SetAdmissionDate sets the "admission_date" field.
-func (sc *StudentCreate) SetAdmissionDate(t time.Time) *StudentCreate {
-	sc.mutation.SetAdmissionDate(t)
-	return sc
-}
-
-// SetState sets the "state" field.
-func (sc *StudentCreate) SetState(u uint8) *StudentCreate {
-	sc.mutation.SetState(u)
 	return sc
 }
 
@@ -132,15 +120,15 @@ func (sc *StudentCreate) SetID(u uint32) *StudentCreate {
 	return sc
 }
 
-// SetClassID sets the "class" edge to the Class entity by ID.
-func (sc *StudentCreate) SetClassID(id uint32) *StudentCreate {
-	sc.mutation.SetClassID(id)
+// SetSchoolID sets the "school" edge to the School entity by ID.
+func (sc *StudentCreate) SetSchoolID(id uint16) *StudentCreate {
+	sc.mutation.SetSchoolID(id)
 	return sc
 }
 
-// SetClass sets the "class" edge to the Class entity.
-func (sc *StudentCreate) SetClass(c *Class) *StudentCreate {
-	return sc.SetClassID(c.ID)
+// SetSchool sets the "school" edge to the School entity.
+func (sc *StudentCreate) SetSchool(s *School) *StudentCreate {
+	return sc.SetSchoolID(s.ID)
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
@@ -204,8 +192,8 @@ func (sc *StudentCreate) check() error {
 	if _, ok := sc.mutation.UID(); !ok {
 		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "Student.uid"`)}
 	}
-	if _, ok := sc.mutation.Cid(); !ok {
-		return &ValidationError{Name: "cid", err: errors.New(`ent: missing required field "Student.cid"`)}
+	if _, ok := sc.mutation.Sid(); !ok {
+		return &ValidationError{Name: "sid", err: errors.New(`ent: missing required field "Student.sid"`)}
 	}
 	if _, ok := sc.mutation.StudentID(); !ok {
 		return &ValidationError{Name: "student_id", err: errors.New(`ent: missing required field "Student.student_id"`)}
@@ -229,20 +217,14 @@ func (sc *StudentCreate) check() error {
 	if _, ok := sc.mutation.Birthday(); !ok {
 		return &ValidationError{Name: "birthday", err: errors.New(`ent: missing required field "Student.birthday"`)}
 	}
-	if _, ok := sc.mutation.AdmissionDate(); !ok {
-		return &ValidationError{Name: "admission_date", err: errors.New(`ent: missing required field "Student.admission_date"`)}
-	}
-	if _, ok := sc.mutation.State(); !ok {
-		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "Student.state"`)}
-	}
 	if _, ok := sc.mutation.IsDisabled(); !ok {
 		return &ValidationError{Name: "is_disabled", err: errors.New(`ent: missing required field "Student.is_disabled"`)}
 	}
 	if _, ok := sc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "Student.created_time"`)}
 	}
-	if _, ok := sc.mutation.ClassID(); !ok {
-		return &ValidationError{Name: "class", err: errors.New(`ent: missing required edge "Student.class"`)}
+	if _, ok := sc.mutation.SchoolID(); !ok {
+		return &ValidationError{Name: "school", err: errors.New(`ent: missing required edge "Student.school"`)}
 	}
 	if _, ok := sc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Student.user"`)}
@@ -295,14 +277,6 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 		_spec.SetField(student.FieldBirthday, field.TypeTime, value)
 		_node.Birthday = value
 	}
-	if value, ok := sc.mutation.AdmissionDate(); ok {
-		_spec.SetField(student.FieldAdmissionDate, field.TypeTime, value)
-		_node.AdmissionDate = value
-	}
-	if value, ok := sc.mutation.State(); ok {
-		_spec.SetField(student.FieldState, field.TypeUint8, value)
-		_node.State = value
-	}
 	if value, ok := sc.mutation.IsDisabled(); ok {
 		_spec.SetField(student.FieldIsDisabled, field.TypeBool, value)
 		_node.IsDisabled = value
@@ -319,21 +293,21 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 		_spec.SetField(student.FieldModifiedTime, field.TypeTime, value)
 		_node.ModifiedTime = &value
 	}
-	if nodes := sc.mutation.ClassIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.SchoolIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   student.ClassTable,
-			Columns: []string{student.ClassColumn},
+			Table:   student.SchoolTable,
+			Columns: []string{student.SchoolColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
+				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.Cid = nodes[0]
+		_node.Sid = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {

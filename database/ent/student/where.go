@@ -60,9 +60,9 @@ func UID(v uint32) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldUID, v))
 }
 
-// Cid applies equality check predicate on the "cid" field. It's identical to CidEQ.
-func Cid(v uint32) predicate.Student {
-	return predicate.Student(sql.FieldEQ(FieldCid, v))
+// Sid applies equality check predicate on the "sid" field. It's identical to SidEQ.
+func Sid(v uint16) predicate.Student {
+	return predicate.Student(sql.FieldEQ(FieldSid, v))
 }
 
 // StudentID applies equality check predicate on the "student_id" field. It's identical to StudentIDEQ.
@@ -83,16 +83,6 @@ func Gender(v uint8) predicate.Student {
 // Birthday applies equality check predicate on the "birthday" field. It's identical to BirthdayEQ.
 func Birthday(v time.Time) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldBirthday, v))
-}
-
-// AdmissionDate applies equality check predicate on the "admission_date" field. It's identical to AdmissionDateEQ.
-func AdmissionDate(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldEQ(FieldAdmissionDate, v))
-}
-
-// State applies equality check predicate on the "state" field. It's identical to StateEQ.
-func State(v uint8) predicate.Student {
-	return predicate.Student(sql.FieldEQ(FieldState, v))
 }
 
 // IsDisabled applies equality check predicate on the "is_disabled" field. It's identical to IsDisabledEQ.
@@ -135,24 +125,24 @@ func UIDNotIn(vs ...uint32) predicate.Student {
 	return predicate.Student(sql.FieldNotIn(FieldUID, vs...))
 }
 
-// CidEQ applies the EQ predicate on the "cid" field.
-func CidEQ(v uint32) predicate.Student {
-	return predicate.Student(sql.FieldEQ(FieldCid, v))
+// SidEQ applies the EQ predicate on the "sid" field.
+func SidEQ(v uint16) predicate.Student {
+	return predicate.Student(sql.FieldEQ(FieldSid, v))
 }
 
-// CidNEQ applies the NEQ predicate on the "cid" field.
-func CidNEQ(v uint32) predicate.Student {
-	return predicate.Student(sql.FieldNEQ(FieldCid, v))
+// SidNEQ applies the NEQ predicate on the "sid" field.
+func SidNEQ(v uint16) predicate.Student {
+	return predicate.Student(sql.FieldNEQ(FieldSid, v))
 }
 
-// CidIn applies the In predicate on the "cid" field.
-func CidIn(vs ...uint32) predicate.Student {
-	return predicate.Student(sql.FieldIn(FieldCid, vs...))
+// SidIn applies the In predicate on the "sid" field.
+func SidIn(vs ...uint16) predicate.Student {
+	return predicate.Student(sql.FieldIn(FieldSid, vs...))
 }
 
-// CidNotIn applies the NotIn predicate on the "cid" field.
-func CidNotIn(vs ...uint32) predicate.Student {
-	return predicate.Student(sql.FieldNotIn(FieldCid, vs...))
+// SidNotIn applies the NotIn predicate on the "sid" field.
+func SidNotIn(vs ...uint16) predicate.Student {
+	return predicate.Student(sql.FieldNotIn(FieldSid, vs...))
 }
 
 // StudentIDEQ applies the EQ predicate on the "student_id" field.
@@ -365,86 +355,6 @@ func BirthdayLTE(v time.Time) predicate.Student {
 	return predicate.Student(sql.FieldLTE(FieldBirthday, v))
 }
 
-// AdmissionDateEQ applies the EQ predicate on the "admission_date" field.
-func AdmissionDateEQ(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldEQ(FieldAdmissionDate, v))
-}
-
-// AdmissionDateNEQ applies the NEQ predicate on the "admission_date" field.
-func AdmissionDateNEQ(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldNEQ(FieldAdmissionDate, v))
-}
-
-// AdmissionDateIn applies the In predicate on the "admission_date" field.
-func AdmissionDateIn(vs ...time.Time) predicate.Student {
-	return predicate.Student(sql.FieldIn(FieldAdmissionDate, vs...))
-}
-
-// AdmissionDateNotIn applies the NotIn predicate on the "admission_date" field.
-func AdmissionDateNotIn(vs ...time.Time) predicate.Student {
-	return predicate.Student(sql.FieldNotIn(FieldAdmissionDate, vs...))
-}
-
-// AdmissionDateGT applies the GT predicate on the "admission_date" field.
-func AdmissionDateGT(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldGT(FieldAdmissionDate, v))
-}
-
-// AdmissionDateGTE applies the GTE predicate on the "admission_date" field.
-func AdmissionDateGTE(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldGTE(FieldAdmissionDate, v))
-}
-
-// AdmissionDateLT applies the LT predicate on the "admission_date" field.
-func AdmissionDateLT(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldLT(FieldAdmissionDate, v))
-}
-
-// AdmissionDateLTE applies the LTE predicate on the "admission_date" field.
-func AdmissionDateLTE(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldLTE(FieldAdmissionDate, v))
-}
-
-// StateEQ applies the EQ predicate on the "state" field.
-func StateEQ(v uint8) predicate.Student {
-	return predicate.Student(sql.FieldEQ(FieldState, v))
-}
-
-// StateNEQ applies the NEQ predicate on the "state" field.
-func StateNEQ(v uint8) predicate.Student {
-	return predicate.Student(sql.FieldNEQ(FieldState, v))
-}
-
-// StateIn applies the In predicate on the "state" field.
-func StateIn(vs ...uint8) predicate.Student {
-	return predicate.Student(sql.FieldIn(FieldState, vs...))
-}
-
-// StateNotIn applies the NotIn predicate on the "state" field.
-func StateNotIn(vs ...uint8) predicate.Student {
-	return predicate.Student(sql.FieldNotIn(FieldState, vs...))
-}
-
-// StateGT applies the GT predicate on the "state" field.
-func StateGT(v uint8) predicate.Student {
-	return predicate.Student(sql.FieldGT(FieldState, v))
-}
-
-// StateGTE applies the GTE predicate on the "state" field.
-func StateGTE(v uint8) predicate.Student {
-	return predicate.Student(sql.FieldGTE(FieldState, v))
-}
-
-// StateLT applies the LT predicate on the "state" field.
-func StateLT(v uint8) predicate.Student {
-	return predicate.Student(sql.FieldLT(FieldState, v))
-}
-
-// StateLTE applies the LTE predicate on the "state" field.
-func StateLTE(v uint8) predicate.Student {
-	return predicate.Student(sql.FieldLTE(FieldState, v))
-}
-
 // IsDisabledEQ applies the EQ predicate on the "is_disabled" field.
 func IsDisabledEQ(v bool) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldIsDisabled, v))
@@ -595,21 +505,21 @@ func ModifiedTimeNotNil() predicate.Student {
 	return predicate.Student(sql.FieldNotNull(FieldModifiedTime))
 }
 
-// HasClass applies the HasEdge predicate on the "class" edge.
-func HasClass() predicate.Student {
+// HasSchool applies the HasEdge predicate on the "school" edge.
+func HasSchool() predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ClassTable, ClassColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, SchoolTable, SchoolColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasClassWith applies the HasEdge predicate on the "class" edge with a given conditions (other predicates).
-func HasClassWith(preds ...predicate.Class) predicate.Student {
+// HasSchoolWith applies the HasEdge predicate on the "school" edge with a given conditions (other predicates).
+func HasSchoolWith(preds ...predicate.School) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
-		step := newClassStep()
+		step := newSchoolStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

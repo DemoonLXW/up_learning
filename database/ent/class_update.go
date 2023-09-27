@@ -14,7 +14,6 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
-	"github.com/DemoonLXW/up_learning/database/ent/student"
 )
 
 // ClassUpdate is the builder for updating Class entities.
@@ -121,21 +120,6 @@ func (cu *ClassUpdate) SetCollege(c *College) *ClassUpdate {
 	return cu.SetCollegeID(c.ID)
 }
 
-// AddStudentIDs adds the "students" edge to the Student entity by IDs.
-func (cu *ClassUpdate) AddStudentIDs(ids ...uint32) *ClassUpdate {
-	cu.mutation.AddStudentIDs(ids...)
-	return cu
-}
-
-// AddStudents adds the "students" edges to the Student entity.
-func (cu *ClassUpdate) AddStudents(s ...*Student) *ClassUpdate {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return cu.AddStudentIDs(ids...)
-}
-
 // Mutation returns the ClassMutation object of the builder.
 func (cu *ClassUpdate) Mutation() *ClassMutation {
 	return cu.mutation
@@ -145,27 +129,6 @@ func (cu *ClassUpdate) Mutation() *ClassMutation {
 func (cu *ClassUpdate) ClearCollege() *ClassUpdate {
 	cu.mutation.ClearCollege()
 	return cu
-}
-
-// ClearStudents clears all "students" edges to the Student entity.
-func (cu *ClassUpdate) ClearStudents() *ClassUpdate {
-	cu.mutation.ClearStudents()
-	return cu
-}
-
-// RemoveStudentIDs removes the "students" edge to Student entities by IDs.
-func (cu *ClassUpdate) RemoveStudentIDs(ids ...uint32) *ClassUpdate {
-	cu.mutation.RemoveStudentIDs(ids...)
-	return cu
-}
-
-// RemoveStudents removes "students" edges to Student entities.
-func (cu *ClassUpdate) RemoveStudents(s ...*Student) *ClassUpdate {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return cu.RemoveStudentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -258,51 +221,6 @@ func (cu *ClassUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if cu.mutation.StudentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   class.StudentsTable,
-			Columns: []string{class.StudentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.RemovedStudentsIDs(); len(nodes) > 0 && !cu.mutation.StudentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   class.StudentsTable,
-			Columns: []string{class.StudentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.StudentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   class.StudentsTable,
-			Columns: []string{class.StudentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {
@@ -421,21 +339,6 @@ func (cuo *ClassUpdateOne) SetCollege(c *College) *ClassUpdateOne {
 	return cuo.SetCollegeID(c.ID)
 }
 
-// AddStudentIDs adds the "students" edge to the Student entity by IDs.
-func (cuo *ClassUpdateOne) AddStudentIDs(ids ...uint32) *ClassUpdateOne {
-	cuo.mutation.AddStudentIDs(ids...)
-	return cuo
-}
-
-// AddStudents adds the "students" edges to the Student entity.
-func (cuo *ClassUpdateOne) AddStudents(s ...*Student) *ClassUpdateOne {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return cuo.AddStudentIDs(ids...)
-}
-
 // Mutation returns the ClassMutation object of the builder.
 func (cuo *ClassUpdateOne) Mutation() *ClassMutation {
 	return cuo.mutation
@@ -445,27 +348,6 @@ func (cuo *ClassUpdateOne) Mutation() *ClassMutation {
 func (cuo *ClassUpdateOne) ClearCollege() *ClassUpdateOne {
 	cuo.mutation.ClearCollege()
 	return cuo
-}
-
-// ClearStudents clears all "students" edges to the Student entity.
-func (cuo *ClassUpdateOne) ClearStudents() *ClassUpdateOne {
-	cuo.mutation.ClearStudents()
-	return cuo
-}
-
-// RemoveStudentIDs removes the "students" edge to Student entities by IDs.
-func (cuo *ClassUpdateOne) RemoveStudentIDs(ids ...uint32) *ClassUpdateOne {
-	cuo.mutation.RemoveStudentIDs(ids...)
-	return cuo
-}
-
-// RemoveStudents removes "students" edges to Student entities.
-func (cuo *ClassUpdateOne) RemoveStudents(s ...*Student) *ClassUpdateOne {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return cuo.RemoveStudentIDs(ids...)
 }
 
 // Where appends a list predicates to the ClassUpdate builder.
@@ -588,51 +470,6 @@ func (cuo *ClassUpdateOne) sqlSave(ctx context.Context) (_node *Class, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if cuo.mutation.StudentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   class.StudentsTable,
-			Columns: []string{class.StudentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.RemovedStudentsIDs(); len(nodes) > 0 && !cuo.mutation.StudentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   class.StudentsTable,
-			Columns: []string{class.StudentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.StudentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   class.StudentsTable,
-			Columns: []string{class.StudentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

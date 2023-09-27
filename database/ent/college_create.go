@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
-	"github.com/DemoonLXW/up_learning/database/ent/school"
 )
 
 // CollegeCreate is the builder for creating a College entity.
@@ -96,17 +95,6 @@ func (cc *CollegeCreate) SetID(u uint16) *CollegeCreate {
 	return cc
 }
 
-// SetSchoolID sets the "school" edge to the School entity by ID.
-func (cc *CollegeCreate) SetSchoolID(id uint16) *CollegeCreate {
-	cc.mutation.SetSchoolID(id)
-	return cc
-}
-
-// SetSchool sets the "school" edge to the School entity.
-func (cc *CollegeCreate) SetSchool(s *School) *CollegeCreate {
-	return cc.SetSchoolID(s.ID)
-}
-
 // AddClassIDs adds the "classes" edge to the Class entity by IDs.
 func (cc *CollegeCreate) AddClassIDs(ids ...uint32) *CollegeCreate {
 	cc.mutation.AddClassIDs(ids...)
@@ -181,9 +169,6 @@ func (cc *CollegeCreate) check() error {
 	if _, ok := cc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "College.created_time"`)}
 	}
-	if _, ok := cc.mutation.SchoolID(); !ok {
-		return &ValidationError{Name: "school", err: errors.New(`ent: missing required edge "College.school"`)}
-	}
 	return nil
 }
 
@@ -216,6 +201,10 @@ func (cc *CollegeCreate) createSpec() (*College, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := cc.mutation.Sid(); ok {
+		_spec.SetField(college.FieldSid, field.TypeUint16, value)
+		_node.Sid = value
+	}
 	if value, ok := cc.mutation.Name(); ok {
 		_spec.SetField(college.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -235,23 +224,6 @@ func (cc *CollegeCreate) createSpec() (*College, *sqlgraph.CreateSpec) {
 	if value, ok := cc.mutation.ModifiedTime(); ok {
 		_spec.SetField(college.FieldModifiedTime, field.TypeTime, value)
 		_node.ModifiedTime = &value
-	}
-	if nodes := cc.mutation.SchoolIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   college.SchoolTable,
-			Columns: []string{college.SchoolColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.Sid = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := cc.mutation.ClassesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -16,8 +16,8 @@ const (
 	FieldID = "id"
 	// FieldUID holds the string denoting the uid field in the database.
 	FieldUID = "uid"
-	// FieldCid holds the string denoting the cid field in the database.
-	FieldCid = "cid"
+	// FieldSid holds the string denoting the sid field in the database.
+	FieldSid = "sid"
 	// FieldStudentID holds the string denoting the student_id field in the database.
 	FieldStudentID = "student_id"
 	// FieldName holds the string denoting the name field in the database.
@@ -26,10 +26,6 @@ const (
 	FieldGender = "gender"
 	// FieldBirthday holds the string denoting the birthday field in the database.
 	FieldBirthday = "birthday"
-	// FieldAdmissionDate holds the string denoting the admission_date field in the database.
-	FieldAdmissionDate = "admission_date"
-	// FieldState holds the string denoting the state field in the database.
-	FieldState = "state"
 	// FieldIsDisabled holds the string denoting the is_disabled field in the database.
 	FieldIsDisabled = "is_disabled"
 	// FieldCreatedTime holds the string denoting the created_time field in the database.
@@ -38,19 +34,19 @@ const (
 	FieldDeletedTime = "deleted_time"
 	// FieldModifiedTime holds the string denoting the modified_time field in the database.
 	FieldModifiedTime = "modified_time"
-	// EdgeClass holds the string denoting the class edge name in mutations.
-	EdgeClass = "class"
+	// EdgeSchool holds the string denoting the school edge name in mutations.
+	EdgeSchool = "school"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the student in the database.
 	Table = "student"
-	// ClassTable is the table that holds the class relation/edge.
-	ClassTable = "student"
-	// ClassInverseTable is the table name for the Class entity.
-	// It exists in this package in order to avoid circular dependency with the "class" package.
-	ClassInverseTable = "class"
-	// ClassColumn is the table column denoting the class relation/edge.
-	ClassColumn = "cid"
+	// SchoolTable is the table that holds the school relation/edge.
+	SchoolTable = "student"
+	// SchoolInverseTable is the table name for the School entity.
+	// It exists in this package in order to avoid circular dependency with the "school" package.
+	SchoolInverseTable = "school"
+	// SchoolColumn is the table column denoting the school relation/edge.
+	SchoolColumn = "sid"
 	// UserTable is the table that holds the user relation/edge.
 	UserTable = "student"
 	// UserInverseTable is the table name for the User entity.
@@ -64,13 +60,11 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUID,
-	FieldCid,
+	FieldSid,
 	FieldStudentID,
 	FieldName,
 	FieldGender,
 	FieldBirthday,
-	FieldAdmissionDate,
-	FieldState,
 	FieldIsDisabled,
 	FieldCreatedTime,
 	FieldDeletedTime,
@@ -111,9 +105,9 @@ func ByUID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUID, opts...).ToFunc()
 }
 
-// ByCid orders the results by the cid field.
-func ByCid(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCid, opts...).ToFunc()
+// BySid orders the results by the sid field.
+func BySid(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSid, opts...).ToFunc()
 }
 
 // ByStudentID orders the results by the student_id field.
@@ -136,16 +130,6 @@ func ByBirthday(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldBirthday, opts...).ToFunc()
 }
 
-// ByAdmissionDate orders the results by the admission_date field.
-func ByAdmissionDate(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAdmissionDate, opts...).ToFunc()
-}
-
-// ByState orders the results by the state field.
-func ByState(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldState, opts...).ToFunc()
-}
-
 // ByIsDisabled orders the results by the is_disabled field.
 func ByIsDisabled(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsDisabled, opts...).ToFunc()
@@ -166,10 +150,10 @@ func ByModifiedTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModifiedTime, opts...).ToFunc()
 }
 
-// ByClassField orders the results by class field.
-func ByClassField(field string, opts ...sql.OrderTermOption) OrderOption {
+// BySchoolField orders the results by school field.
+func BySchoolField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newClassStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newSchoolStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -179,11 +163,11 @@ func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newClassStep() *sqlgraph.Step {
+func newSchoolStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ClassInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, ClassTable, ClassColumn),
+		sqlgraph.To(SchoolInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, SchoolTable, SchoolColumn),
 	)
 }
 func newUserStep() *sqlgraph.Step {

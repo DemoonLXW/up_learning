@@ -34,17 +34,17 @@ const (
 	FieldDeletedTime = "deleted_time"
 	// FieldModifiedTime holds the string denoting the modified_time field in the database.
 	FieldModifiedTime = "modified_time"
-	// EdgeColleges holds the string denoting the colleges edge name in mutations.
-	EdgeColleges = "colleges"
+	// EdgeStudents holds the string denoting the students edge name in mutations.
+	EdgeStudents = "students"
 	// Table holds the table name of the school in the database.
 	Table = "school"
-	// CollegesTable is the table that holds the colleges relation/edge.
-	CollegesTable = "college"
-	// CollegesInverseTable is the table name for the College entity.
-	// It exists in this package in order to avoid circular dependency with the "college" package.
-	CollegesInverseTable = "college"
-	// CollegesColumn is the table column denoting the colleges relation/edge.
-	CollegesColumn = "sid"
+	// StudentsTable is the table that holds the students relation/edge.
+	StudentsTable = "student"
+	// StudentsInverseTable is the table name for the Student entity.
+	// It exists in this package in order to avoid circular dependency with the "student" package.
+	StudentsInverseTable = "student"
+	// StudentsColumn is the table column denoting the students relation/edge.
+	StudentsColumn = "sid"
 )
 
 // Columns holds all SQL columns for school fields.
@@ -137,23 +137,23 @@ func ByModifiedTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModifiedTime, opts...).ToFunc()
 }
 
-// ByCollegesCount orders the results by colleges count.
-func ByCollegesCount(opts ...sql.OrderTermOption) OrderOption {
+// ByStudentsCount orders the results by students count.
+func ByStudentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCollegesStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newStudentsStep(), opts...)
 	}
 }
 
-// ByColleges orders the results by colleges terms.
-func ByColleges(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByStudents orders the results by students terms.
+func ByStudents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCollegesStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newStudentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newCollegesStep() *sqlgraph.Step {
+func newStudentsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CollegesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CollegesTable, CollegesColumn),
+		sqlgraph.To(StudentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
 	)
 }

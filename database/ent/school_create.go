@@ -10,8 +10,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
+	"github.com/DemoonLXW/up_learning/database/ent/student"
 )
 
 // SchoolCreate is the builder for creating a School entity.
@@ -119,19 +119,19 @@ func (sc *SchoolCreate) SetID(u uint16) *SchoolCreate {
 	return sc
 }
 
-// AddCollegeIDs adds the "colleges" edge to the College entity by IDs.
-func (sc *SchoolCreate) AddCollegeIDs(ids ...uint16) *SchoolCreate {
-	sc.mutation.AddCollegeIDs(ids...)
+// AddStudentIDs adds the "students" edge to the Student entity by IDs.
+func (sc *SchoolCreate) AddStudentIDs(ids ...uint32) *SchoolCreate {
+	sc.mutation.AddStudentIDs(ids...)
 	return sc
 }
 
-// AddColleges adds the "colleges" edges to the College entity.
-func (sc *SchoolCreate) AddColleges(c ...*College) *SchoolCreate {
-	ids := make([]uint16, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// AddStudents adds the "students" edges to the Student entity.
+func (sc *SchoolCreate) AddStudents(s ...*Student) *SchoolCreate {
+	ids := make([]uint32, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return sc.AddCollegeIDs(ids...)
+	return sc.AddStudentIDs(ids...)
 }
 
 // Mutation returns the SchoolMutation object of the builder.
@@ -277,15 +277,15 @@ func (sc *SchoolCreate) createSpec() (*School, *sqlgraph.CreateSpec) {
 		_spec.SetField(school.FieldModifiedTime, field.TypeTime, value)
 		_node.ModifiedTime = &value
 	}
-	if nodes := sc.mutation.CollegesIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.StudentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   school.CollegesTable,
-			Columns: []string{school.CollegesColumn},
+			Table:   school.StudentsTable,
+			Columns: []string{school.StudentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

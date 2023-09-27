@@ -105,6 +105,26 @@ func SidNotIn(vs ...uint16) predicate.College {
 	return predicate.College(sql.FieldNotIn(FieldSid, vs...))
 }
 
+// SidGT applies the GT predicate on the "sid" field.
+func SidGT(v uint16) predicate.College {
+	return predicate.College(sql.FieldGT(FieldSid, v))
+}
+
+// SidGTE applies the GTE predicate on the "sid" field.
+func SidGTE(v uint16) predicate.College {
+	return predicate.College(sql.FieldGTE(FieldSid, v))
+}
+
+// SidLT applies the LT predicate on the "sid" field.
+func SidLT(v uint16) predicate.College {
+	return predicate.College(sql.FieldLT(FieldSid, v))
+}
+
+// SidLTE applies the LTE predicate on the "sid" field.
+func SidLTE(v uint16) predicate.College {
+	return predicate.College(sql.FieldLTE(FieldSid, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.College {
 	return predicate.College(sql.FieldEQ(FieldName, v))
@@ -318,29 +338,6 @@ func ModifiedTimeIsNil() predicate.College {
 // ModifiedTimeNotNil applies the NotNil predicate on the "modified_time" field.
 func ModifiedTimeNotNil() predicate.College {
 	return predicate.College(sql.FieldNotNull(FieldModifiedTime))
-}
-
-// HasSchool applies the HasEdge predicate on the "school" edge.
-func HasSchool() predicate.College {
-	return predicate.College(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, SchoolTable, SchoolColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSchoolWith applies the HasEdge predicate on the "school" edge with a given conditions (other predicates).
-func HasSchoolWith(preds ...predicate.School) predicate.College {
-	return predicate.College(func(s *sql.Selector) {
-		step := newSchoolStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
 }
 
 // HasClasses applies the HasEdge predicate on the "classes" edge.

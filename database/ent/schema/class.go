@@ -49,6 +49,6 @@ func (Class) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("cid"),
-		edge.To("students", Student.Type),
+		// edge.To("students", Student.Type),
 	}
 }

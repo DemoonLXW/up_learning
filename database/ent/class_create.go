@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
-	"github.com/DemoonLXW/up_learning/database/ent/student"
 )
 
 // ClassCreate is the builder for creating a Class entity.
@@ -105,21 +104,6 @@ func (cc *ClassCreate) SetCollegeID(id uint16) *ClassCreate {
 // SetCollege sets the "college" edge to the College entity.
 func (cc *ClassCreate) SetCollege(c *College) *ClassCreate {
 	return cc.SetCollegeID(c.ID)
-}
-
-// AddStudentIDs adds the "students" edge to the Student entity by IDs.
-func (cc *ClassCreate) AddStudentIDs(ids ...uint32) *ClassCreate {
-	cc.mutation.AddStudentIDs(ids...)
-	return cc
-}
-
-// AddStudents adds the "students" edges to the Student entity.
-func (cc *ClassCreate) AddStudents(s ...*Student) *ClassCreate {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return cc.AddStudentIDs(ids...)
 }
 
 // Mutation returns the ClassMutation object of the builder.
@@ -251,22 +235,6 @@ func (cc *ClassCreate) createSpec() (*Class, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.Cid = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := cc.mutation.StudentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   class.StudentsTable,
-			Columns: []string{class.StudentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

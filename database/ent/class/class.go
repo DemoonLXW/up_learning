@@ -28,8 +28,6 @@ const (
 	FieldModifiedTime = "modified_time"
 	// EdgeCollege holds the string denoting the college edge name in mutations.
 	EdgeCollege = "college"
-	// EdgeStudents holds the string denoting the students edge name in mutations.
-	EdgeStudents = "students"
 	// Table holds the table name of the class in the database.
 	Table = "class"
 	// CollegeTable is the table that holds the college relation/edge.
@@ -39,13 +37,6 @@ const (
 	CollegeInverseTable = "college"
 	// CollegeColumn is the table column denoting the college relation/edge.
 	CollegeColumn = "cid"
-	// StudentsTable is the table that holds the students relation/edge.
-	StudentsTable = "student"
-	// StudentsInverseTable is the table name for the Student entity.
-	// It exists in this package in order to avoid circular dependency with the "student" package.
-	StudentsInverseTable = "student"
-	// StudentsColumn is the table column denoting the students relation/edge.
-	StudentsColumn = "cid"
 )
 
 // Columns holds all SQL columns for class fields.
@@ -120,31 +111,10 @@ func ByCollegeField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCollegeStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByStudentsCount orders the results by students count.
-func ByStudentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newStudentsStep(), opts...)
-	}
-}
-
-// ByStudents orders the results by students terms.
-func ByStudents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newStudentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newCollegeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CollegeInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, CollegeTable, CollegeColumn),
-	)
-}
-func newStudentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(StudentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
 	)
 }

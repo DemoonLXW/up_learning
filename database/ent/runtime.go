@@ -141,11 +141,11 @@ func init() {
 	// student.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	student.NameValidator = studentDescName.Validators[0].(func(string) error)
 	// studentDescIsDisabled is the schema descriptor for is_disabled field.
-	studentDescIsDisabled := studentFields[9].Descriptor()
+	studentDescIsDisabled := studentFields[7].Descriptor()
 	// student.DefaultIsDisabled holds the default value on creation for the is_disabled field.
 	student.DefaultIsDisabled = studentDescIsDisabled.Default.(bool)
 	// studentDescCreatedTime is the schema descriptor for created_time field.
-	studentDescCreatedTime := studentFields[10].Descriptor()
+	studentDescCreatedTime := studentFields[8].Descriptor()
 	// student.DefaultCreatedTime holds the default value on creation for the created_time field.
 	student.DefaultCreatedTime = studentDescCreatedTime.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()

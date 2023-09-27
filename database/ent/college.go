@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
-	"github.com/DemoonLXW/up_learning/database/ent/school"
 )
 
 // College is the model entity for the College schema.
@@ -38,32 +37,17 @@ type College struct {
 
 // CollegeEdges holds the relations/edges for other nodes in the graph.
 type CollegeEdges struct {
-	// School holds the value of the school edge.
-	School *School `json:"school,omitempty"`
 	// Classes holds the value of the classes edge.
 	Classes []*Class `json:"classes,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// SchoolOrErr returns the School value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e CollegeEdges) SchoolOrErr() (*School, error) {
-	if e.loadedTypes[0] {
-		if e.School == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: school.Label}
-		}
-		return e.School, nil
-	}
-	return nil, &NotLoadedError{edge: "school"}
+	loadedTypes [1]bool
 }
 
 // ClassesOrErr returns the Classes value or an error if the edge
 // was not loaded in eager-loading.
 func (e CollegeEdges) ClassesOrErr() ([]*Class, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Classes, nil
 	}
 	return nil, &NotLoadedError{edge: "classes"}
@@ -153,11 +137,6 @@ func (c *College) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (c *College) Value(name string) (ent.Value, error) {
 	return c.selectValues.Get(name)
-}
-
-// QuerySchool queries the "school" edge of the College entity.
-func (c *College) QuerySchool() *SchoolQuery {
-	return NewCollegeClient(c.config).QuerySchool(c)
 }
 
 // QueryClasses queries the "classes" edge of the College entity.

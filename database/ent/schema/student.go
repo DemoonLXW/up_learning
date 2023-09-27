@@ -28,7 +28,7 @@ func (Student) Fields() []ent.Field {
 			Unique(),
 		field.Uint32("uid").
 			Unique(),
-		field.Uint32("cid"),
+		field.Uint16("sid"),
 		field.String("student_id").
 			Unique().
 			NotEmpty(),
@@ -36,8 +36,6 @@ func (Student) Fields() []ent.Field {
 			NotEmpty(),
 		field.Uint8("gender"),
 		field.Time("birthday"),
-		field.Time("admission_date"),
-		field.Uint8("state"),
 		field.Bool("is_disabled").
 			Default(false),
 		field.Time("created_time").
@@ -55,11 +53,11 @@ func (Student) Fields() []ent.Field {
 // Edges of the Student.
 func (Student) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("class", Class.Type).
+		edge.From("school", School.Type).
 			Ref("students").
 			Unique().
 			Required().
-			Field("cid"),
+			Field("sid"),
 		edge.From("user", User.Type).
 			Ref("students").
 			Unique().

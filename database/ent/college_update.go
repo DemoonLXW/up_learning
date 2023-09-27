@@ -14,7 +14,6 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
-	"github.com/DemoonLXW/up_learning/database/ent/school"
 )
 
 // CollegeUpdate is the builder for updating College entities.
@@ -32,7 +31,14 @@ func (cu *CollegeUpdate) Where(ps ...predicate.College) *CollegeUpdate {
 
 // SetSid sets the "sid" field.
 func (cu *CollegeUpdate) SetSid(u uint16) *CollegeUpdate {
+	cu.mutation.ResetSid()
 	cu.mutation.SetSid(u)
+	return cu
+}
+
+// AddSid adds u to the "sid" field.
+func (cu *CollegeUpdate) AddSid(u int16) *CollegeUpdate {
+	cu.mutation.AddSid(u)
 	return cu
 }
 
@@ -110,17 +116,6 @@ func (cu *CollegeUpdate) ClearModifiedTime() *CollegeUpdate {
 	return cu
 }
 
-// SetSchoolID sets the "school" edge to the School entity by ID.
-func (cu *CollegeUpdate) SetSchoolID(id uint16) *CollegeUpdate {
-	cu.mutation.SetSchoolID(id)
-	return cu
-}
-
-// SetSchool sets the "school" edge to the School entity.
-func (cu *CollegeUpdate) SetSchool(s *School) *CollegeUpdate {
-	return cu.SetSchoolID(s.ID)
-}
-
 // AddClassIDs adds the "classes" edge to the Class entity by IDs.
 func (cu *CollegeUpdate) AddClassIDs(ids ...uint32) *CollegeUpdate {
 	cu.mutation.AddClassIDs(ids...)
@@ -139,12 +134,6 @@ func (cu *CollegeUpdate) AddClasses(c ...*Class) *CollegeUpdate {
 // Mutation returns the CollegeMutation object of the builder.
 func (cu *CollegeUpdate) Mutation() *CollegeMutation {
 	return cu.mutation
-}
-
-// ClearSchool clears the "school" edge to the School entity.
-func (cu *CollegeUpdate) ClearSchool() *CollegeUpdate {
-	cu.mutation.ClearSchool()
-	return cu
 }
 
 // ClearClasses clears all "classes" edges to the Class entity.
@@ -195,18 +184,7 @@ func (cu *CollegeUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (cu *CollegeUpdate) check() error {
-	if _, ok := cu.mutation.SchoolID(); cu.mutation.SchoolCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "College.school"`)
-	}
-	return nil
-}
-
 func (cu *CollegeUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := cu.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(college.Table, college.Columns, sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16))
 	if ps := cu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -214,6 +192,12 @@ func (cu *CollegeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := cu.mutation.Sid(); ok {
+		_spec.SetField(college.FieldSid, field.TypeUint16, value)
+	}
+	if value, ok := cu.mutation.AddedSid(); ok {
+		_spec.AddField(college.FieldSid, field.TypeUint16, value)
 	}
 	if value, ok := cu.mutation.Name(); ok {
 		_spec.SetField(college.FieldName, field.TypeString, value)
@@ -235,35 +219,6 @@ func (cu *CollegeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if cu.mutation.ModifiedTimeCleared() {
 		_spec.ClearField(college.FieldModifiedTime, field.TypeTime)
-	}
-	if cu.mutation.SchoolCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   college.SchoolTable,
-			Columns: []string{college.SchoolColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cu.mutation.SchoolIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   college.SchoolTable,
-			Columns: []string{college.SchoolColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if cu.mutation.ClassesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -332,7 +287,14 @@ type CollegeUpdateOne struct {
 
 // SetSid sets the "sid" field.
 func (cuo *CollegeUpdateOne) SetSid(u uint16) *CollegeUpdateOne {
+	cuo.mutation.ResetSid()
 	cuo.mutation.SetSid(u)
+	return cuo
+}
+
+// AddSid adds u to the "sid" field.
+func (cuo *CollegeUpdateOne) AddSid(u int16) *CollegeUpdateOne {
+	cuo.mutation.AddSid(u)
 	return cuo
 }
 
@@ -410,17 +372,6 @@ func (cuo *CollegeUpdateOne) ClearModifiedTime() *CollegeUpdateOne {
 	return cuo
 }
 
-// SetSchoolID sets the "school" edge to the School entity by ID.
-func (cuo *CollegeUpdateOne) SetSchoolID(id uint16) *CollegeUpdateOne {
-	cuo.mutation.SetSchoolID(id)
-	return cuo
-}
-
-// SetSchool sets the "school" edge to the School entity.
-func (cuo *CollegeUpdateOne) SetSchool(s *School) *CollegeUpdateOne {
-	return cuo.SetSchoolID(s.ID)
-}
-
 // AddClassIDs adds the "classes" edge to the Class entity by IDs.
 func (cuo *CollegeUpdateOne) AddClassIDs(ids ...uint32) *CollegeUpdateOne {
 	cuo.mutation.AddClassIDs(ids...)
@@ -439,12 +390,6 @@ func (cuo *CollegeUpdateOne) AddClasses(c ...*Class) *CollegeUpdateOne {
 // Mutation returns the CollegeMutation object of the builder.
 func (cuo *CollegeUpdateOne) Mutation() *CollegeMutation {
 	return cuo.mutation
-}
-
-// ClearSchool clears the "school" edge to the School entity.
-func (cuo *CollegeUpdateOne) ClearSchool() *CollegeUpdateOne {
-	cuo.mutation.ClearSchool()
-	return cuo
 }
 
 // ClearClasses clears all "classes" edges to the Class entity.
@@ -508,18 +453,7 @@ func (cuo *CollegeUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (cuo *CollegeUpdateOne) check() error {
-	if _, ok := cuo.mutation.SchoolID(); cuo.mutation.SchoolCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "College.school"`)
-	}
-	return nil
-}
-
 func (cuo *CollegeUpdateOne) sqlSave(ctx context.Context) (_node *College, err error) {
-	if err := cuo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(college.Table, college.Columns, sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16))
 	id, ok := cuo.mutation.ID()
 	if !ok {
@@ -545,6 +479,12 @@ func (cuo *CollegeUpdateOne) sqlSave(ctx context.Context) (_node *College, err e
 			}
 		}
 	}
+	if value, ok := cuo.mutation.Sid(); ok {
+		_spec.SetField(college.FieldSid, field.TypeUint16, value)
+	}
+	if value, ok := cuo.mutation.AddedSid(); ok {
+		_spec.AddField(college.FieldSid, field.TypeUint16, value)
+	}
 	if value, ok := cuo.mutation.Name(); ok {
 		_spec.SetField(college.FieldName, field.TypeString, value)
 	}
@@ -565,35 +505,6 @@ func (cuo *CollegeUpdateOne) sqlSave(ctx context.Context) (_node *College, err e
 	}
 	if cuo.mutation.ModifiedTimeCleared() {
 		_spec.ClearField(college.FieldModifiedTime, field.TypeTime)
-	}
-	if cuo.mutation.SchoolCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   college.SchoolTable,
-			Columns: []string{college.SchoolColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := cuo.mutation.SchoolIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   college.SchoolTable,
-			Columns: []string{college.SchoolColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if cuo.mutation.ClassesCleared() {
 		edge := &sqlgraph.EdgeSpec{

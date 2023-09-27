@@ -620,21 +620,21 @@ func ModifiedTimeNotNil() predicate.School {
 	return predicate.School(sql.FieldNotNull(FieldModifiedTime))
 }
 
-// HasColleges applies the HasEdge predicate on the "colleges" edge.
-func HasColleges() predicate.School {
+// HasStudents applies the HasEdge predicate on the "students" edge.
+func HasStudents() predicate.School {
 	return predicate.School(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CollegesTable, CollegesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasCollegesWith applies the HasEdge predicate on the "colleges" edge with a given conditions (other predicates).
-func HasCollegesWith(preds ...predicate.College) predicate.School {
+// HasStudentsWith applies the HasEdge predicate on the "students" edge with a given conditions (other predicates).
+func HasStudentsWith(preds ...predicate.Student) predicate.School {
 	return predicate.School(func(s *sql.Selector) {
-		step := newCollegesStep()
+		step := newStudentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

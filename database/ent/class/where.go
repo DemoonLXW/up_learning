@@ -343,29 +343,6 @@ func HasCollegeWith(preds ...predicate.College) predicate.Class {
 	})
 }
 
-// HasStudents applies the HasEdge predicate on the "students" edge.
-func HasStudents() predicate.Class {
-	return predicate.Class(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasStudentsWith applies the HasEdge predicate on the "students" edge with a given conditions (other predicates).
-func HasStudentsWith(preds ...predicate.Student) predicate.Class {
-	return predicate.Class(func(s *sql.Selector) {
-		step := newStudentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Class) predicate.Class {
 	return predicate.Class(func(s *sql.Selector) {

@@ -45,11 +45,11 @@ func (College) Fields() []ent.Field {
 // Edges of the College.
 func (College) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("school", School.Type).
-			Ref("colleges").
-			Unique().
-			Required().
-			Field("sid"),
+		// edge.From("school", School.Type).
+		// 	Ref("colleges").
+		// 	Unique().
+		// 	Required().
+		// 	Field("sid"),
 		edge.To("classes", Class.Type),
 	}
 }

@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/DemoonLXW/up_learning/database/ent/class"
+	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -21,8 +21,8 @@ type Student struct {
 	ID uint32 `json:"id,omitempty"`
 	// UID holds the value of the "uid" field.
 	UID uint32 `json:"uid,omitempty"`
-	// Cid holds the value of the "cid" field.
-	Cid uint32 `json:"cid,omitempty"`
+	// Sid holds the value of the "sid" field.
+	Sid uint16 `json:"sid,omitempty"`
 	// StudentID holds the value of the "student_id" field.
 	StudentID string `json:"student_id,omitempty"`
 	// Name holds the value of the "name" field.
@@ -31,10 +31,6 @@ type Student struct {
 	Gender uint8 `json:"gender,omitempty"`
 	// Birthday holds the value of the "birthday" field.
 	Birthday time.Time `json:"birthday,omitempty"`
-	// AdmissionDate holds the value of the "admission_date" field.
-	AdmissionDate time.Time `json:"admission_date,omitempty"`
-	// State holds the value of the "state" field.
-	State uint8 `json:"state,omitempty"`
 	// IsDisabled holds the value of the "is_disabled" field.
 	IsDisabled bool `json:"is_disabled,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
@@ -51,8 +47,8 @@ type Student struct {
 
 // StudentEdges holds the relations/edges for other nodes in the graph.
 type StudentEdges struct {
-	// Class holds the value of the class edge.
-	Class *Class `json:"class,omitempty"`
+	// School holds the value of the school edge.
+	School *School `json:"school,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -60,17 +56,17 @@ type StudentEdges struct {
 	loadedTypes [2]bool
 }
 
-// ClassOrErr returns the Class value or an error if the edge
+// SchoolOrErr returns the School value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e StudentEdges) ClassOrErr() (*Class, error) {
+func (e StudentEdges) SchoolOrErr() (*School, error) {
 	if e.loadedTypes[0] {
-		if e.Class == nil {
+		if e.School == nil {
 			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: class.Label}
+			return nil, &NotFoundError{label: school.Label}
 		}
-		return e.Class, nil
+		return e.School, nil
 	}
-	return nil, &NotLoadedError{edge: "class"}
+	return nil, &NotLoadedError{edge: "school"}
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -93,11 +89,11 @@ func (*Student) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case student.FieldIsDisabled:
 			values[i] = new(sql.NullBool)
-		case student.FieldID, student.FieldUID, student.FieldCid, student.FieldGender, student.FieldState:
+		case student.FieldID, student.FieldUID, student.FieldSid, student.FieldGender:
 			values[i] = new(sql.NullInt64)
 		case student.FieldStudentID, student.FieldName:
 			values[i] = new(sql.NullString)
-		case student.FieldBirthday, student.FieldAdmissionDate, student.FieldCreatedTime, student.FieldDeletedTime, student.FieldModifiedTime:
+		case student.FieldBirthday, student.FieldCreatedTime, student.FieldDeletedTime, student.FieldModifiedTime:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -126,11 +122,11 @@ func (s *Student) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.UID = uint32(value.Int64)
 			}
-		case student.FieldCid:
+		case student.FieldSid:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field cid", values[i])
+				return fmt.Errorf("unexpected type %T for field sid", values[i])
 			} else if value.Valid {
-				s.Cid = uint32(value.Int64)
+				s.Sid = uint16(value.Int64)
 			}
 		case student.FieldStudentID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -155,18 +151,6 @@ func (s *Student) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field birthday", values[i])
 			} else if value.Valid {
 				s.Birthday = value.Time
-			}
-		case student.FieldAdmissionDate:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field admission_date", values[i])
-			} else if value.Valid {
-				s.AdmissionDate = value.Time
-			}
-		case student.FieldState:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field state", values[i])
-			} else if value.Valid {
-				s.State = uint8(value.Int64)
 			}
 		case student.FieldIsDisabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -208,9 +192,9 @@ func (s *Student) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
 }
 
-// QueryClass queries the "class" edge of the Student entity.
-func (s *Student) QueryClass() *ClassQuery {
-	return NewStudentClient(s.config).QueryClass(s)
+// QuerySchool queries the "school" edge of the Student entity.
+func (s *Student) QuerySchool() *SchoolQuery {
+	return NewStudentClient(s.config).QuerySchool(s)
 }
 
 // QueryUser queries the "user" edge of the Student entity.
@@ -244,8 +228,8 @@ func (s *Student) String() string {
 	builder.WriteString("uid=")
 	builder.WriteString(fmt.Sprintf("%v", s.UID))
 	builder.WriteString(", ")
-	builder.WriteString("cid=")
-	builder.WriteString(fmt.Sprintf("%v", s.Cid))
+	builder.WriteString("sid=")
+	builder.WriteString(fmt.Sprintf("%v", s.Sid))
 	builder.WriteString(", ")
 	builder.WriteString("student_id=")
 	builder.WriteString(s.StudentID)
@@ -258,12 +242,6 @@ func (s *Student) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("birthday=")
 	builder.WriteString(s.Birthday.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("admission_date=")
-	builder.WriteString(s.AdmissionDate.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("state=")
-	builder.WriteString(fmt.Sprintf("%v", s.State))
 	builder.WriteString(", ")
 	builder.WriteString("is_disabled=")
 	builder.WriteString(fmt.Sprintf("%v", s.IsDisabled))

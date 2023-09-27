@@ -26,19 +26,10 @@ const (
 	FieldDeletedTime = "deleted_time"
 	// FieldModifiedTime holds the string denoting the modified_time field in the database.
 	FieldModifiedTime = "modified_time"
-	// EdgeSchool holds the string denoting the school edge name in mutations.
-	EdgeSchool = "school"
 	// EdgeClasses holds the string denoting the classes edge name in mutations.
 	EdgeClasses = "classes"
 	// Table holds the table name of the college in the database.
 	Table = "college"
-	// SchoolTable is the table that holds the school relation/edge.
-	SchoolTable = "college"
-	// SchoolInverseTable is the table name for the School entity.
-	// It exists in this package in order to avoid circular dependency with the "school" package.
-	SchoolInverseTable = "school"
-	// SchoolColumn is the table column denoting the school relation/edge.
-	SchoolColumn = "sid"
 	// ClassesTable is the table that holds the classes relation/edge.
 	ClassesTable = "class"
 	// ClassesInverseTable is the table name for the Class entity.
@@ -114,13 +105,6 @@ func ByModifiedTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModifiedTime, opts...).ToFunc()
 }
 
-// BySchoolField orders the results by school field.
-func BySchoolField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSchoolStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // ByClassesCount orders the results by classes count.
 func ByClassesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -133,13 +117,6 @@ func ByClasses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newClassesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
-}
-func newSchoolStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SchoolInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, SchoolTable, SchoolColumn),
-	)
 }
 func newClassesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

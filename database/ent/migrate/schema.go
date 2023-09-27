@@ -36,26 +36,18 @@ var (
 	// CollegeColumns holds the columns for the "college" table.
 	CollegeColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint16, Increment: true},
+		{Name: "sid", Type: field.TypeUint16},
 		{Name: "name", Type: field.TypeString},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
 		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
-		{Name: "sid", Type: field.TypeUint16},
 	}
 	// CollegeTable holds the schema information for the "college" table.
 	CollegeTable = &schema.Table{
 		Name:       "college",
 		Columns:    CollegeColumns,
 		PrimaryKey: []*schema.Column{CollegeColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "college_school_colleges",
-				Columns:    []*schema.Column{CollegeColumns[6]},
-				RefColumns: []*schema.Column{SchoolColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
 	}
 	// FileColumns holds the columns for the "file" table.
 	FileColumns = []*schema.Column{
@@ -217,13 +209,11 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "gender", Type: field.TypeUint8},
 		{Name: "birthday", Type: field.TypeTime},
-		{Name: "admission_date", Type: field.TypeTime},
-		{Name: "state", Type: field.TypeUint8},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
 		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
-		{Name: "cid", Type: field.TypeUint32},
+		{Name: "sid", Type: field.TypeUint16},
 		{Name: "uid", Type: field.TypeUint32},
 	}
 	// StudentTable holds the schema information for the "student" table.
@@ -233,14 +223,14 @@ var (
 		PrimaryKey: []*schema.Column{StudentColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "student_class_students",
-				Columns:    []*schema.Column{StudentColumns[11]},
-				RefColumns: []*schema.Column{ClassColumns[0]},
+				Symbol:     "student_school_students",
+				Columns:    []*schema.Column{StudentColumns[9]},
+				RefColumns: []*schema.Column{SchoolColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "student_user_students",
-				Columns:    []*schema.Column{StudentColumns[12]},
+				Columns:    []*schema.Column{StudentColumns[10]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -314,7 +304,6 @@ func init() {
 	ClassTable.Annotation = &entsql.Annotation{
 		Table: "class",
 	}
-	CollegeTable.ForeignKeys[0].RefTable = SchoolTable
 	CollegeTable.Annotation = &entsql.Annotation{
 		Table: "college",
 	}
@@ -344,7 +333,7 @@ func init() {
 	SchoolTable.Annotation = &entsql.Annotation{
 		Table: "school",
 	}
-	StudentTable.ForeignKeys[0].RefTable = ClassTable
+	StudentTable.ForeignKeys[0].RefTable = SchoolTable
 	StudentTable.ForeignKeys[1].RefTable = UserTable
 	StudentTable.Annotation = &entsql.Annotation{
 		Table: "student",
