@@ -280,12 +280,20 @@ func (cont *ManagementController) GetPermissionsByRoleId(c *gin.Context) {
 		return
 	}
 
-	permissions := make([]entity.RetrievedPermission, len(ps))
-	for i, v := range ps {
-		permissions[i].ID = v.ID
-		permissions[i].Action = v.Action
-		permissions[i].Description = v.Description
-		permissions[i].IsDisabled = v.IsDisabled
+	permissions := make([]entity.RetrievedPermission, 0, len(ps))
+	for _, v := range ps {
+		if !v.IsDisabled {
+			permissions = append(permissions, entity.RetrievedPermission{
+				ID:          v.ID,
+				Action:      v.Action,
+				Description: v.Description,
+				IsDisabled:  v.IsDisabled,
+			})
+		}
+		// permissions[i].ID = v.ID
+		// permissions[i].Action = v.Action
+		// permissions[i].Description = v.Description
+		// permissions[i].IsDisabled = v.IsDisabled
 	}
 
 	var res entity.Result
@@ -453,6 +461,10 @@ func (cont *ManagementController) GetSampleOfSchoolImport(c *gin.Context) {
 	f, err := cont.Services.Management.FindOneSampleFileByType("import school")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if f.IsDisabled {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file is disabled: " + f.Name})
 		return
 	}
 
