@@ -61,9 +61,11 @@ func (cont *AuthController) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	permissions_action := make([]string, len(ps))
-	for i, v := range ps {
-		permissions_action[i] = v.Action
+	permissions_action := make([]string, 0, len(ps))
+	for _, v := range ps {
+		if !v.IsDisabled {
+			permissions_action = append(permissions_action, v.Action)
+		}
 	}
 
 	m, err := cont.Services.Auth.FindMenuByRoleIds(roles_ids)
@@ -71,9 +73,11 @@ func (cont *AuthController) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	menus := make([]*entity.Menu, 0)
+	var menus []*entity.Menu
 	for _, menu := range m {
-		menus = append(menus, menu.JSONMenu...)
+		if !menu.IsDisabled {
+			menus = append(menus, menu.JSONMenu...)
+		}
 	}
 
 	id := fmt.Sprintf("%d", user.ID)
@@ -130,16 +134,22 @@ func (cont *AuthController) AutoLogin(c *gin.Context) {
 		return
 	}
 
-	roles_name := make([]string, len(roles))
-	menus := make([]*entity.Menu, 0)
+	roles_name := make([]string, 0, len(roles))
+	var menus []*entity.Menu
 	var permissions_action []string
-	for i, r := range roles {
-		roles_name[i] = r.Name
-		for _, menu := range r.Edges.Menu {
-			menus = append(menus, menu.JSONMenu...)
-		}
-		for _, permission := range r.Edges.Permissions {
-			permissions_action = append(permissions_action, permission.Action)
+	for _, r := range roles {
+		if !r.IsDisabled {
+			roles_name = append(roles_name, r.Name)
+			for _, menu := range r.Edges.Menu {
+				if !menu.IsDisabled {
+					menus = append(menus, menu.JSONMenu...)
+				}
+			}
+			for _, permission := range r.Edges.Permissions {
+				if !permission.IsDisabled {
+					permissions_action = append(permissions_action, permission.Action)
+				}
+			}
 		}
 	}
 
