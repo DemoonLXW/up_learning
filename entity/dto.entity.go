@@ -151,3 +151,9 @@ type RetrievedSchool struct {
 	Remark              string `json:"remark"`
 	IsDisabled          bool   `json:"isDisabled"`
 }
+
+type ToAddStudent struct {
+	StudentID string `json:"student_id"`
+	Name      string `json:"name"`
+	Gender    uint8  `json:"gender"`
+}

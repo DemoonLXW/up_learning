@@ -1085,3 +1085,68 @@ func (serv *ManagementService) FindOneSampleFileByType(t string) (*ent.File, err
 
 	return f, nil
 }
+
+func (serv *ManagementService) ReadStudentsFromFile(f *os.File) ([]*entity.ToAddStudent, error) {
+	book, err := excelize.OpenFile(f.Name())
+	if err != nil {
+		return nil, fmt.Errorf("read students from file open failed: %w", err)
+	}
+
+	rows, err := book.GetRows(book.GetSheetName(0))
+	if err != nil {
+		return nil, fmt.Errorf("read students from file get rows failed: %w", err)
+	}
+
+	length := len(rows)
+	if length < 2 {
+		return nil, fmt.Errorf("read students from file less than two rows failed: %w", err)
+	}
+
+	students := make([]*entity.ToAddStudent, length-1)
+	columnMap := map[int]string{0: "StudentID", 1: "Name", 2: "Gender"}
+	fieldMap := make(map[string]int)
+	v := reflect.ValueOf(&entity.ToAddStudent{}).Elem()
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		fieldMap[t.Field(i).Name] = i
+	}
+
+	for i := 1; i < length; i++ {
+		var student entity.ToAddStudent
+		studentValue := reflect.ValueOf(&student).Elem()
+
+		size := len(rows[i])
+		if size < 3 {
+			return nil, fmt.Errorf("read students from file less than three columns failed: %w", err)
+		}
+
+		for j := 0; j < 3; j++ {
+			col := strings.Trim(rows[i][j], "")
+			if col == "" {
+				return nil, fmt.Errorf("read students from file cell[%d][%d] %s empty failed: %w", i, j, columnMap[j], err)
+			}
+			switch j {
+			case 2:
+				{
+					var gender uint8
+					switch col {
+					case "男":
+						gender = 0
+					case "女":
+						gender = 1
+					default:
+						return nil, fmt.Errorf("read schools from file cell[%d][%d] %s invalid failed: %w", i, j, columnMap[j], err)
+					}
+					studentValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(gender))
+
+				}
+			default:
+				studentValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(col))
+			}
+		}
+
+		students[i-1] = &student
+	}
+
+	return students, nil
+}

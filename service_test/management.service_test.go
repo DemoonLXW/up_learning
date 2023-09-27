@@ -469,3 +469,18 @@ func TestFindOneSampleFileByType(t *testing.T) {
 	assert.Nil(t, err)
 	fmt.Println(f)
 }
+
+func TestReadStudentsFromFile(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	f, err := os.Open("../importStudents2.xlsx")
+	assert.Nil(t, err)
+
+	students, err := serv.ReadStudentsFromFile(f)
+	assert.Nil(t, err)
+
+	for _, s := range students {
+		fmt.Println(s.Name, s.StudentID, s.Gender)
+	}
+}
