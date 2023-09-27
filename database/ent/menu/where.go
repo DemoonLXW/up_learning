@@ -80,6 +80,11 @@ func ModifiedTime(v time.Time) predicate.Menu {
 	return predicate.Menu(sql.FieldEQ(FieldModifiedTime, v))
 }
 
+// IsDisabled applies equality check predicate on the "is_disabled" field. It's identical to IsDisabledEQ.
+func IsDisabled(v bool) predicate.Menu {
+	return predicate.Menu(sql.FieldEQ(FieldIsDisabled, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Menu {
 	return predicate.Menu(sql.FieldEQ(FieldName, v))
@@ -313,6 +318,16 @@ func ModifiedTimeIsNil() predicate.Menu {
 // ModifiedTimeNotNil applies the NotNil predicate on the "modified_time" field.
 func ModifiedTimeNotNil() predicate.Menu {
 	return predicate.Menu(sql.FieldNotNull(FieldModifiedTime))
+}
+
+// IsDisabledEQ applies the EQ predicate on the "is_disabled" field.
+func IsDisabledEQ(v bool) predicate.Menu {
+	return predicate.Menu(sql.FieldEQ(FieldIsDisabled, v))
+}
+
+// IsDisabledNEQ applies the NEQ predicate on the "is_disabled" field.
+func IsDisabledNEQ(v bool) predicate.Menu {
+	return predicate.Menu(sql.FieldNEQ(FieldIsDisabled, v))
 }
 
 // HasRole applies the HasEdge predicate on the "role" edge.

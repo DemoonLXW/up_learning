@@ -82,6 +82,20 @@ func (mc *MenuCreate) SetNillableModifiedTime(t *time.Time) *MenuCreate {
 	return mc
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (mc *MenuCreate) SetIsDisabled(b bool) *MenuCreate {
+	mc.mutation.SetIsDisabled(b)
+	return mc
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (mc *MenuCreate) SetNillableIsDisabled(b *bool) *MenuCreate {
+	if b != nil {
+		mc.SetIsDisabled(*b)
+	}
+	return mc
+}
+
 // SetID sets the "id" field.
 func (mc *MenuCreate) SetID(u uint8) *MenuCreate {
 	mc.mutation.SetID(u)
@@ -138,6 +152,10 @@ func (mc *MenuCreate) defaults() {
 		v := menu.DefaultCreatedTime()
 		mc.mutation.SetCreatedTime(v)
 	}
+	if _, ok := mc.mutation.IsDisabled(); !ok {
+		v := menu.DefaultIsDisabled
+		mc.mutation.SetIsDisabled(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -155,6 +173,9 @@ func (mc *MenuCreate) check() error {
 	}
 	if _, ok := mc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "Menu.created_time"`)}
+	}
+	if _, ok := mc.mutation.IsDisabled(); !ok {
+		return &ValidationError{Name: "is_disabled", err: errors.New(`ent: missing required field "Menu.is_disabled"`)}
 	}
 	if _, ok := mc.mutation.RoleID(); !ok {
 		return &ValidationError{Name: "role", err: errors.New(`ent: missing required edge "Menu.role"`)}
@@ -210,6 +231,10 @@ func (mc *MenuCreate) createSpec() (*Menu, *sqlgraph.CreateSpec) {
 	if value, ok := mc.mutation.ModifiedTime(); ok {
 		_spec.SetField(menu.FieldModifiedTime, field.TypeTime, value)
 		_node.ModifiedTime = &value
+	}
+	if value, ok := mc.mutation.IsDisabled(); ok {
+		_spec.SetField(menu.FieldIsDisabled, field.TypeBool, value)
+		_node.IsDisabled = value
 	}
 	if nodes := mc.mutation.RoleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

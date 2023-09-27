@@ -26,6 +26,8 @@ const (
 	FieldDeletedTime = "deleted_time"
 	// FieldModifiedTime holds the string denoting the modified_time field in the database.
 	FieldModifiedTime = "modified_time"
+	// FieldIsDisabled holds the string denoting the is_disabled field in the database.
+	FieldIsDisabled = "is_disabled"
 	// EdgeRole holds the string denoting the role edge name in mutations.
 	EdgeRole = "role"
 	// Table holds the table name of the menu in the database.
@@ -48,6 +50,7 @@ var Columns = []string{
 	FieldCreatedTime,
 	FieldDeletedTime,
 	FieldModifiedTime,
+	FieldIsDisabled,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -65,6 +68,8 @@ var (
 	NameValidator func(string) error
 	// DefaultCreatedTime holds the default value on creation for the "created_time" field.
 	DefaultCreatedTime func() time.Time
+	// DefaultIsDisabled holds the default value on creation for the "is_disabled" field.
+	DefaultIsDisabled bool
 )
 
 // OrderOption defines the ordering options for the Menu queries.
@@ -98,6 +103,11 @@ func ByDeletedTime(opts ...sql.OrderTermOption) OrderOption {
 // ByModifiedTime orders the results by the modified_time field.
 func ByModifiedTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModifiedTime, opts...).ToFunc()
+}
+
+// ByIsDisabled orders the results by the is_disabled field.
+func ByIsDisabled(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsDisabled, opts...).ToFunc()
 }
 
 // ByRoleField orders the results by role field.

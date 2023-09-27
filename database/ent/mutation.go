@@ -2588,6 +2588,7 @@ type MenuMutation struct {
 	created_time    *time.Time
 	deleted_time    *time.Time
 	modified_time   *time.Time
+	is_disabled     *bool
 	clearedFields   map[string]struct{}
 	role            *uint8
 	clearedrole     bool
@@ -2971,6 +2972,42 @@ func (m *MenuMutation) ResetModifiedTime() {
 	delete(m.clearedFields, menu.FieldModifiedTime)
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (m *MenuMutation) SetIsDisabled(b bool) {
+	m.is_disabled = &b
+}
+
+// IsDisabled returns the value of the "is_disabled" field in the mutation.
+func (m *MenuMutation) IsDisabled() (r bool, exists bool) {
+	v := m.is_disabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsDisabled returns the old "is_disabled" field's value of the Menu entity.
+// If the Menu object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MenuMutation) OldIsDisabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsDisabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsDisabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsDisabled: %w", err)
+	}
+	return oldValue.IsDisabled, nil
+}
+
+// ResetIsDisabled resets all changes to the "is_disabled" field.
+func (m *MenuMutation) ResetIsDisabled() {
+	m.is_disabled = nil
+}
+
 // SetRoleID sets the "role" edge to the Role entity by id.
 func (m *MenuMutation) SetRoleID(id uint8) {
 	m.role = &id
@@ -3044,7 +3081,7 @@ func (m *MenuMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MenuMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.name != nil {
 		fields = append(fields, menu.FieldName)
 	}
@@ -3062,6 +3099,9 @@ func (m *MenuMutation) Fields() []string {
 	}
 	if m.modified_time != nil {
 		fields = append(fields, menu.FieldModifiedTime)
+	}
+	if m.is_disabled != nil {
+		fields = append(fields, menu.FieldIsDisabled)
 	}
 	return fields
 }
@@ -3083,6 +3123,8 @@ func (m *MenuMutation) Field(name string) (ent.Value, bool) {
 		return m.DeletedTime()
 	case menu.FieldModifiedTime:
 		return m.ModifiedTime()
+	case menu.FieldIsDisabled:
+		return m.IsDisabled()
 	}
 	return nil, false
 }
@@ -3104,6 +3146,8 @@ func (m *MenuMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldDeletedTime(ctx)
 	case menu.FieldModifiedTime:
 		return m.OldModifiedTime(ctx)
+	case menu.FieldIsDisabled:
+		return m.OldIsDisabled(ctx)
 	}
 	return nil, fmt.Errorf("unknown Menu field %s", name)
 }
@@ -3154,6 +3198,13 @@ func (m *MenuMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetModifiedTime(v)
+		return nil
+	case menu.FieldIsDisabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsDisabled(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Menu field %s", name)
@@ -3245,6 +3296,9 @@ func (m *MenuMutation) ResetField(name string) error {
 		return nil
 	case menu.FieldModifiedTime:
 		m.ResetModifiedTime()
+		return nil
+	case menu.FieldIsDisabled:
+		m.ResetIsDisabled()
 		return nil
 	}
 	return fmt.Errorf("unknown Menu field %s", name)

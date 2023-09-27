@@ -43,6 +43,8 @@ func (Menu) Fields() []ent.Field {
 		field.Time("modified_time").
 			Nillable().
 			Optional(),
+		field.Bool("is_disabled").
+			Default(false),
 	}
 }
 

@@ -115,6 +115,20 @@ func (mu *MenuUpdate) ClearModifiedTime() *MenuUpdate {
 	return mu
 }
 
+// SetIsDisabled sets the "is_disabled" field.
+func (mu *MenuUpdate) SetIsDisabled(b bool) *MenuUpdate {
+	mu.mutation.SetIsDisabled(b)
+	return mu
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (mu *MenuUpdate) SetNillableIsDisabled(b *bool) *MenuUpdate {
+	if b != nil {
+		mu.SetIsDisabled(*b)
+	}
+	return mu
+}
+
 // SetRoleID sets the "role" edge to the Role entity by ID.
 func (mu *MenuUpdate) SetRoleID(id uint8) *MenuUpdate {
 	mu.mutation.SetRoleID(id)
@@ -217,6 +231,9 @@ func (mu *MenuUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if mu.mutation.ModifiedTimeCleared() {
 		_spec.ClearField(menu.FieldModifiedTime, field.TypeTime)
+	}
+	if value, ok := mu.mutation.IsDisabled(); ok {
+		_spec.SetField(menu.FieldIsDisabled, field.TypeBool, value)
 	}
 	if mu.mutation.RoleCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -348,6 +365,20 @@ func (muo *MenuUpdateOne) SetNillableModifiedTime(t *time.Time) *MenuUpdateOne {
 // ClearModifiedTime clears the value of the "modified_time" field.
 func (muo *MenuUpdateOne) ClearModifiedTime() *MenuUpdateOne {
 	muo.mutation.ClearModifiedTime()
+	return muo
+}
+
+// SetIsDisabled sets the "is_disabled" field.
+func (muo *MenuUpdateOne) SetIsDisabled(b bool) *MenuUpdateOne {
+	muo.mutation.SetIsDisabled(b)
+	return muo
+}
+
+// SetNillableIsDisabled sets the "is_disabled" field if the given value is not nil.
+func (muo *MenuUpdateOne) SetNillableIsDisabled(b *bool) *MenuUpdateOne {
+	if b != nil {
+		muo.SetIsDisabled(*b)
+	}
 	return muo
 }
 
@@ -483,6 +514,9 @@ func (muo *MenuUpdateOne) sqlSave(ctx context.Context) (_node *Menu, err error) 
 	}
 	if muo.mutation.ModifiedTimeCleared() {
 		_spec.ClearField(menu.FieldModifiedTime, field.TypeTime)
+	}
+	if value, ok := muo.mutation.IsDisabled(); ok {
+		_spec.SetField(menu.FieldIsDisabled, field.TypeBool, value)
 	}
 	if muo.mutation.RoleCleared() {
 		edge := &sqlgraph.EdgeSpec{

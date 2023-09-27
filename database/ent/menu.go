@@ -32,6 +32,8 @@ type Menu struct {
 	DeletedTime *time.Time `json:"deleted_time,omitempty"`
 	// ModifiedTime holds the value of the "modified_time" field.
 	ModifiedTime *time.Time `json:"modified_time,omitempty"`
+	// IsDisabled holds the value of the "is_disabled" field.
+	IsDisabled bool `json:"is_disabled,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MenuQuery when eager-loading is set.
 	Edges        MenuEdges `json:"edges"`
@@ -67,6 +69,8 @@ func (*Menu) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case menu.FieldJSONMenu:
 			values[i] = new([]byte)
+		case menu.FieldIsDisabled:
+			values[i] = new(sql.NullBool)
 		case menu.FieldID, menu.FieldRid:
 			values[i] = new(sql.NullInt64)
 		case menu.FieldName:
@@ -136,6 +140,12 @@ func (m *Menu) assignValues(columns []string, values []any) error {
 				m.ModifiedTime = new(time.Time)
 				*m.ModifiedTime = value.Time
 			}
+		case menu.FieldIsDisabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_disabled", values[i])
+			} else if value.Valid {
+				m.IsDisabled = value.Bool
+			}
 		default:
 			m.selectValues.Set(columns[i], values[i])
 		}
@@ -202,6 +212,9 @@ func (m *Menu) String() string {
 		builder.WriteString("modified_time=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("is_disabled=")
+	builder.WriteString(fmt.Sprintf("%v", m.IsDisabled))
 	builder.WriteByte(')')
 	return builder.String()
 }

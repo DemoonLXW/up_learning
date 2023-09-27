@@ -91,6 +91,7 @@ var (
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
 		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "rid", Type: field.TypeUint8},
 	}
 	// MenuTable holds the schema information for the "menu" table.
@@ -101,7 +102,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "menu_role_menu",
-				Columns:    []*schema.Column{MenuColumns[6]},
+				Columns:    []*schema.Column{MenuColumns[7]},
 				RefColumns: []*schema.Column{RoleColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

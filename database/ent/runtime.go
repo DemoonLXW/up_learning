@@ -72,6 +72,10 @@ func init() {
 	menuDescCreatedTime := menuFields[4].Descriptor()
 	// menu.DefaultCreatedTime holds the default value on creation for the created_time field.
 	menu.DefaultCreatedTime = menuDescCreatedTime.Default.(func() time.Time)
+	// menuDescIsDisabled is the schema descriptor for is_disabled field.
+	menuDescIsDisabled := menuFields[7].Descriptor()
+	// menu.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	menu.DefaultIsDisabled = menuDescIsDisabled.Default.(bool)
 	permissionFields := schema.Permission{}.Fields()
 	_ = permissionFields
 	// permissionDescAction is the schema descriptor for action field.
