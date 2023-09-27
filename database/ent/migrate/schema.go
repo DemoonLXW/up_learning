@@ -208,7 +208,6 @@ var (
 		{Name: "student_id", Type: field.TypeString, Unique: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "gender", Type: field.TypeUint8},
-		{Name: "birthday", Type: field.TypeTime},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
@@ -224,13 +223,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "student_school_students",
-				Columns:    []*schema.Column{StudentColumns[9]},
+				Columns:    []*schema.Column{StudentColumns[8]},
 				RefColumns: []*schema.Column{SchoolColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "student_user_students",
-				Columns:    []*schema.Column{StudentColumns[10]},
+				Columns:    []*schema.Column{StudentColumns[9]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

@@ -52,12 +52,6 @@ func (sc *StudentCreate) SetGender(u uint8) *StudentCreate {
 	return sc
 }
 
-// SetBirthday sets the "birthday" field.
-func (sc *StudentCreate) SetBirthday(t time.Time) *StudentCreate {
-	sc.mutation.SetBirthday(t)
-	return sc
-}
-
 // SetIsDisabled sets the "is_disabled" field.
 func (sc *StudentCreate) SetIsDisabled(b bool) *StudentCreate {
 	sc.mutation.SetIsDisabled(b)
@@ -214,9 +208,6 @@ func (sc *StudentCreate) check() error {
 	if _, ok := sc.mutation.Gender(); !ok {
 		return &ValidationError{Name: "gender", err: errors.New(`ent: missing required field "Student.gender"`)}
 	}
-	if _, ok := sc.mutation.Birthday(); !ok {
-		return &ValidationError{Name: "birthday", err: errors.New(`ent: missing required field "Student.birthday"`)}
-	}
 	if _, ok := sc.mutation.IsDisabled(); !ok {
 		return &ValidationError{Name: "is_disabled", err: errors.New(`ent: missing required field "Student.is_disabled"`)}
 	}
@@ -272,10 +263,6 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.Gender(); ok {
 		_spec.SetField(student.FieldGender, field.TypeUint8, value)
 		_node.Gender = value
-	}
-	if value, ok := sc.mutation.Birthday(); ok {
-		_spec.SetField(student.FieldBirthday, field.TypeTime, value)
-		_node.Birthday = value
 	}
 	if value, ok := sc.mutation.IsDisabled(); ok {
 		_spec.SetField(student.FieldIsDisabled, field.TypeBool, value)

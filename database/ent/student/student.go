@@ -24,8 +24,6 @@ const (
 	FieldName = "name"
 	// FieldGender holds the string denoting the gender field in the database.
 	FieldGender = "gender"
-	// FieldBirthday holds the string denoting the birthday field in the database.
-	FieldBirthday = "birthday"
 	// FieldIsDisabled holds the string denoting the is_disabled field in the database.
 	FieldIsDisabled = "is_disabled"
 	// FieldCreatedTime holds the string denoting the created_time field in the database.
@@ -64,7 +62,6 @@ var Columns = []string{
 	FieldStudentID,
 	FieldName,
 	FieldGender,
-	FieldBirthday,
 	FieldIsDisabled,
 	FieldCreatedTime,
 	FieldDeletedTime,
@@ -123,11 +120,6 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByGender orders the results by the gender field.
 func ByGender(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldGender, opts...).ToFunc()
-}
-
-// ByBirthday orders the results by the birthday field.
-func ByBirthday(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldBirthday, opts...).ToFunc()
 }
 
 // ByIsDisabled orders the results by the is_disabled field.

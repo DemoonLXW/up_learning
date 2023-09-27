@@ -67,12 +67,6 @@ func (su *StudentUpdate) AddGender(u int8) *StudentUpdate {
 	return su
 }
 
-// SetBirthday sets the "birthday" field.
-func (su *StudentUpdate) SetBirthday(t time.Time) *StudentUpdate {
-	su.mutation.SetBirthday(t)
-	return su
-}
-
 // SetIsDisabled sets the "is_disabled" field.
 func (su *StudentUpdate) SetIsDisabled(b bool) *StudentUpdate {
 	su.mutation.SetIsDisabled(b)
@@ -252,9 +246,6 @@ func (su *StudentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.AddedGender(); ok {
 		_spec.AddField(student.FieldGender, field.TypeUint8, value)
 	}
-	if value, ok := su.mutation.Birthday(); ok {
-		_spec.SetField(student.FieldBirthday, field.TypeTime, value)
-	}
 	if value, ok := su.mutation.IsDisabled(); ok {
 		_spec.SetField(student.FieldIsDisabled, field.TypeBool, value)
 	}
@@ -385,12 +376,6 @@ func (suo *StudentUpdateOne) SetGender(u uint8) *StudentUpdateOne {
 // AddGender adds u to the "gender" field.
 func (suo *StudentUpdateOne) AddGender(u int8) *StudentUpdateOne {
 	suo.mutation.AddGender(u)
-	return suo
-}
-
-// SetBirthday sets the "birthday" field.
-func (suo *StudentUpdateOne) SetBirthday(t time.Time) *StudentUpdateOne {
-	suo.mutation.SetBirthday(t)
 	return suo
 }
 
@@ -602,9 +587,6 @@ func (suo *StudentUpdateOne) sqlSave(ctx context.Context) (_node *Student, err e
 	}
 	if value, ok := suo.mutation.AddedGender(); ok {
 		_spec.AddField(student.FieldGender, field.TypeUint8, value)
-	}
-	if value, ok := suo.mutation.Birthday(); ok {
-		_spec.SetField(student.FieldBirthday, field.TypeTime, value)
 	}
 	if value, ok := suo.mutation.IsDisabled(); ok {
 		_spec.SetField(student.FieldIsDisabled, field.TypeBool, value)

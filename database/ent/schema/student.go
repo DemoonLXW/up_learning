@@ -35,7 +35,6 @@ func (Student) Fields() []ent.Field {
 		field.String("name").
 			NotEmpty(),
 		field.Uint8("gender"),
-		field.Time("birthday"),
 		field.Bool("is_disabled").
 			Default(false),
 		field.Time("created_time").

@@ -80,11 +80,6 @@ func Gender(v uint8) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldGender, v))
 }
 
-// Birthday applies equality check predicate on the "birthday" field. It's identical to BirthdayEQ.
-func Birthday(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldEQ(FieldBirthday, v))
-}
-
 // IsDisabled applies equality check predicate on the "is_disabled" field. It's identical to IsDisabledEQ.
 func IsDisabled(v bool) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldIsDisabled, v))
@@ -313,46 +308,6 @@ func GenderLT(v uint8) predicate.Student {
 // GenderLTE applies the LTE predicate on the "gender" field.
 func GenderLTE(v uint8) predicate.Student {
 	return predicate.Student(sql.FieldLTE(FieldGender, v))
-}
-
-// BirthdayEQ applies the EQ predicate on the "birthday" field.
-func BirthdayEQ(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldEQ(FieldBirthday, v))
-}
-
-// BirthdayNEQ applies the NEQ predicate on the "birthday" field.
-func BirthdayNEQ(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldNEQ(FieldBirthday, v))
-}
-
-// BirthdayIn applies the In predicate on the "birthday" field.
-func BirthdayIn(vs ...time.Time) predicate.Student {
-	return predicate.Student(sql.FieldIn(FieldBirthday, vs...))
-}
-
-// BirthdayNotIn applies the NotIn predicate on the "birthday" field.
-func BirthdayNotIn(vs ...time.Time) predicate.Student {
-	return predicate.Student(sql.FieldNotIn(FieldBirthday, vs...))
-}
-
-// BirthdayGT applies the GT predicate on the "birthday" field.
-func BirthdayGT(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldGT(FieldBirthday, v))
-}
-
-// BirthdayGTE applies the GTE predicate on the "birthday" field.
-func BirthdayGTE(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldGTE(FieldBirthday, v))
-}
-
-// BirthdayLT applies the LT predicate on the "birthday" field.
-func BirthdayLT(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldLT(FieldBirthday, v))
-}
-
-// BirthdayLTE applies the LTE predicate on the "birthday" field.
-func BirthdayLTE(v time.Time) predicate.Student {
-	return predicate.Student(sql.FieldLTE(FieldBirthday, v))
 }
 
 // IsDisabledEQ applies the EQ predicate on the "is_disabled" field.

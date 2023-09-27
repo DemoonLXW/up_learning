@@ -29,8 +29,6 @@ type Student struct {
 	Name string `json:"name,omitempty"`
 	// Gender holds the value of the "gender" field.
 	Gender uint8 `json:"gender,omitempty"`
-	// Birthday holds the value of the "birthday" field.
-	Birthday time.Time `json:"birthday,omitempty"`
 	// IsDisabled holds the value of the "is_disabled" field.
 	IsDisabled bool `json:"is_disabled,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
@@ -93,7 +91,7 @@ func (*Student) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case student.FieldStudentID, student.FieldName:
 			values[i] = new(sql.NullString)
-		case student.FieldBirthday, student.FieldCreatedTime, student.FieldDeletedTime, student.FieldModifiedTime:
+		case student.FieldCreatedTime, student.FieldDeletedTime, student.FieldModifiedTime:
 			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -145,12 +143,6 @@ func (s *Student) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field gender", values[i])
 			} else if value.Valid {
 				s.Gender = uint8(value.Int64)
-			}
-		case student.FieldBirthday:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field birthday", values[i])
-			} else if value.Valid {
-				s.Birthday = value.Time
 			}
 		case student.FieldIsDisabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -239,9 +231,6 @@ func (s *Student) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("gender=")
 	builder.WriteString(fmt.Sprintf("%v", s.Gender))
-	builder.WriteString(", ")
-	builder.WriteString("birthday=")
-	builder.WriteString(s.Birthday.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("is_disabled=")
 	builder.WriteString(fmt.Sprintf("%v", s.IsDisabled))

@@ -7095,7 +7095,6 @@ type StudentMutation struct {
 	name          *string
 	gender        *uint8
 	addgender     *int8
-	birthday      *time.Time
 	is_disabled   *bool
 	created_time  *time.Time
 	deleted_time  *time.Time
@@ -7414,42 +7413,6 @@ func (m *StudentMutation) ResetGender() {
 	m.addgender = nil
 }
 
-// SetBirthday sets the "birthday" field.
-func (m *StudentMutation) SetBirthday(t time.Time) {
-	m.birthday = &t
-}
-
-// Birthday returns the value of the "birthday" field in the mutation.
-func (m *StudentMutation) Birthday() (r time.Time, exists bool) {
-	v := m.birthday
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldBirthday returns the old "birthday" field's value of the Student entity.
-// If the Student object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *StudentMutation) OldBirthday(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldBirthday is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldBirthday requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldBirthday: %w", err)
-	}
-	return oldValue.Birthday, nil
-}
-
-// ResetBirthday resets all changes to the "birthday" field.
-func (m *StudentMutation) ResetBirthday() {
-	m.birthday = nil
-}
-
 // SetIsDisabled sets the "is_disabled" field.
 func (m *StudentMutation) SetIsDisabled(b bool) {
 	m.is_disabled = &b
@@ -7732,7 +7695,7 @@ func (m *StudentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *StudentMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 9)
 	if m.user != nil {
 		fields = append(fields, student.FieldUID)
 	}
@@ -7747,9 +7710,6 @@ func (m *StudentMutation) Fields() []string {
 	}
 	if m.gender != nil {
 		fields = append(fields, student.FieldGender)
-	}
-	if m.birthday != nil {
-		fields = append(fields, student.FieldBirthday)
 	}
 	if m.is_disabled != nil {
 		fields = append(fields, student.FieldIsDisabled)
@@ -7781,8 +7741,6 @@ func (m *StudentMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case student.FieldGender:
 		return m.Gender()
-	case student.FieldBirthday:
-		return m.Birthday()
 	case student.FieldIsDisabled:
 		return m.IsDisabled()
 	case student.FieldCreatedTime:
@@ -7810,8 +7768,6 @@ func (m *StudentMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldName(ctx)
 	case student.FieldGender:
 		return m.OldGender(ctx)
-	case student.FieldBirthday:
-		return m.OldBirthday(ctx)
 	case student.FieldIsDisabled:
 		return m.OldIsDisabled(ctx)
 	case student.FieldCreatedTime:
@@ -7863,13 +7819,6 @@ func (m *StudentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetGender(v)
-		return nil
-	case student.FieldBirthday:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetBirthday(v)
 		return nil
 	case student.FieldIsDisabled:
 		v, ok := value.(bool)
@@ -7992,9 +7941,6 @@ func (m *StudentMutation) ResetField(name string) error {
 		return nil
 	case student.FieldGender:
 		m.ResetGender()
-		return nil
-	case student.FieldBirthday:
-		m.ResetBirthday()
 		return nil
 	case student.FieldIsDisabled:
 		m.ResetIsDisabled()
