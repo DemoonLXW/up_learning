@@ -87,6 +87,7 @@ func (serv *AuthService) Login(account, password string) (*ent.User, string, err
 			func(s *sql.Selector) {
 				s.Where(sql.IsNull(user.FieldDeletedTime))
 			},
+			user.IsDisabledEQ(false),
 		),
 	).WithRoles(func(rq *ent.RoleQuery) {
 		rq.Where(role.And(
@@ -184,30 +185,16 @@ func (serv *AuthService) CheckCredential(id uint32, token string) (string, error
 
 }
 
-func (serv *AuthService) FindOneUserById(id uint32) (*ent.User, error) {
-	ctx := context.Background()
-	user, err := serv.DB.User.Query().Where(user.IDEQ(id)).WithRoles().Only(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("user find one by id failed: %w", err)
-	}
-	return user, nil
-}
-
-func (serv *AuthService) FindMenuByUserId(id uint32) ([]*ent.Menu, error) {
-	ctx := context.Background()
-
-	menu, err := serv.DB.User.Query().Where(user.IDEQ(id)).QueryRoles().QueryMenu().All(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("menus find by user id failed: %w", err)
-	}
-
-	return menu, nil
-}
-
 func (serv *AuthService) FindMenuByRoleIds(ids []uint8) ([]*ent.Menu, error) {
 	ctx := context.Background()
 
-	menu, err := serv.DB.Menu.Query().Where(menu.RidIn(ids...)).All(ctx)
+	menu, err := serv.DB.Menu.Query().Where(menu.And(
+		menu.RidIn(ids...),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(menu.FieldDeletedTime))
+		},
+		menu.IsDisabledEQ(false),
+	)).All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("menus find by role ids failed: %w", err)
 	}
@@ -218,7 +205,32 @@ func (serv *AuthService) FindMenuByRoleIds(ids []uint8) ([]*ent.Menu, error) {
 func (serv *AuthService) FindRolesWithMenusAndPermissonsByUserId(id uint32) ([]*ent.Role, error) {
 	ctx := context.Background()
 
-	roles, err := serv.DB.User.Query().Where(user.IDEQ(id)).QueryRoles().WithMenu().WithPermissions().All(ctx)
+	roles, err := serv.DB.User.Query().Where(user.And(
+		user.IDEQ(id),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(user.FieldDeletedTime))
+		},
+		user.IsDisabledEQ(false),
+	)).QueryRoles().Where(role.And(
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(role.FieldDeletedTime))
+		},
+		role.IsDisabledEQ(false),
+	)).WithMenu(func(mq *ent.MenuQuery) {
+		mq.Where(menu.And(
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(menu.FieldDeletedTime))
+			},
+			menu.IsDisabledEQ(false),
+		))
+	}).WithPermissions(func(pq *ent.PermissionQuery) {
+		pq.Where(permission.And(
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(permission.FieldDeletedTime))
+			},
+			permission.IsDisabledEQ(false),
+		))
+	}).All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("roles with menus find by user id failed: %w", err)
 	}
@@ -230,7 +242,13 @@ func (serv *AuthService) CheckPermissions(id uint32, permissions []string) (bool
 	ctx := context.Background()
 
 	check, err := serv.DB.User.Query().
-		Where(user.IDEQ(id)).
+		Where(user.And(
+			user.IDEQ(id),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(user.FieldDeletedTime))
+			},
+			user.IsDisabledEQ(false),
+		)).
 		QueryRoles().
 		Where(role.And(
 			func(s *sql.Selector) {
@@ -251,49 +269,4 @@ func (serv *AuthService) CheckPermissions(id uint32, permissions []string) (bool
 		return false, fmt.Errorf("check permissions failed: %w", err)
 	}
 	return check == len(permissions), nil
-}
-
-func (serv *AuthService) CreateUser(toCreates []*ent.User) error {
-	ctx := context.Background()
-
-	num, err := serv.DB.User.Query().Aggregate(ent.Count()).Int(ctx)
-	if err != nil {
-		return fmt.Errorf("create users count failed: %w", err)
-	}
-
-	accounts := make([]string, len(toCreates))
-	bulk := make([]*ent.UserCreate, len(toCreates))
-	for i, v := range toCreates {
-		accounts[i] = v.Account
-		bulk[i] = serv.DB.User.Create().
-			SetID(uint32(num + i + 1)).
-			SetAccount(v.Account).
-			SetPassword(v.Password)
-	}
-
-	checkRepeatAccount, err := serv.DB.User.Query().Where(user.AccountIn(accounts...)).Exist(ctx)
-	if err != nil {
-		return fmt.Errorf("create users check repeat user failed: %w", err)
-	}
-	if checkRepeatAccount {
-		return fmt.Errorf("repeat user")
-	}
-
-	tx, err := serv.DB.Tx(ctx)
-	if err != nil {
-		return fmt.Errorf("create user start a transaction failed: %w", err)
-	}
-
-	err = tx.User.CreateBulk(bulk...).Exec(ctx)
-	if err != nil {
-		return rollback(tx, "create users", err)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return fmt.Errorf("create users transaction commit failed: %w", err)
-	}
-
-	return nil
-
 }
