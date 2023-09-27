@@ -36,6 +36,20 @@ func (su *StudentUpdate) SetUID(u uint32) *StudentUpdate {
 	return su
 }
 
+// SetNillableUID sets the "uid" field if the given value is not nil.
+func (su *StudentUpdate) SetNillableUID(u *uint32) *StudentUpdate {
+	if u != nil {
+		su.SetUID(*u)
+	}
+	return su
+}
+
+// ClearUID clears the value of the "uid" field.
+func (su *StudentUpdate) ClearUID() *StudentUpdate {
+	su.mutation.ClearUID()
+	return su
+}
+
 // SetSid sets the "sid" field.
 func (su *StudentUpdate) SetSid(u uint16) *StudentUpdate {
 	su.mutation.SetSid(u)
@@ -152,6 +166,14 @@ func (su *StudentUpdate) SetUserID(id uint32) *StudentUpdate {
 	return su
 }
 
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (su *StudentUpdate) SetNillableUserID(id *uint32) *StudentUpdate {
+	if id != nil {
+		su = su.SetUserID(*id)
+	}
+	return su
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (su *StudentUpdate) SetUser(u *User) *StudentUpdate {
 	return su.SetUserID(u.ID)
@@ -215,9 +237,6 @@ func (su *StudentUpdate) check() error {
 	}
 	if _, ok := su.mutation.SchoolID(); su.mutation.SchoolCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Student.school"`)
-	}
-	if _, ok := su.mutation.UserID(); su.mutation.UserCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Student.user"`)
 	}
 	return nil
 }
@@ -348,6 +367,20 @@ func (suo *StudentUpdateOne) SetUID(u uint32) *StudentUpdateOne {
 	return suo
 }
 
+// SetNillableUID sets the "uid" field if the given value is not nil.
+func (suo *StudentUpdateOne) SetNillableUID(u *uint32) *StudentUpdateOne {
+	if u != nil {
+		suo.SetUID(*u)
+	}
+	return suo
+}
+
+// ClearUID clears the value of the "uid" field.
+func (suo *StudentUpdateOne) ClearUID() *StudentUpdateOne {
+	suo.mutation.ClearUID()
+	return suo
+}
+
 // SetSid sets the "sid" field.
 func (suo *StudentUpdateOne) SetSid(u uint16) *StudentUpdateOne {
 	suo.mutation.SetSid(u)
@@ -464,6 +497,14 @@ func (suo *StudentUpdateOne) SetUserID(id uint32) *StudentUpdateOne {
 	return suo
 }
 
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (suo *StudentUpdateOne) SetNillableUserID(id *uint32) *StudentUpdateOne {
+	if id != nil {
+		suo = suo.SetUserID(*id)
+	}
+	return suo
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (suo *StudentUpdateOne) SetUser(u *User) *StudentUpdateOne {
 	return suo.SetUserID(u.ID)
@@ -540,9 +581,6 @@ func (suo *StudentUpdateOne) check() error {
 	}
 	if _, ok := suo.mutation.SchoolID(); suo.mutation.SchoolCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Student.school"`)
-	}
-	if _, ok := suo.mutation.UserID(); suo.mutation.UserCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Student.user"`)
 	}
 	return nil
 }

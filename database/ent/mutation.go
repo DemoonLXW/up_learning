@@ -7244,9 +7244,22 @@ func (m *StudentMutation) OldUID(ctx context.Context) (v uint32, err error) {
 	return oldValue.UID, nil
 }
 
+// ClearUID clears the value of the "uid" field.
+func (m *StudentMutation) ClearUID() {
+	m.user = nil
+	m.clearedFields[student.FieldUID] = struct{}{}
+}
+
+// UIDCleared returns if the "uid" field was cleared in this mutation.
+func (m *StudentMutation) UIDCleared() bool {
+	_, ok := m.clearedFields[student.FieldUID]
+	return ok
+}
+
 // ResetUID resets all changes to the "uid" field.
 func (m *StudentMutation) ResetUID() {
 	m.user = nil
+	delete(m.clearedFields, student.FieldUID)
 }
 
 // SetSid sets the "sid" field.
@@ -7634,7 +7647,7 @@ func (m *StudentMutation) ClearUser() {
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
 func (m *StudentMutation) UserCleared() bool {
-	return m.cleareduser
+	return m.UIDCleared() || m.cleareduser
 }
 
 // UserID returns the "user" edge ID in the mutation.
@@ -7893,6 +7906,9 @@ func (m *StudentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *StudentMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(student.FieldUID) {
+		fields = append(fields, student.FieldUID)
+	}
 	if m.FieldCleared(student.FieldDeletedTime) {
 		fields = append(fields, student.FieldDeletedTime)
 	}
@@ -7913,6 +7929,9 @@ func (m *StudentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *StudentMutation) ClearField(name string) error {
 	switch name {
+	case student.FieldUID:
+		m.ClearUID()
+		return nil
 	case student.FieldDeletedTime:
 		m.ClearDeletedTime()
 		return nil

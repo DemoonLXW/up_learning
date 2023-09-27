@@ -213,7 +213,7 @@ var (
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
 		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
 		{Name: "sid", Type: field.TypeUint16},
-		{Name: "uid", Type: field.TypeUint32},
+		{Name: "uid", Type: field.TypeUint32, Nullable: true},
 	}
 	// StudentTable holds the schema information for the "student" table.
 	StudentTable = &schema.Table{
@@ -231,7 +231,7 @@ var (
 				Symbol:     "student_user_students",
 				Columns:    []*schema.Column{StudentColumns[9]},
 				RefColumns: []*schema.Column{UserColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}

@@ -28,6 +28,14 @@ func (sc *StudentCreate) SetUID(u uint32) *StudentCreate {
 	return sc
 }
 
+// SetNillableUID sets the "uid" field if the given value is not nil.
+func (sc *StudentCreate) SetNillableUID(u *uint32) *StudentCreate {
+	if u != nil {
+		sc.SetUID(*u)
+	}
+	return sc
+}
+
 // SetSid sets the "sid" field.
 func (sc *StudentCreate) SetSid(u uint16) *StudentCreate {
 	sc.mutation.SetSid(u)
@@ -131,6 +139,14 @@ func (sc *StudentCreate) SetUserID(id uint32) *StudentCreate {
 	return sc
 }
 
+// SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
+func (sc *StudentCreate) SetNillableUserID(id *uint32) *StudentCreate {
+	if id != nil {
+		sc = sc.SetUserID(*id)
+	}
+	return sc
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (sc *StudentCreate) SetUser(u *User) *StudentCreate {
 	return sc.SetUserID(u.ID)
@@ -183,9 +199,6 @@ func (sc *StudentCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *StudentCreate) check() error {
-	if _, ok := sc.mutation.UID(); !ok {
-		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "Student.uid"`)}
-	}
 	if _, ok := sc.mutation.Sid(); !ok {
 		return &ValidationError{Name: "sid", err: errors.New(`ent: missing required field "Student.sid"`)}
 	}
@@ -216,9 +229,6 @@ func (sc *StudentCreate) check() error {
 	}
 	if _, ok := sc.mutation.SchoolID(); !ok {
 		return &ValidationError{Name: "school", err: errors.New(`ent: missing required edge "Student.school"`)}
-	}
-	if _, ok := sc.mutation.UserID(); !ok {
-		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Student.user"`)}
 	}
 	return nil
 }

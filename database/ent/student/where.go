@@ -120,6 +120,16 @@ func UIDNotIn(vs ...uint32) predicate.Student {
 	return predicate.Student(sql.FieldNotIn(FieldUID, vs...))
 }
 
+// UIDIsNil applies the IsNil predicate on the "uid" field.
+func UIDIsNil() predicate.Student {
+	return predicate.Student(sql.FieldIsNull(FieldUID))
+}
+
+// UIDNotNil applies the NotNil predicate on the "uid" field.
+func UIDNotNil() predicate.Student {
+	return predicate.Student(sql.FieldNotNull(FieldUID))
+}
+
 // SidEQ applies the EQ predicate on the "sid" field.
 func SidEQ(v uint16) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldSid, v))
