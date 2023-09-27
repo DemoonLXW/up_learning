@@ -357,12 +357,10 @@ func (serv *ManagementService) RetrieveRole(current, pageSize *int, like, sort s
 					role.DescriptionContains(like),
 				),
 				func(s *sql.Selector) {
+					s.Where(sql.IsNull(role.FieldDeletedTime))
 					if isDisabled != nil {
 						s.Where(sql.EQ(role.FieldIsDisabled, *isDisabled))
 					}
-				},
-				func(s *sql.Selector) {
-					s.Where(sql.IsNull(role.FieldDeletedTime))
 				},
 			),
 		).
@@ -402,12 +400,10 @@ func (serv *ManagementService) GetTotalRetrievedRoles(like string, isDisabled *b
 					role.DescriptionContains(like),
 				),
 				func(s *sql.Selector) {
+					s.Where(sql.IsNull(role.FieldDeletedTime))
 					if isDisabled != nil {
 						s.Where(sql.EQ(role.FieldIsDisabled, *isDisabled))
 					}
-				},
-				func(s *sql.Selector) {
-					s.Where(sql.IsNull(role.FieldDeletedTime))
 				},
 			),
 		).Count(ctx)
@@ -526,13 +522,11 @@ func (serv *ManagementService) FindPermissionsByRoleIds(ids []uint8) ([]*ent.Per
 		func(s *sql.Selector) {
 			s.Where(sql.IsNull(role.FieldDeletedTime))
 		},
-		// No isDisabled = false because roles include both two states (disabled or not)
 	)).WithPermissions(func(q *ent.PermissionQuery) {
 		q.Where(permission.And(
 			func(s *sql.Selector) {
 				s.Where(sql.IsNull(permission.FieldDeletedTime))
 			},
-			permission.IsDisabledEQ(false),
 		))
 	}).All(ctx)
 
@@ -1077,14 +1071,12 @@ func (serv *ManagementService) FindOneSampleFileByType(t string) (*ent.File, err
 		func(s *sql.Selector) {
 			s.Where(sql.IsNull(samplefile.FieldDeletedTime))
 		},
-		samplefile.IsDisabledEQ(false),
 		samplefile.TypeEQ(t),
 	)).
 		QueryFile().Where(file.And(
 		func(s *sql.Selector) {
 			s.Where(sql.IsNull(file.FieldDeletedTime))
 		},
-		file.IsDisabledEQ(false),
 	)).
 		First(ctx)
 	if err != nil {

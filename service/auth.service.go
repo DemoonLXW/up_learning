@@ -193,7 +193,6 @@ func (serv *AuthService) FindMenuByRoleIds(ids []uint8) ([]*ent.Menu, error) {
 		func(s *sql.Selector) {
 			s.Where(sql.IsNull(menu.FieldDeletedTime))
 		},
-		menu.IsDisabledEQ(false),
 	)).All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("menus find by role ids failed: %w", err)
@@ -210,25 +209,21 @@ func (serv *AuthService) FindRolesWithMenusAndPermissonsByUserId(id uint32) ([]*
 		func(s *sql.Selector) {
 			s.Where(sql.IsNull(user.FieldDeletedTime))
 		},
-		user.IsDisabledEQ(false),
 	)).QueryRoles().Where(role.And(
 		func(s *sql.Selector) {
 			s.Where(sql.IsNull(role.FieldDeletedTime))
 		},
-		role.IsDisabledEQ(false),
 	)).WithMenu(func(mq *ent.MenuQuery) {
 		mq.Where(menu.And(
 			func(s *sql.Selector) {
 				s.Where(sql.IsNull(menu.FieldDeletedTime))
 			},
-			menu.IsDisabledEQ(false),
 		))
 	}).WithPermissions(func(pq *ent.PermissionQuery) {
 		pq.Where(permission.And(
 			func(s *sql.Selector) {
 				s.Where(sql.IsNull(permission.FieldDeletedTime))
 			},
-			permission.IsDisabledEQ(false),
 		))
 	}).All(ctx)
 	if err != nil {
