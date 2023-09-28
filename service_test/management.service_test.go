@@ -513,3 +513,19 @@ func TestCreateStudent(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
+func TestRetrieveStudent(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	current := 2
+	pageSize := 1
+	order := false
+	disabled := true
+	students, err := serv.RetrieveStudentBySchoolID(&current, &pageSize, "ly", "id", &order, &disabled, 3)
+	assert.Nil(t, err)
+	for _, v := range students {
+		fmt.Println(v)
+	}
+	assert.Len(t, students, 0)
+}

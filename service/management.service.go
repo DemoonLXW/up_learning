@@ -1224,3 +1224,45 @@ func (serv *ManagementService) CreateStudent(toCreates []*entity.ToAddStudent, s
 
 	return nil
 }
+
+func (serv *ManagementService) RetrieveStudentBySchoolID(current, pageSize *int, like, sort string, order, isDisabled *bool, schoolID uint16) ([]*ent.Student, error) {
+	ctx := context.Background()
+
+	query := serv.DB.Student.Query().
+		Where(student.And(
+			student.Or(
+				student.NameContains(like),
+				student.StudentIDContains(like),
+			),
+			student.SidEQ(schoolID),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(student.FieldDeletedTime))
+				if isDisabled != nil {
+					s.Where(sql.EQ(student.FieldIsDisabled, *isDisabled))
+				}
+			},
+		)).
+		Order(func(s *sql.Selector) {
+			isSorted := sort != "" && (sort == student.FieldID || sort == student.FieldStudentID || sort == student.FieldName ||
+				sort == student.FieldGender || sort == student.FieldIsDisabled)
+			if isSorted && order != nil {
+				if *order {
+					s.OrderBy(sql.Desc(sort))
+				} else {
+					s.OrderBy(sql.Asc(sort))
+				}
+			}
+		})
+
+	if pageSize != nil && current != nil {
+		offset := (*current - 1) * (*pageSize)
+		query.Limit(*pageSize).Offset(offset)
+	}
+	students, err := query.All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("retrieve student query failed: %w", err)
+	}
+
+	return students, nil
+}
