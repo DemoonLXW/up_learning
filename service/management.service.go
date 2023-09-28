@@ -1266,3 +1266,28 @@ func (serv *ManagementService) RetrieveStudentBySchoolID(current, pageSize *int,
 
 	return students, nil
 }
+
+func (serv *ManagementService) GetTotalRetrievedStudentsBySchoolID(like string, isDisabled *bool, schoolID uint16) (int, error) {
+	ctx := context.Background()
+
+	total, err := serv.DB.Student.Query().
+		Where(student.And(
+			student.Or(
+				student.NameContains(like),
+				student.StudentIDContains(like),
+			),
+			student.SidEQ(schoolID),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(student.FieldDeletedTime))
+				if isDisabled != nil {
+					s.Where(sql.EQ(student.FieldIsDisabled, *isDisabled))
+				}
+			},
+		)).Count(ctx)
+
+	if err != nil {
+		return -1, fmt.Errorf("get retrieved total students query failed: %w", err)
+	}
+
+	return total, nil
+}

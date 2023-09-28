@@ -529,3 +529,13 @@ func TestRetrieveStudent(t *testing.T) {
 	}
 	assert.Len(t, students, 0)
 }
+
+func TestGetTotalRetrievedStudentsBySchoolID(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	// disabled := true
+	total, err := serv.GetTotalRetrievedStudentsBySchoolID("ly", nil, 3)
+	assert.Nil(t, err)
+	assert.Equal(t, 2, total)
+}
