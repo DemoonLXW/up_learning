@@ -476,3 +476,60 @@ func (cont *ManagementController) GetSampleOfSchoolImport(c *gin.Context) {
 
 	c.FileAttachment(wd+"/"+f.Path, f.Name)
 }
+
+func (cont *ManagementController) GetStudentListBySchoolID(c *gin.Context) {
+	type School struct {
+		SchoolID uint16 `uri:"school_id" binding:"required"`
+	}
+
+	var s School
+	if err := c.ShouldBindUri(&s); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var search entity.Search
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ss, err := cont.Services.Management.RetrieveStudentBySchoolID(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled, s.SchoolID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	total, err := cont.Services.Management.GetTotalRetrievedStudentsBySchoolID(search.Like, search.IsDisabled, s.SchoolID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	students := make([]entity.RetrievedStudent, len(ss))
+	for i, v := range ss {
+		students[i].ID = v.ID
+		students[i].StudentID = v.StudentID
+		students[i].Name = v.Name
+		students[i].IsDisabled = v.IsDisabled
+		switch v.Gender {
+		case 0:
+			students[i].Gender = "男"
+		case 1:
+			students[i].Gender = "女"
+		}
+	}
+
+	var data entity.RetrievedListData
+	data.Record = students
+	data.Total = total
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < int(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
+
+	var res entity.Result
+	res.Message = "Get List of Students by School Id Successfully"
+	res.Data = data
+	c.JSON(http.StatusOK, res)
+}

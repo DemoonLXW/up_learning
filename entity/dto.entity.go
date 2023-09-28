@@ -157,3 +157,11 @@ type ToAddStudent struct {
 	Name      string `json:"name"`
 	Gender    uint8  `json:"gender"`
 }
+
+type RetrievedStudent struct {
+	ID         uint32 `json:"id"`
+	StudentID  string `json:"student_id"`
+	Name       string `json:"name"`
+	Gender     string `json:"gender"`
+	IsDisabled bool   `json:"is_disabled"`
+}

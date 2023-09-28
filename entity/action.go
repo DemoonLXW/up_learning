@@ -17,7 +17,8 @@ const (
 
 	GetUserList = "get user list"
 
-	ImportSchool            = "import school"
-	GetSchoolList           = "get school list"
-	GetSampleOfSchoolImport = "get sample of school import"
+	ImportSchool             = "import school"
+	GetSchoolList            = "get school list"
+	GetSampleOfSchoolImport  = "get sample of school import"
+	GetStudentListBySchoolID = "get students list by school id"
 )
