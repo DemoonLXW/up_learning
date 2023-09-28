@@ -17,6 +17,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
+	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/xuri/excelize/v2"
@@ -1149,4 +1150,77 @@ func (serv *ManagementService) ReadStudentsFromFile(f *os.File) ([]*entity.ToAdd
 	}
 
 	return students, nil
+}
+
+func (serv *ManagementService) CreateStudent(toCreates []*entity.ToAddStudent, schoolID uint16) error {
+	ctx := context.Background()
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("create student start a transaction failed: %w", err)
+	}
+
+	current := 0
+	length := len(toCreates)
+	for ; current < length; current++ {
+		id, err := tx.Student.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(student.FieldDeletedTime))
+		}).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create student find a deleted student id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := tx.Student.Update().Where(student.And(
+			student.IDEQ(id),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(student.FieldDeletedTime))
+			},
+		)).
+			SetCreatedTime(time.Now()).
+			ClearDeletedTime().
+			ClearModifiedTime().
+			SetIsDisabled(false).
+			SetName(toCreates[current].Name).
+			SetStudentID(toCreates[current].StudentID).
+			SetGender(toCreates[current].Gender).
+			SetSid(schoolID).
+			Save(ctx)
+		if err != nil {
+			return rollback(tx, "create student", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create student", fmt.Errorf("create student update deleted student affect 0 row"))
+		}
+	}
+	if current < length {
+		num, err := tx.Student.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create student count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		bulk := make([]*ent.StudentCreate, bulkLength)
+		for i := 0; i < bulkLength; i++ {
+			bulk[i] = tx.Student.Create().SetID(uint32(num + i + 1)).
+				SetName(toCreates[current+i].Name).
+				SetStudentID(toCreates[current+i].StudentID).
+				SetGender(toCreates[current+i].Gender).
+				SetSid(schoolID)
+		}
+
+		err = tx.Student.CreateBulk(bulk...).Exec(ctx)
+		if err != nil {
+			return rollback(tx, "create student", err)
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("create student transaction commit failed: %w", err)
+	}
+
+	return nil
 }

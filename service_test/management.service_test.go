@@ -484,3 +484,32 @@ func TestReadStudentsFromFile(t *testing.T) {
 		fmt.Println(s.Name, s.StudentID, s.Gender)
 	}
 }
+
+func TestCreateStudent(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	// student1 := entity.ToAddStudent{
+	// 	StudentID: "20221050045",
+	// 	Name:      "lxw",
+	// 	Gender:    0,
+	// }
+
+	student2 := entity.ToAddStudent{
+		StudentID: "20221050046",
+		Name:      "lyj",
+		Gender:    1,
+	}
+
+	student3 := entity.ToAddStudent{
+		StudentID: "20221050047",
+		Name:      "lyk",
+		Gender:    0,
+	}
+
+	students := []*entity.ToAddStudent{&student3, &student2}
+
+	err = serv.CreateStudent(students, 3)
+	assert.Nil(t, err)
+
+}
