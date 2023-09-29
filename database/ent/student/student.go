@@ -16,8 +16,8 @@ const (
 	FieldID = "id"
 	// FieldUID holds the string denoting the uid field in the database.
 	FieldUID = "uid"
-	// FieldSid holds the string denoting the sid field in the database.
-	FieldSid = "sid"
+	// FieldCid holds the string denoting the cid field in the database.
+	FieldCid = "cid"
 	// FieldStudentID holds the string denoting the student_id field in the database.
 	FieldStudentID = "student_id"
 	// FieldName holds the string denoting the name field in the database.
@@ -32,19 +32,19 @@ const (
 	FieldDeletedTime = "deleted_time"
 	// FieldModifiedTime holds the string denoting the modified_time field in the database.
 	FieldModifiedTime = "modified_time"
-	// EdgeSchool holds the string denoting the school edge name in mutations.
-	EdgeSchool = "school"
+	// EdgeClass holds the string denoting the class edge name in mutations.
+	EdgeClass = "class"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the student in the database.
 	Table = "student"
-	// SchoolTable is the table that holds the school relation/edge.
-	SchoolTable = "student"
-	// SchoolInverseTable is the table name for the School entity.
-	// It exists in this package in order to avoid circular dependency with the "school" package.
-	SchoolInverseTable = "school"
-	// SchoolColumn is the table column denoting the school relation/edge.
-	SchoolColumn = "sid"
+	// ClassTable is the table that holds the class relation/edge.
+	ClassTable = "student"
+	// ClassInverseTable is the table name for the Class entity.
+	// It exists in this package in order to avoid circular dependency with the "class" package.
+	ClassInverseTable = "class"
+	// ClassColumn is the table column denoting the class relation/edge.
+	ClassColumn = "cid"
 	// UserTable is the table that holds the user relation/edge.
 	UserTable = "student"
 	// UserInverseTable is the table name for the User entity.
@@ -58,7 +58,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUID,
-	FieldSid,
+	FieldCid,
 	FieldStudentID,
 	FieldName,
 	FieldGender,
@@ -68,10 +68,21 @@ var Columns = []string{
 	FieldModifiedTime,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "student"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"school_students",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -102,9 +113,9 @@ func ByUID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUID, opts...).ToFunc()
 }
 
-// BySid orders the results by the sid field.
-func BySid(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSid, opts...).ToFunc()
+// ByCid orders the results by the cid field.
+func ByCid(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCid, opts...).ToFunc()
 }
 
 // ByStudentID orders the results by the student_id field.
@@ -142,10 +153,10 @@ func ByModifiedTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModifiedTime, opts...).ToFunc()
 }
 
-// BySchoolField orders the results by school field.
-func BySchoolField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByClassField orders the results by class field.
+func ByClassField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSchoolStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newClassStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -155,11 +166,11 @@ func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newSchoolStep() *sqlgraph.Step {
+func newClassStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SchoolInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, SchoolTable, SchoolColumn),
+		sqlgraph.To(ClassInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ClassTable, ClassColumn),
 	)
 }
 func newUserStep() *sqlgraph.Step {

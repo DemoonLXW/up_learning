@@ -8,6 +8,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
+	"github.com/DemoonLXW/up_learning/database/ent/major"
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
@@ -27,21 +28,21 @@ func init() {
 	classFields := schema.Class{}.Fields()
 	_ = classFields
 	// classDescIsDisabled is the schema descriptor for is_disabled field.
-	classDescIsDisabled := classFields[3].Descriptor()
+	classDescIsDisabled := classFields[4].Descriptor()
 	// class.DefaultIsDisabled holds the default value on creation for the is_disabled field.
 	class.DefaultIsDisabled = classDescIsDisabled.Default.(bool)
 	// classDescCreatedTime is the schema descriptor for created_time field.
-	classDescCreatedTime := classFields[4].Descriptor()
+	classDescCreatedTime := classFields[5].Descriptor()
 	// class.DefaultCreatedTime holds the default value on creation for the created_time field.
 	class.DefaultCreatedTime = classDescCreatedTime.Default.(func() time.Time)
 	collegeFields := schema.College{}.Fields()
 	_ = collegeFields
 	// collegeDescIsDisabled is the schema descriptor for is_disabled field.
-	collegeDescIsDisabled := collegeFields[3].Descriptor()
+	collegeDescIsDisabled := collegeFields[2].Descriptor()
 	// college.DefaultIsDisabled holds the default value on creation for the is_disabled field.
 	college.DefaultIsDisabled = collegeDescIsDisabled.Default.(bool)
 	// collegeDescCreatedTime is the schema descriptor for created_time field.
-	collegeDescCreatedTime := collegeFields[4].Descriptor()
+	collegeDescCreatedTime := collegeFields[3].Descriptor()
 	// college.DefaultCreatedTime holds the default value on creation for the created_time field.
 	college.DefaultCreatedTime = collegeDescCreatedTime.Default.(func() time.Time)
 	fileFields := schema.File{}.Fields()
@@ -62,6 +63,16 @@ func init() {
 	fileDescCreatedTime := fileFields[6].Descriptor()
 	// file.DefaultCreatedTime holds the default value on creation for the created_time field.
 	file.DefaultCreatedTime = fileDescCreatedTime.Default.(func() time.Time)
+	majorFields := schema.Major{}.Fields()
+	_ = majorFields
+	// majorDescIsDisabled is the schema descriptor for is_disabled field.
+	majorDescIsDisabled := majorFields[3].Descriptor()
+	// major.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	major.DefaultIsDisabled = majorDescIsDisabled.Default.(bool)
+	// majorDescCreatedTime is the schema descriptor for created_time field.
+	majorDescCreatedTime := majorFields[4].Descriptor()
+	// major.DefaultCreatedTime holds the default value on creation for the created_time field.
+	major.DefaultCreatedTime = majorDescCreatedTime.Default.(func() time.Time)
 	menuFields := schema.Menu{}.Fields()
 	_ = menuFields
 	// menuDescName is the schema descriptor for name field.

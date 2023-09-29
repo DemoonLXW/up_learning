@@ -11,53 +11,48 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id uint16) predicate.College {
+func ID(id uint8) predicate.College {
 	return predicate.College(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id uint16) predicate.College {
+func IDEQ(id uint8) predicate.College {
 	return predicate.College(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id uint16) predicate.College {
+func IDNEQ(id uint8) predicate.College {
 	return predicate.College(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...uint16) predicate.College {
+func IDIn(ids ...uint8) predicate.College {
 	return predicate.College(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...uint16) predicate.College {
+func IDNotIn(ids ...uint8) predicate.College {
 	return predicate.College(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id uint16) predicate.College {
+func IDGT(id uint8) predicate.College {
 	return predicate.College(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id uint16) predicate.College {
+func IDGTE(id uint8) predicate.College {
 	return predicate.College(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id uint16) predicate.College {
+func IDLT(id uint8) predicate.College {
 	return predicate.College(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id uint16) predicate.College {
+func IDLTE(id uint8) predicate.College {
 	return predicate.College(sql.FieldLTE(FieldID, id))
-}
-
-// Sid applies equality check predicate on the "sid" field. It's identical to SidEQ.
-func Sid(v uint16) predicate.College {
-	return predicate.College(sql.FieldEQ(FieldSid, v))
 }
 
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
@@ -83,46 +78,6 @@ func DeletedTime(v time.Time) predicate.College {
 // ModifiedTime applies equality check predicate on the "modified_time" field. It's identical to ModifiedTimeEQ.
 func ModifiedTime(v time.Time) predicate.College {
 	return predicate.College(sql.FieldEQ(FieldModifiedTime, v))
-}
-
-// SidEQ applies the EQ predicate on the "sid" field.
-func SidEQ(v uint16) predicate.College {
-	return predicate.College(sql.FieldEQ(FieldSid, v))
-}
-
-// SidNEQ applies the NEQ predicate on the "sid" field.
-func SidNEQ(v uint16) predicate.College {
-	return predicate.College(sql.FieldNEQ(FieldSid, v))
-}
-
-// SidIn applies the In predicate on the "sid" field.
-func SidIn(vs ...uint16) predicate.College {
-	return predicate.College(sql.FieldIn(FieldSid, vs...))
-}
-
-// SidNotIn applies the NotIn predicate on the "sid" field.
-func SidNotIn(vs ...uint16) predicate.College {
-	return predicate.College(sql.FieldNotIn(FieldSid, vs...))
-}
-
-// SidGT applies the GT predicate on the "sid" field.
-func SidGT(v uint16) predicate.College {
-	return predicate.College(sql.FieldGT(FieldSid, v))
-}
-
-// SidGTE applies the GTE predicate on the "sid" field.
-func SidGTE(v uint16) predicate.College {
-	return predicate.College(sql.FieldGTE(FieldSid, v))
-}
-
-// SidLT applies the LT predicate on the "sid" field.
-func SidLT(v uint16) predicate.College {
-	return predicate.College(sql.FieldLT(FieldSid, v))
-}
-
-// SidLTE applies the LTE predicate on the "sid" field.
-func SidLTE(v uint16) predicate.College {
-	return predicate.College(sql.FieldLTE(FieldSid, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -340,21 +295,21 @@ func ModifiedTimeNotNil() predicate.College {
 	return predicate.College(sql.FieldNotNull(FieldModifiedTime))
 }
 
-// HasClasses applies the HasEdge predicate on the "classes" edge.
-func HasClasses() predicate.College {
+// HasMajors applies the HasEdge predicate on the "majors" edge.
+func HasMajors() predicate.College {
 	return predicate.College(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ClassesTable, ClassesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, MajorsTable, MajorsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasClassesWith applies the HasEdge predicate on the "classes" edge with a given conditions (other predicates).
-func HasClassesWith(preds ...predicate.Class) predicate.College {
+// HasMajorsWith applies the HasEdge predicate on the "majors" edge with a given conditions (other predicates).
+func HasMajorsWith(preds ...predicate.Major) predicate.College {
 	return predicate.College(func(s *sql.Selector) {
-		step := newClassesStep()
+		step := newMajorsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

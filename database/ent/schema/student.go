@@ -29,7 +29,7 @@ func (Student) Fields() []ent.Field {
 		field.Uint32("uid").
 			Unique().
 			Optional(),
-		field.Uint16("sid"),
+		field.Uint32("cid"),
 		field.String("student_id").
 			Unique().
 			NotEmpty(),
@@ -53,11 +53,11 @@ func (Student) Fields() []ent.Field {
 // Edges of the Student.
 func (Student) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("school", School.Type).
+		edge.From("class", Class.Type).
 			Ref("students").
 			Unique().
 			Required().
-			Field("sid"),
+			Field("cid"),
 		edge.From("user", User.Type).
 			Ref("students").
 			Unique().

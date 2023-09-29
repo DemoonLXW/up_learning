@@ -11,7 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/class"
-	"github.com/DemoonLXW/up_learning/database/ent/college"
+	"github.com/DemoonLXW/up_learning/database/ent/major"
+	"github.com/DemoonLXW/up_learning/database/ent/student"
 )
 
 // ClassCreate is the builder for creating a Class entity.
@@ -21,9 +22,15 @@ type ClassCreate struct {
 	hooks    []Hook
 }
 
-// SetCid sets the "cid" field.
-func (cc *ClassCreate) SetCid(u uint16) *ClassCreate {
-	cc.mutation.SetCid(u)
+// SetMid sets the "mid" field.
+func (cc *ClassCreate) SetMid(u uint16) *ClassCreate {
+	cc.mutation.SetMid(u)
+	return cc
+}
+
+// SetGrade sets the "grade" field.
+func (cc *ClassCreate) SetGrade(s string) *ClassCreate {
+	cc.mutation.SetGrade(s)
 	return cc
 }
 
@@ -95,15 +102,30 @@ func (cc *ClassCreate) SetID(u uint32) *ClassCreate {
 	return cc
 }
 
-// SetCollegeID sets the "college" edge to the College entity by ID.
-func (cc *ClassCreate) SetCollegeID(id uint16) *ClassCreate {
-	cc.mutation.SetCollegeID(id)
+// SetMajorID sets the "major" edge to the Major entity by ID.
+func (cc *ClassCreate) SetMajorID(id uint16) *ClassCreate {
+	cc.mutation.SetMajorID(id)
 	return cc
 }
 
-// SetCollege sets the "college" edge to the College entity.
-func (cc *ClassCreate) SetCollege(c *College) *ClassCreate {
-	return cc.SetCollegeID(c.ID)
+// SetMajor sets the "major" edge to the Major entity.
+func (cc *ClassCreate) SetMajor(m *Major) *ClassCreate {
+	return cc.SetMajorID(m.ID)
+}
+
+// AddStudentIDs adds the "students" edge to the Student entity by IDs.
+func (cc *ClassCreate) AddStudentIDs(ids ...uint32) *ClassCreate {
+	cc.mutation.AddStudentIDs(ids...)
+	return cc
+}
+
+// AddStudents adds the "students" edges to the Student entity.
+func (cc *ClassCreate) AddStudents(s ...*Student) *ClassCreate {
+	ids := make([]uint32, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return cc.AddStudentIDs(ids...)
 }
 
 // Mutation returns the ClassMutation object of the builder.
@@ -153,8 +175,11 @@ func (cc *ClassCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (cc *ClassCreate) check() error {
-	if _, ok := cc.mutation.Cid(); !ok {
-		return &ValidationError{Name: "cid", err: errors.New(`ent: missing required field "Class.cid"`)}
+	if _, ok := cc.mutation.Mid(); !ok {
+		return &ValidationError{Name: "mid", err: errors.New(`ent: missing required field "Class.mid"`)}
+	}
+	if _, ok := cc.mutation.Grade(); !ok {
+		return &ValidationError{Name: "grade", err: errors.New(`ent: missing required field "Class.grade"`)}
 	}
 	if _, ok := cc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Class.name"`)}
@@ -165,8 +190,8 @@ func (cc *ClassCreate) check() error {
 	if _, ok := cc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "Class.created_time"`)}
 	}
-	if _, ok := cc.mutation.CollegeID(); !ok {
-		return &ValidationError{Name: "college", err: errors.New(`ent: missing required edge "Class.college"`)}
+	if _, ok := cc.mutation.MajorID(); !ok {
+		return &ValidationError{Name: "major", err: errors.New(`ent: missing required edge "Class.major"`)}
 	}
 	return nil
 }
@@ -200,6 +225,10 @@ func (cc *ClassCreate) createSpec() (*Class, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := cc.mutation.Grade(); ok {
+		_spec.SetField(class.FieldGrade, field.TypeString, value)
+		_node.Grade = value
+	}
 	if value, ok := cc.mutation.Name(); ok {
 		_spec.SetField(class.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -220,21 +249,37 @@ func (cc *ClassCreate) createSpec() (*Class, *sqlgraph.CreateSpec) {
 		_spec.SetField(class.FieldModifiedTime, field.TypeTime, value)
 		_node.ModifiedTime = &value
 	}
-	if nodes := cc.mutation.CollegeIDs(); len(nodes) > 0 {
+	if nodes := cc.mutation.MajorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   class.CollegeTable,
-			Columns: []string{class.CollegeColumn},
+			Table:   class.MajorTable,
+			Columns: []string{class.MajorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.Cid = nodes[0]
+		_node.Mid = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.StudentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   class.StudentsTable,
+			Columns: []string{class.StudentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

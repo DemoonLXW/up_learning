@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
-	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -50,9 +50,9 @@ func (su *StudentUpdate) ClearUID() *StudentUpdate {
 	return su
 }
 
-// SetSid sets the "sid" field.
-func (su *StudentUpdate) SetSid(u uint16) *StudentUpdate {
-	su.mutation.SetSid(u)
+// SetCid sets the "cid" field.
+func (su *StudentUpdate) SetCid(u uint32) *StudentUpdate {
+	su.mutation.SetCid(u)
 	return su
 }
 
@@ -149,15 +149,15 @@ func (su *StudentUpdate) ClearModifiedTime() *StudentUpdate {
 	return su
 }
 
-// SetSchoolID sets the "school" edge to the School entity by ID.
-func (su *StudentUpdate) SetSchoolID(id uint16) *StudentUpdate {
-	su.mutation.SetSchoolID(id)
+// SetClassID sets the "class" edge to the Class entity by ID.
+func (su *StudentUpdate) SetClassID(id uint32) *StudentUpdate {
+	su.mutation.SetClassID(id)
 	return su
 }
 
-// SetSchool sets the "school" edge to the School entity.
-func (su *StudentUpdate) SetSchool(s *School) *StudentUpdate {
-	return su.SetSchoolID(s.ID)
+// SetClass sets the "class" edge to the Class entity.
+func (su *StudentUpdate) SetClass(c *Class) *StudentUpdate {
+	return su.SetClassID(c.ID)
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
@@ -184,9 +184,9 @@ func (su *StudentUpdate) Mutation() *StudentMutation {
 	return su.mutation
 }
 
-// ClearSchool clears the "school" edge to the School entity.
-func (su *StudentUpdate) ClearSchool() *StudentUpdate {
-	su.mutation.ClearSchool()
+// ClearClass clears the "class" edge to the Class entity.
+func (su *StudentUpdate) ClearClass() *StudentUpdate {
+	su.mutation.ClearClass()
 	return su
 }
 
@@ -235,8 +235,8 @@ func (su *StudentUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Student.name": %w`, err)}
 		}
 	}
-	if _, ok := su.mutation.SchoolID(); su.mutation.SchoolCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Student.school"`)
+	if _, ok := su.mutation.ClassID(); su.mutation.ClassCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Student.class"`)
 	}
 	return nil
 }
@@ -283,28 +283,28 @@ func (su *StudentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if su.mutation.ModifiedTimeCleared() {
 		_spec.ClearField(student.FieldModifiedTime, field.TypeTime)
 	}
-	if su.mutation.SchoolCleared() {
+	if su.mutation.ClassCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   student.SchoolTable,
-			Columns: []string{student.SchoolColumn},
+			Table:   student.ClassTable,
+			Columns: []string{student.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.SchoolIDs(); len(nodes) > 0 {
+	if nodes := su.mutation.ClassIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   student.SchoolTable,
-			Columns: []string{student.SchoolColumn},
+			Table:   student.ClassTable,
+			Columns: []string{student.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {
@@ -381,9 +381,9 @@ func (suo *StudentUpdateOne) ClearUID() *StudentUpdateOne {
 	return suo
 }
 
-// SetSid sets the "sid" field.
-func (suo *StudentUpdateOne) SetSid(u uint16) *StudentUpdateOne {
-	suo.mutation.SetSid(u)
+// SetCid sets the "cid" field.
+func (suo *StudentUpdateOne) SetCid(u uint32) *StudentUpdateOne {
+	suo.mutation.SetCid(u)
 	return suo
 }
 
@@ -480,15 +480,15 @@ func (suo *StudentUpdateOne) ClearModifiedTime() *StudentUpdateOne {
 	return suo
 }
 
-// SetSchoolID sets the "school" edge to the School entity by ID.
-func (suo *StudentUpdateOne) SetSchoolID(id uint16) *StudentUpdateOne {
-	suo.mutation.SetSchoolID(id)
+// SetClassID sets the "class" edge to the Class entity by ID.
+func (suo *StudentUpdateOne) SetClassID(id uint32) *StudentUpdateOne {
+	suo.mutation.SetClassID(id)
 	return suo
 }
 
-// SetSchool sets the "school" edge to the School entity.
-func (suo *StudentUpdateOne) SetSchool(s *School) *StudentUpdateOne {
-	return suo.SetSchoolID(s.ID)
+// SetClass sets the "class" edge to the Class entity.
+func (suo *StudentUpdateOne) SetClass(c *Class) *StudentUpdateOne {
+	return suo.SetClassID(c.ID)
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
@@ -515,9 +515,9 @@ func (suo *StudentUpdateOne) Mutation() *StudentMutation {
 	return suo.mutation
 }
 
-// ClearSchool clears the "school" edge to the School entity.
-func (suo *StudentUpdateOne) ClearSchool() *StudentUpdateOne {
-	suo.mutation.ClearSchool()
+// ClearClass clears the "class" edge to the Class entity.
+func (suo *StudentUpdateOne) ClearClass() *StudentUpdateOne {
+	suo.mutation.ClearClass()
 	return suo
 }
 
@@ -579,8 +579,8 @@ func (suo *StudentUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Student.name": %w`, err)}
 		}
 	}
-	if _, ok := suo.mutation.SchoolID(); suo.mutation.SchoolCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Student.school"`)
+	if _, ok := suo.mutation.ClassID(); suo.mutation.ClassCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Student.class"`)
 	}
 	return nil
 }
@@ -644,28 +644,28 @@ func (suo *StudentUpdateOne) sqlSave(ctx context.Context) (_node *Student, err e
 	if suo.mutation.ModifiedTimeCleared() {
 		_spec.ClearField(student.FieldModifiedTime, field.TypeTime)
 	}
-	if suo.mutation.SchoolCleared() {
+	if suo.mutation.ClassCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   student.SchoolTable,
-			Columns: []string{student.SchoolColumn},
+			Table:   student.ClassTable,
+			Columns: []string{student.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.SchoolIDs(); len(nodes) > 0 {
+	if nodes := suo.mutation.ClassIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   student.SchoolTable,
-			Columns: []string{student.SchoolColumn},
+			Table:   student.ClassTable,
+			Columns: []string{student.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

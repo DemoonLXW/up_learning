@@ -12,12 +12,13 @@ var (
 	// ClassColumns holds the columns for the "class" table.
 	ClassColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "grade", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
 		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
-		{Name: "cid", Type: field.TypeUint16},
+		{Name: "mid", Type: field.TypeUint16},
 	}
 	// ClassTable holds the schema information for the "class" table.
 	ClassTable = &schema.Table{
@@ -26,17 +27,16 @@ var (
 		PrimaryKey: []*schema.Column{ClassColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "class_college_classes",
-				Columns:    []*schema.Column{ClassColumns[6]},
-				RefColumns: []*schema.Column{CollegeColumns[0]},
+				Symbol:     "class_major_classes",
+				Columns:    []*schema.Column{ClassColumns[7]},
+				RefColumns: []*schema.Column{MajorColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 	}
 	// CollegeColumns holds the columns for the "college" table.
 	CollegeColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUint16, Increment: true},
-		{Name: "sid", Type: field.TypeUint16},
+		{Name: "id", Type: field.TypeUint8, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
@@ -71,6 +71,30 @@ var (
 				Symbol:     "file_user_files",
 				Columns:    []*schema.Column{FileColumns[8]},
 				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// MajorColumns holds the columns for the "major" table.
+	MajorColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint16, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
+		{Name: "cid", Type: field.TypeUint8},
+	}
+	// MajorTable holds the schema information for the "major" table.
+	MajorTable = &schema.Table{
+		Name:       "major",
+		Columns:    MajorColumns,
+		PrimaryKey: []*schema.Column{MajorColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "major_college_majors",
+				Columns:    []*schema.Column{MajorColumns[6]},
+				RefColumns: []*schema.Column{CollegeColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -212,7 +236,8 @@ var (
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
 		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
-		{Name: "sid", Type: field.TypeUint16},
+		{Name: "cid", Type: field.TypeUint32},
+		{Name: "school_students", Type: field.TypeUint16, Nullable: true},
 		{Name: "uid", Type: field.TypeUint32, Nullable: true},
 	}
 	// StudentTable holds the schema information for the "student" table.
@@ -222,14 +247,20 @@ var (
 		PrimaryKey: []*schema.Column{StudentColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "student_school_students",
+				Symbol:     "student_class_students",
 				Columns:    []*schema.Column{StudentColumns[8]},
-				RefColumns: []*schema.Column{SchoolColumns[0]},
+				RefColumns: []*schema.Column{ClassColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "student_user_students",
+				Symbol:     "student_school_students",
 				Columns:    []*schema.Column{StudentColumns[9]},
+				RefColumns: []*schema.Column{SchoolColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "student_user_students",
+				Columns:    []*schema.Column{StudentColumns[10]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -286,6 +317,7 @@ var (
 		ClassTable,
 		CollegeTable,
 		FileTable,
+		MajorTable,
 		MenuTable,
 		PermissionTable,
 		RoleTable,
@@ -299,7 +331,7 @@ var (
 )
 
 func init() {
-	ClassTable.ForeignKeys[0].RefTable = CollegeTable
+	ClassTable.ForeignKeys[0].RefTable = MajorTable
 	ClassTable.Annotation = &entsql.Annotation{
 		Table: "class",
 	}
@@ -309,6 +341,10 @@ func init() {
 	FileTable.ForeignKeys[0].RefTable = UserTable
 	FileTable.Annotation = &entsql.Annotation{
 		Table: "file",
+	}
+	MajorTable.ForeignKeys[0].RefTable = CollegeTable
+	MajorTable.Annotation = &entsql.Annotation{
+		Table: "major",
 	}
 	MenuTable.ForeignKeys[0].RefTable = RoleTable
 	MenuTable.Annotation = &entsql.Annotation{
@@ -332,8 +368,9 @@ func init() {
 	SchoolTable.Annotation = &entsql.Annotation{
 		Table: "school",
 	}
-	StudentTable.ForeignKeys[0].RefTable = SchoolTable
-	StudentTable.ForeignKeys[1].RefTable = UserTable
+	StudentTable.ForeignKeys[0].RefTable = ClassTable
+	StudentTable.ForeignKeys[1].RefTable = SchoolTable
+	StudentTable.ForeignKeys[2].RefTable = UserTable
 	StudentTable.Annotation = &entsql.Annotation{
 		Table: "student",
 	}

@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent/class"
-	"github.com/DemoonLXW/up_learning/database/ent/college"
+	"github.com/DemoonLXW/up_learning/database/ent/major"
 )
 
 // Class is the model entity for the Class schema.
@@ -18,8 +18,10 @@ type Class struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uint32 `json:"id,omitempty"`
-	// Cid holds the value of the "cid" field.
-	Cid uint16 `json:"cid,omitempty"`
+	// Mid holds the value of the "mid" field.
+	Mid uint16 `json:"mid,omitempty"`
+	// Grade holds the value of the "grade" field.
+	Grade string `json:"grade,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// IsDisabled holds the value of the "is_disabled" field.
@@ -38,24 +40,35 @@ type Class struct {
 
 // ClassEdges holds the relations/edges for other nodes in the graph.
 type ClassEdges struct {
-	// College holds the value of the college edge.
-	College *College `json:"college,omitempty"`
+	// Major holds the value of the major edge.
+	Major *Major `json:"major,omitempty"`
+	// Students holds the value of the students edge.
+	Students []*Student `json:"students,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
-// CollegeOrErr returns the College value or an error if the edge
+// MajorOrErr returns the Major value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e ClassEdges) CollegeOrErr() (*College, error) {
+func (e ClassEdges) MajorOrErr() (*Major, error) {
 	if e.loadedTypes[0] {
-		if e.College == nil {
+		if e.Major == nil {
 			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: college.Label}
+			return nil, &NotFoundError{label: major.Label}
 		}
-		return e.College, nil
+		return e.Major, nil
 	}
-	return nil, &NotLoadedError{edge: "college"}
+	return nil, &NotLoadedError{edge: "major"}
+}
+
+// StudentsOrErr returns the Students value or an error if the edge
+// was not loaded in eager-loading.
+func (e ClassEdges) StudentsOrErr() ([]*Student, error) {
+	if e.loadedTypes[1] {
+		return e.Students, nil
+	}
+	return nil, &NotLoadedError{edge: "students"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -65,9 +78,9 @@ func (*Class) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case class.FieldIsDisabled:
 			values[i] = new(sql.NullBool)
-		case class.FieldID, class.FieldCid:
+		case class.FieldID, class.FieldMid:
 			values[i] = new(sql.NullInt64)
-		case class.FieldName:
+		case class.FieldGrade, class.FieldName:
 			values[i] = new(sql.NullString)
 		case class.FieldCreatedTime, class.FieldDeletedTime, class.FieldModifiedTime:
 			values[i] = new(sql.NullTime)
@@ -92,11 +105,17 @@ func (c *Class) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			c.ID = uint32(value.Int64)
-		case class.FieldCid:
+		case class.FieldMid:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field cid", values[i])
+				return fmt.Errorf("unexpected type %T for field mid", values[i])
 			} else if value.Valid {
-				c.Cid = uint16(value.Int64)
+				c.Mid = uint16(value.Int64)
+			}
+		case class.FieldGrade:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field grade", values[i])
+			} else if value.Valid {
+				c.Grade = value.String
 			}
 		case class.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -144,9 +163,14 @@ func (c *Class) Value(name string) (ent.Value, error) {
 	return c.selectValues.Get(name)
 }
 
-// QueryCollege queries the "college" edge of the Class entity.
-func (c *Class) QueryCollege() *CollegeQuery {
-	return NewClassClient(c.config).QueryCollege(c)
+// QueryMajor queries the "major" edge of the Class entity.
+func (c *Class) QueryMajor() *MajorQuery {
+	return NewClassClient(c.config).QueryMajor(c)
+}
+
+// QueryStudents queries the "students" edge of the Class entity.
+func (c *Class) QueryStudents() *StudentQuery {
+	return NewClassClient(c.config).QueryStudents(c)
 }
 
 // Update returns a builder for updating this Class.
@@ -172,8 +196,11 @@ func (c *Class) String() string {
 	var builder strings.Builder
 	builder.WriteString("Class(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", c.ID))
-	builder.WriteString("cid=")
-	builder.WriteString(fmt.Sprintf("%v", c.Cid))
+	builder.WriteString("mid=")
+	builder.WriteString(fmt.Sprintf("%v", c.Mid))
+	builder.WriteString(", ")
+	builder.WriteString("grade=")
+	builder.WriteString(c.Grade)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(c.Name)

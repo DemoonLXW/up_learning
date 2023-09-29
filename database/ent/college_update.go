@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
+	"github.com/DemoonLXW/up_learning/database/ent/major"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 )
 
@@ -26,19 +26,6 @@ type CollegeUpdate struct {
 // Where appends a list predicates to the CollegeUpdate builder.
 func (cu *CollegeUpdate) Where(ps ...predicate.College) *CollegeUpdate {
 	cu.mutation.Where(ps...)
-	return cu
-}
-
-// SetSid sets the "sid" field.
-func (cu *CollegeUpdate) SetSid(u uint16) *CollegeUpdate {
-	cu.mutation.ResetSid()
-	cu.mutation.SetSid(u)
-	return cu
-}
-
-// AddSid adds u to the "sid" field.
-func (cu *CollegeUpdate) AddSid(u int16) *CollegeUpdate {
-	cu.mutation.AddSid(u)
 	return cu
 }
 
@@ -116,19 +103,19 @@ func (cu *CollegeUpdate) ClearModifiedTime() *CollegeUpdate {
 	return cu
 }
 
-// AddClassIDs adds the "classes" edge to the Class entity by IDs.
-func (cu *CollegeUpdate) AddClassIDs(ids ...uint32) *CollegeUpdate {
-	cu.mutation.AddClassIDs(ids...)
+// AddMajorIDs adds the "majors" edge to the Major entity by IDs.
+func (cu *CollegeUpdate) AddMajorIDs(ids ...uint16) *CollegeUpdate {
+	cu.mutation.AddMajorIDs(ids...)
 	return cu
 }
 
-// AddClasses adds the "classes" edges to the Class entity.
-func (cu *CollegeUpdate) AddClasses(c ...*Class) *CollegeUpdate {
-	ids := make([]uint32, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// AddMajors adds the "majors" edges to the Major entity.
+func (cu *CollegeUpdate) AddMajors(m ...*Major) *CollegeUpdate {
+	ids := make([]uint16, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
 	}
-	return cu.AddClassIDs(ids...)
+	return cu.AddMajorIDs(ids...)
 }
 
 // Mutation returns the CollegeMutation object of the builder.
@@ -136,25 +123,25 @@ func (cu *CollegeUpdate) Mutation() *CollegeMutation {
 	return cu.mutation
 }
 
-// ClearClasses clears all "classes" edges to the Class entity.
-func (cu *CollegeUpdate) ClearClasses() *CollegeUpdate {
-	cu.mutation.ClearClasses()
+// ClearMajors clears all "majors" edges to the Major entity.
+func (cu *CollegeUpdate) ClearMajors() *CollegeUpdate {
+	cu.mutation.ClearMajors()
 	return cu
 }
 
-// RemoveClassIDs removes the "classes" edge to Class entities by IDs.
-func (cu *CollegeUpdate) RemoveClassIDs(ids ...uint32) *CollegeUpdate {
-	cu.mutation.RemoveClassIDs(ids...)
+// RemoveMajorIDs removes the "majors" edge to Major entities by IDs.
+func (cu *CollegeUpdate) RemoveMajorIDs(ids ...uint16) *CollegeUpdate {
+	cu.mutation.RemoveMajorIDs(ids...)
 	return cu
 }
 
-// RemoveClasses removes "classes" edges to Class entities.
-func (cu *CollegeUpdate) RemoveClasses(c ...*Class) *CollegeUpdate {
-	ids := make([]uint32, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// RemoveMajors removes "majors" edges to Major entities.
+func (cu *CollegeUpdate) RemoveMajors(m ...*Major) *CollegeUpdate {
+	ids := make([]uint16, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
 	}
-	return cu.RemoveClassIDs(ids...)
+	return cu.RemoveMajorIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -185,19 +172,13 @@ func (cu *CollegeUpdate) ExecX(ctx context.Context) {
 }
 
 func (cu *CollegeUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(college.Table, college.Columns, sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16))
+	_spec := sqlgraph.NewUpdateSpec(college.Table, college.Columns, sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint8))
 	if ps := cu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := cu.mutation.Sid(); ok {
-		_spec.SetField(college.FieldSid, field.TypeUint16, value)
-	}
-	if value, ok := cu.mutation.AddedSid(); ok {
-		_spec.AddField(college.FieldSid, field.TypeUint16, value)
 	}
 	if value, ok := cu.mutation.Name(); ok {
 		_spec.SetField(college.FieldName, field.TypeString, value)
@@ -220,28 +201,28 @@ func (cu *CollegeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if cu.mutation.ModifiedTimeCleared() {
 		_spec.ClearField(college.FieldModifiedTime, field.TypeTime)
 	}
-	if cu.mutation.ClassesCleared() {
+	if cu.mutation.MajorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   college.ClassesTable,
-			Columns: []string{college.ClassesColumn},
+			Table:   college.MajorsTable,
+			Columns: []string{college.MajorsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cu.mutation.RemovedClassesIDs(); len(nodes) > 0 && !cu.mutation.ClassesCleared() {
+	if nodes := cu.mutation.RemovedMajorsIDs(); len(nodes) > 0 && !cu.mutation.MajorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   college.ClassesTable,
-			Columns: []string{college.ClassesColumn},
+			Table:   college.MajorsTable,
+			Columns: []string{college.MajorsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
 			},
 		}
 		for _, k := range nodes {
@@ -249,15 +230,15 @@ func (cu *CollegeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cu.mutation.ClassesIDs(); len(nodes) > 0 {
+	if nodes := cu.mutation.MajorsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   college.ClassesTable,
-			Columns: []string{college.ClassesColumn},
+			Table:   college.MajorsTable,
+			Columns: []string{college.MajorsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
 			},
 		}
 		for _, k := range nodes {
@@ -283,19 +264,6 @@ type CollegeUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *CollegeMutation
-}
-
-// SetSid sets the "sid" field.
-func (cuo *CollegeUpdateOne) SetSid(u uint16) *CollegeUpdateOne {
-	cuo.mutation.ResetSid()
-	cuo.mutation.SetSid(u)
-	return cuo
-}
-
-// AddSid adds u to the "sid" field.
-func (cuo *CollegeUpdateOne) AddSid(u int16) *CollegeUpdateOne {
-	cuo.mutation.AddSid(u)
-	return cuo
 }
 
 // SetName sets the "name" field.
@@ -372,19 +340,19 @@ func (cuo *CollegeUpdateOne) ClearModifiedTime() *CollegeUpdateOne {
 	return cuo
 }
 
-// AddClassIDs adds the "classes" edge to the Class entity by IDs.
-func (cuo *CollegeUpdateOne) AddClassIDs(ids ...uint32) *CollegeUpdateOne {
-	cuo.mutation.AddClassIDs(ids...)
+// AddMajorIDs adds the "majors" edge to the Major entity by IDs.
+func (cuo *CollegeUpdateOne) AddMajorIDs(ids ...uint16) *CollegeUpdateOne {
+	cuo.mutation.AddMajorIDs(ids...)
 	return cuo
 }
 
-// AddClasses adds the "classes" edges to the Class entity.
-func (cuo *CollegeUpdateOne) AddClasses(c ...*Class) *CollegeUpdateOne {
-	ids := make([]uint32, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// AddMajors adds the "majors" edges to the Major entity.
+func (cuo *CollegeUpdateOne) AddMajors(m ...*Major) *CollegeUpdateOne {
+	ids := make([]uint16, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
 	}
-	return cuo.AddClassIDs(ids...)
+	return cuo.AddMajorIDs(ids...)
 }
 
 // Mutation returns the CollegeMutation object of the builder.
@@ -392,25 +360,25 @@ func (cuo *CollegeUpdateOne) Mutation() *CollegeMutation {
 	return cuo.mutation
 }
 
-// ClearClasses clears all "classes" edges to the Class entity.
-func (cuo *CollegeUpdateOne) ClearClasses() *CollegeUpdateOne {
-	cuo.mutation.ClearClasses()
+// ClearMajors clears all "majors" edges to the Major entity.
+func (cuo *CollegeUpdateOne) ClearMajors() *CollegeUpdateOne {
+	cuo.mutation.ClearMajors()
 	return cuo
 }
 
-// RemoveClassIDs removes the "classes" edge to Class entities by IDs.
-func (cuo *CollegeUpdateOne) RemoveClassIDs(ids ...uint32) *CollegeUpdateOne {
-	cuo.mutation.RemoveClassIDs(ids...)
+// RemoveMajorIDs removes the "majors" edge to Major entities by IDs.
+func (cuo *CollegeUpdateOne) RemoveMajorIDs(ids ...uint16) *CollegeUpdateOne {
+	cuo.mutation.RemoveMajorIDs(ids...)
 	return cuo
 }
 
-// RemoveClasses removes "classes" edges to Class entities.
-func (cuo *CollegeUpdateOne) RemoveClasses(c ...*Class) *CollegeUpdateOne {
-	ids := make([]uint32, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// RemoveMajors removes "majors" edges to Major entities.
+func (cuo *CollegeUpdateOne) RemoveMajors(m ...*Major) *CollegeUpdateOne {
+	ids := make([]uint16, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
 	}
-	return cuo.RemoveClassIDs(ids...)
+	return cuo.RemoveMajorIDs(ids...)
 }
 
 // Where appends a list predicates to the CollegeUpdate builder.
@@ -454,7 +422,7 @@ func (cuo *CollegeUpdateOne) ExecX(ctx context.Context) {
 }
 
 func (cuo *CollegeUpdateOne) sqlSave(ctx context.Context) (_node *College, err error) {
-	_spec := sqlgraph.NewUpdateSpec(college.Table, college.Columns, sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16))
+	_spec := sqlgraph.NewUpdateSpec(college.Table, college.Columns, sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint8))
 	id, ok := cuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "College.id" for update`)}
@@ -479,12 +447,6 @@ func (cuo *CollegeUpdateOne) sqlSave(ctx context.Context) (_node *College, err e
 			}
 		}
 	}
-	if value, ok := cuo.mutation.Sid(); ok {
-		_spec.SetField(college.FieldSid, field.TypeUint16, value)
-	}
-	if value, ok := cuo.mutation.AddedSid(); ok {
-		_spec.AddField(college.FieldSid, field.TypeUint16, value)
-	}
 	if value, ok := cuo.mutation.Name(); ok {
 		_spec.SetField(college.FieldName, field.TypeString, value)
 	}
@@ -506,28 +468,28 @@ func (cuo *CollegeUpdateOne) sqlSave(ctx context.Context) (_node *College, err e
 	if cuo.mutation.ModifiedTimeCleared() {
 		_spec.ClearField(college.FieldModifiedTime, field.TypeTime)
 	}
-	if cuo.mutation.ClassesCleared() {
+	if cuo.mutation.MajorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   college.ClassesTable,
-			Columns: []string{college.ClassesColumn},
+			Table:   college.MajorsTable,
+			Columns: []string{college.MajorsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cuo.mutation.RemovedClassesIDs(); len(nodes) > 0 && !cuo.mutation.ClassesCleared() {
+	if nodes := cuo.mutation.RemovedMajorsIDs(); len(nodes) > 0 && !cuo.mutation.MajorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   college.ClassesTable,
-			Columns: []string{college.ClassesColumn},
+			Table:   college.MajorsTable,
+			Columns: []string{college.MajorsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
 			},
 		}
 		for _, k := range nodes {
@@ -535,15 +497,15 @@ func (cuo *CollegeUpdateOne) sqlSave(ctx context.Context) (_node *College, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cuo.mutation.ClassesIDs(); len(nodes) > 0 {
+	if nodes := cuo.mutation.MajorsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   college.ClassesTable,
-			Columns: []string{college.ClassesColumn},
+			Table:   college.MajorsTable,
+			Columns: []string{college.MajorsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
 			},
 		}
 		for _, k := range nodes {

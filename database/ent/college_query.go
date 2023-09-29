@@ -11,19 +11,19 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
+	"github.com/DemoonLXW/up_learning/database/ent/major"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 )
 
 // CollegeQuery is the builder for querying College entities.
 type CollegeQuery struct {
 	config
-	ctx         *QueryContext
-	order       []college.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.College
-	withClasses *ClassQuery
+	ctx        *QueryContext
+	order      []college.OrderOption
+	inters     []Interceptor
+	predicates []predicate.College
+	withMajors *MajorQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -60,9 +60,9 @@ func (cq *CollegeQuery) Order(o ...college.OrderOption) *CollegeQuery {
 	return cq
 }
 
-// QueryClasses chains the current query on the "classes" edge.
-func (cq *CollegeQuery) QueryClasses() *ClassQuery {
-	query := (&ClassClient{config: cq.config}).Query()
+// QueryMajors chains the current query on the "majors" edge.
+func (cq *CollegeQuery) QueryMajors() *MajorQuery {
+	query := (&MajorClient{config: cq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := cq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -73,8 +73,8 @@ func (cq *CollegeQuery) QueryClasses() *ClassQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(college.Table, college.FieldID, selector),
-			sqlgraph.To(class.Table, class.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, college.ClassesTable, college.ClassesColumn),
+			sqlgraph.To(major.Table, major.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, college.MajorsTable, college.MajorsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -106,8 +106,8 @@ func (cq *CollegeQuery) FirstX(ctx context.Context) *College {
 
 // FirstID returns the first College ID from the query.
 // Returns a *NotFoundError when no College ID was found.
-func (cq *CollegeQuery) FirstID(ctx context.Context) (id uint16, err error) {
-	var ids []uint16
+func (cq *CollegeQuery) FirstID(ctx context.Context) (id uint8, err error) {
+	var ids []uint8
 	if ids, err = cq.Limit(1).IDs(setContextOp(ctx, cq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -119,7 +119,7 @@ func (cq *CollegeQuery) FirstID(ctx context.Context) (id uint16, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (cq *CollegeQuery) FirstIDX(ctx context.Context) uint16 {
+func (cq *CollegeQuery) FirstIDX(ctx context.Context) uint8 {
 	id, err := cq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -157,8 +157,8 @@ func (cq *CollegeQuery) OnlyX(ctx context.Context) *College {
 // OnlyID is like Only, but returns the only College ID in the query.
 // Returns a *NotSingularError when more than one College ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (cq *CollegeQuery) OnlyID(ctx context.Context) (id uint16, err error) {
-	var ids []uint16
+func (cq *CollegeQuery) OnlyID(ctx context.Context) (id uint8, err error) {
+	var ids []uint8
 	if ids, err = cq.Limit(2).IDs(setContextOp(ctx, cq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -174,7 +174,7 @@ func (cq *CollegeQuery) OnlyID(ctx context.Context) (id uint16, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (cq *CollegeQuery) OnlyIDX(ctx context.Context) uint16 {
+func (cq *CollegeQuery) OnlyIDX(ctx context.Context) uint8 {
 	id, err := cq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -202,7 +202,7 @@ func (cq *CollegeQuery) AllX(ctx context.Context) []*College {
 }
 
 // IDs executes the query and returns a list of College IDs.
-func (cq *CollegeQuery) IDs(ctx context.Context) (ids []uint16, err error) {
+func (cq *CollegeQuery) IDs(ctx context.Context) (ids []uint8, err error) {
 	if cq.ctx.Unique == nil && cq.path != nil {
 		cq.Unique(true)
 	}
@@ -214,7 +214,7 @@ func (cq *CollegeQuery) IDs(ctx context.Context) (ids []uint16, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (cq *CollegeQuery) IDsX(ctx context.Context) []uint16 {
+func (cq *CollegeQuery) IDsX(ctx context.Context) []uint8 {
 	ids, err := cq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -269,26 +269,26 @@ func (cq *CollegeQuery) Clone() *CollegeQuery {
 		return nil
 	}
 	return &CollegeQuery{
-		config:      cq.config,
-		ctx:         cq.ctx.Clone(),
-		order:       append([]college.OrderOption{}, cq.order...),
-		inters:      append([]Interceptor{}, cq.inters...),
-		predicates:  append([]predicate.College{}, cq.predicates...),
-		withClasses: cq.withClasses.Clone(),
+		config:     cq.config,
+		ctx:        cq.ctx.Clone(),
+		order:      append([]college.OrderOption{}, cq.order...),
+		inters:     append([]Interceptor{}, cq.inters...),
+		predicates: append([]predicate.College{}, cq.predicates...),
+		withMajors: cq.withMajors.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
 	}
 }
 
-// WithClasses tells the query-builder to eager-load the nodes that are connected to
-// the "classes" edge. The optional arguments are used to configure the query builder of the edge.
-func (cq *CollegeQuery) WithClasses(opts ...func(*ClassQuery)) *CollegeQuery {
-	query := (&ClassClient{config: cq.config}).Query()
+// WithMajors tells the query-builder to eager-load the nodes that are connected to
+// the "majors" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CollegeQuery) WithMajors(opts ...func(*MajorQuery)) *CollegeQuery {
+	query := (&MajorClient{config: cq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	cq.withClasses = query
+	cq.withMajors = query
 	return cq
 }
 
@@ -298,12 +298,12 @@ func (cq *CollegeQuery) WithClasses(opts ...func(*ClassQuery)) *CollegeQuery {
 // Example:
 //
 //	var v []struct {
-//		Sid uint16 `json:"sid,omitempty"`
+//		Name string `json:"name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.College.Query().
-//		GroupBy(college.FieldSid).
+//		GroupBy(college.FieldName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (cq *CollegeQuery) GroupBy(field string, fields ...string) *CollegeGroupBy {
@@ -321,11 +321,11 @@ func (cq *CollegeQuery) GroupBy(field string, fields ...string) *CollegeGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Sid uint16 `json:"sid,omitempty"`
+//		Name string `json:"name,omitempty"`
 //	}
 //
 //	client.College.Query().
-//		Select(college.FieldSid).
+//		Select(college.FieldName).
 //		Scan(ctx, &v)
 func (cq *CollegeQuery) Select(fields ...string) *CollegeSelect {
 	cq.ctx.Fields = append(cq.ctx.Fields, fields...)
@@ -371,7 +371,7 @@ func (cq *CollegeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Coll
 		nodes       = []*College{}
 		_spec       = cq.querySpec()
 		loadedTypes = [1]bool{
-			cq.withClasses != nil,
+			cq.withMajors != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -392,19 +392,19 @@ func (cq *CollegeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Coll
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := cq.withClasses; query != nil {
-		if err := cq.loadClasses(ctx, query, nodes,
-			func(n *College) { n.Edges.Classes = []*Class{} },
-			func(n *College, e *Class) { n.Edges.Classes = append(n.Edges.Classes, e) }); err != nil {
+	if query := cq.withMajors; query != nil {
+		if err := cq.loadMajors(ctx, query, nodes,
+			func(n *College) { n.Edges.Majors = []*Major{} },
+			func(n *College, e *Major) { n.Edges.Majors = append(n.Edges.Majors, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (cq *CollegeQuery) loadClasses(ctx context.Context, query *ClassQuery, nodes []*College, init func(*College), assign func(*College, *Class)) error {
+func (cq *CollegeQuery) loadMajors(ctx context.Context, query *MajorQuery, nodes []*College, init func(*College), assign func(*College, *Major)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uint16]*College)
+	nodeids := make(map[uint8]*College)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -413,10 +413,10 @@ func (cq *CollegeQuery) loadClasses(ctx context.Context, query *ClassQuery, node
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(class.FieldCid)
+		query.ctx.AppendFieldOnce(major.FieldCid)
 	}
-	query.Where(predicate.Class(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(college.ClassesColumn), fks...))
+	query.Where(predicate.Major(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(college.MajorsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -443,7 +443,7 @@ func (cq *CollegeQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (cq *CollegeQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(college.Table, college.Columns, sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16))
+	_spec := sqlgraph.NewQuerySpec(college.Table, college.Columns, sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint8))
 	_spec.From = cq.sql
 	if unique := cq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

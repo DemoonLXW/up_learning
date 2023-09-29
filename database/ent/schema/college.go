@@ -24,9 +24,8 @@ func (College) Annotations() []schema.Annotation {
 // Fields of the College.
 func (College) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint16("id").
+		field.Uint8("id").
 			Unique(),
-		field.Uint16("sid"),
 		field.String("name"),
 		field.Bool("is_disabled").
 			Default(false),
@@ -45,11 +44,6 @@ func (College) Fields() []ent.Field {
 // Edges of the College.
 func (College) Edges() []ent.Edge {
 	return []ent.Edge{
-		// edge.From("school", School.Type).
-		// 	Ref("colleges").
-		// 	Unique().
-		// 	Required().
-		// 	Field("sid"),
-		edge.To("classes", Class.Type),
+		edge.To("majors", Major.Type),
 	}
 }

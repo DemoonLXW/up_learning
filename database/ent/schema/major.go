@@ -10,24 +10,23 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
-// Class holds the schema definition for the Class entity.
-type Class struct {
+// Major holds the schema definition for the Major entity.
+type Major struct {
 	ent.Schema
 }
 
-func (Class) Annotations() []schema.Annotation {
+func (Major) Annotations() []schema.Annotation {
 	return []schema.Annotation{
-		entsql.Annotation{Table: "class"},
+		entsql.Annotation{Table: "major"},
 	}
 }
 
-// Fields of the Class.
-func (Class) Fields() []ent.Field {
+// Fields of the Major.
+func (Major) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint32("id").
+		field.Uint16("id").
 			Unique(),
-		field.Uint16("mid"),
-		field.String("grade"),
+		field.Uint8("cid"),
 		field.String("name"),
 		field.Bool("is_disabled").
 			Default(false),
@@ -43,14 +42,14 @@ func (Class) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Class.
-func (Class) Edges() []ent.Edge {
+// Edges of the Major.
+func (Major) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("major", Major.Type).
-			Ref("classes").
+		edge.From("college", College.Type).
+			Ref("majors").
 			Unique().
 			Required().
-			Field("mid"),
-		edge.To("students", Student.Type),
+			Field("cid"),
+		edge.To("classes", Class.Type),
 	}
 }

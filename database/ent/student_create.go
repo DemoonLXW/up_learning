@@ -10,7 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/DemoonLXW/up_learning/database/ent/school"
+	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -36,9 +36,9 @@ func (sc *StudentCreate) SetNillableUID(u *uint32) *StudentCreate {
 	return sc
 }
 
-// SetSid sets the "sid" field.
-func (sc *StudentCreate) SetSid(u uint16) *StudentCreate {
-	sc.mutation.SetSid(u)
+// SetCid sets the "cid" field.
+func (sc *StudentCreate) SetCid(u uint32) *StudentCreate {
+	sc.mutation.SetCid(u)
 	return sc
 }
 
@@ -122,15 +122,15 @@ func (sc *StudentCreate) SetID(u uint32) *StudentCreate {
 	return sc
 }
 
-// SetSchoolID sets the "school" edge to the School entity by ID.
-func (sc *StudentCreate) SetSchoolID(id uint16) *StudentCreate {
-	sc.mutation.SetSchoolID(id)
+// SetClassID sets the "class" edge to the Class entity by ID.
+func (sc *StudentCreate) SetClassID(id uint32) *StudentCreate {
+	sc.mutation.SetClassID(id)
 	return sc
 }
 
-// SetSchool sets the "school" edge to the School entity.
-func (sc *StudentCreate) SetSchool(s *School) *StudentCreate {
-	return sc.SetSchoolID(s.ID)
+// SetClass sets the "class" edge to the Class entity.
+func (sc *StudentCreate) SetClass(c *Class) *StudentCreate {
+	return sc.SetClassID(c.ID)
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
@@ -199,8 +199,8 @@ func (sc *StudentCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *StudentCreate) check() error {
-	if _, ok := sc.mutation.Sid(); !ok {
-		return &ValidationError{Name: "sid", err: errors.New(`ent: missing required field "Student.sid"`)}
+	if _, ok := sc.mutation.Cid(); !ok {
+		return &ValidationError{Name: "cid", err: errors.New(`ent: missing required field "Student.cid"`)}
 	}
 	if _, ok := sc.mutation.StudentID(); !ok {
 		return &ValidationError{Name: "student_id", err: errors.New(`ent: missing required field "Student.student_id"`)}
@@ -227,8 +227,8 @@ func (sc *StudentCreate) check() error {
 	if _, ok := sc.mutation.CreatedTime(); !ok {
 		return &ValidationError{Name: "created_time", err: errors.New(`ent: missing required field "Student.created_time"`)}
 	}
-	if _, ok := sc.mutation.SchoolID(); !ok {
-		return &ValidationError{Name: "school", err: errors.New(`ent: missing required edge "Student.school"`)}
+	if _, ok := sc.mutation.ClassID(); !ok {
+		return &ValidationError{Name: "class", err: errors.New(`ent: missing required edge "Student.class"`)}
 	}
 	return nil
 }
@@ -290,21 +290,21 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 		_spec.SetField(student.FieldModifiedTime, field.TypeTime, value)
 		_node.ModifiedTime = &value
 	}
-	if nodes := sc.mutation.SchoolIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.ClassIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   student.SchoolTable,
-			Columns: []string{student.SchoolColumn},
+			Table:   student.ClassTable,
+			Columns: []string{student.ClassColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(school.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.Sid = nodes[0]
+		_node.Cid = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {

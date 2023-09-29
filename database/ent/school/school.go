@@ -44,7 +44,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "student" package.
 	StudentsInverseTable = "student"
 	// StudentsColumn is the table column denoting the students relation/edge.
-	StudentsColumn = "sid"
+	StudentsColumn = "school_students"
 )
 
 // Columns holds all SQL columns for school fields.

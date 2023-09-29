@@ -605,6 +605,7 @@ func (uq *UserQuery) loadStudents(ctx context.Context, query *StudentQuery, node
 			init(nodes[i])
 		}
 	}
+	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(student.FieldUID)
 	}

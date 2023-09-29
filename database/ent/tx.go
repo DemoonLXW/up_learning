@@ -18,6 +18,8 @@ type Tx struct {
 	College *CollegeClient
 	// File is the client for interacting with the File builders.
 	File *FileClient
+	// Major is the client for interacting with the Major builders.
+	Major *MajorClient
 	// Menu is the client for interacting with the Menu builders.
 	Menu *MenuClient
 	// Permission is the client for interacting with the Permission builders.
@@ -170,6 +172,7 @@ func (tx *Tx) init() {
 	tx.Class = NewClassClient(tx.config)
 	tx.College = NewCollegeClient(tx.config)
 	tx.File = NewFileClient(tx.config)
+	tx.Major = NewMajorClient(tx.config)
 	tx.Menu = NewMenuClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)

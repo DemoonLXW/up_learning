@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/DemoonLXW/up_learning/database/ent/school"
+	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -21,8 +21,8 @@ type Student struct {
 	ID uint32 `json:"id,omitempty"`
 	// UID holds the value of the "uid" field.
 	UID uint32 `json:"uid,omitempty"`
-	// Sid holds the value of the "sid" field.
-	Sid uint16 `json:"sid,omitempty"`
+	// Cid holds the value of the "cid" field.
+	Cid uint32 `json:"cid,omitempty"`
 	// StudentID holds the value of the "student_id" field.
 	StudentID string `json:"student_id,omitempty"`
 	// Name holds the value of the "name" field.
@@ -39,14 +39,15 @@ type Student struct {
 	ModifiedTime *time.Time `json:"modified_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StudentQuery when eager-loading is set.
-	Edges        StudentEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges           StudentEdges `json:"edges"`
+	school_students *uint16
+	selectValues    sql.SelectValues
 }
 
 // StudentEdges holds the relations/edges for other nodes in the graph.
 type StudentEdges struct {
-	// School holds the value of the school edge.
-	School *School `json:"school,omitempty"`
+	// Class holds the value of the class edge.
+	Class *Class `json:"class,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -54,17 +55,17 @@ type StudentEdges struct {
 	loadedTypes [2]bool
 }
 
-// SchoolOrErr returns the School value or an error if the edge
+// ClassOrErr returns the Class value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e StudentEdges) SchoolOrErr() (*School, error) {
+func (e StudentEdges) ClassOrErr() (*Class, error) {
 	if e.loadedTypes[0] {
-		if e.School == nil {
+		if e.Class == nil {
 			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: school.Label}
+			return nil, &NotFoundError{label: class.Label}
 		}
-		return e.School, nil
+		return e.Class, nil
 	}
-	return nil, &NotLoadedError{edge: "school"}
+	return nil, &NotLoadedError{edge: "class"}
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -87,12 +88,14 @@ func (*Student) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case student.FieldIsDisabled:
 			values[i] = new(sql.NullBool)
-		case student.FieldID, student.FieldUID, student.FieldSid, student.FieldGender:
+		case student.FieldID, student.FieldUID, student.FieldCid, student.FieldGender:
 			values[i] = new(sql.NullInt64)
 		case student.FieldStudentID, student.FieldName:
 			values[i] = new(sql.NullString)
 		case student.FieldCreatedTime, student.FieldDeletedTime, student.FieldModifiedTime:
 			values[i] = new(sql.NullTime)
+		case student.ForeignKeys[0]: // school_students
+			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -120,11 +123,11 @@ func (s *Student) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.UID = uint32(value.Int64)
 			}
-		case student.FieldSid:
+		case student.FieldCid:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field sid", values[i])
+				return fmt.Errorf("unexpected type %T for field cid", values[i])
 			} else if value.Valid {
-				s.Sid = uint16(value.Int64)
+				s.Cid = uint32(value.Int64)
 			}
 		case student.FieldStudentID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -171,6 +174,13 @@ func (s *Student) assignValues(columns []string, values []any) error {
 				s.ModifiedTime = new(time.Time)
 				*s.ModifiedTime = value.Time
 			}
+		case student.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field school_students", value)
+			} else if value.Valid {
+				s.school_students = new(uint16)
+				*s.school_students = uint16(value.Int64)
+			}
 		default:
 			s.selectValues.Set(columns[i], values[i])
 		}
@@ -184,9 +194,9 @@ func (s *Student) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
 }
 
-// QuerySchool queries the "school" edge of the Student entity.
-func (s *Student) QuerySchool() *SchoolQuery {
-	return NewStudentClient(s.config).QuerySchool(s)
+// QueryClass queries the "class" edge of the Student entity.
+func (s *Student) QueryClass() *ClassQuery {
+	return NewStudentClient(s.config).QueryClass(s)
 }
 
 // QueryUser queries the "user" edge of the Student entity.
@@ -220,8 +230,8 @@ func (s *Student) String() string {
 	builder.WriteString("uid=")
 	builder.WriteString(fmt.Sprintf("%v", s.UID))
 	builder.WriteString(", ")
-	builder.WriteString("sid=")
-	builder.WriteString(fmt.Sprintf("%v", s.Sid))
+	builder.WriteString("cid=")
+	builder.WriteString(fmt.Sprintf("%v", s.Cid))
 	builder.WriteString(", ")
 	builder.WriteString("student_id=")
 	builder.WriteString(s.StudentID)

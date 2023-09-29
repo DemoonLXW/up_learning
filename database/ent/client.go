@@ -17,6 +17,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
+	"github.com/DemoonLXW/up_learning/database/ent/major"
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
@@ -39,6 +40,8 @@ type Client struct {
 	College *CollegeClient
 	// File is the client for interacting with the File builders.
 	File *FileClient
+	// Major is the client for interacting with the Major builders.
+	Major *MajorClient
 	// Menu is the client for interacting with the Menu builders.
 	Menu *MenuClient
 	// Permission is the client for interacting with the Permission builders.
@@ -73,6 +76,7 @@ func (c *Client) init() {
 	c.Class = NewClassClient(c.config)
 	c.College = NewCollegeClient(c.config)
 	c.File = NewFileClient(c.config)
+	c.Major = NewMajorClient(c.config)
 	c.Menu = NewMenuClient(c.config)
 	c.Permission = NewPermissionClient(c.config)
 	c.Role = NewRoleClient(c.config)
@@ -167,6 +171,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Class:          NewClassClient(cfg),
 		College:        NewCollegeClient(cfg),
 		File:           NewFileClient(cfg),
+		Major:          NewMajorClient(cfg),
 		Menu:           NewMenuClient(cfg),
 		Permission:     NewPermissionClient(cfg),
 		Role:           NewRoleClient(cfg),
@@ -198,6 +203,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Class:          NewClassClient(cfg),
 		College:        NewCollegeClient(cfg),
 		File:           NewFileClient(cfg),
+		Major:          NewMajorClient(cfg),
 		Menu:           NewMenuClient(cfg),
 		Permission:     NewPermissionClient(cfg),
 		Role:           NewRoleClient(cfg),
@@ -236,8 +242,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Class, c.College, c.File, c.Menu, c.Permission, c.Role, c.RolePermission,
-		c.SampleFile, c.School, c.Student, c.User, c.UserRole,
+		c.Class, c.College, c.File, c.Major, c.Menu, c.Permission, c.Role,
+		c.RolePermission, c.SampleFile, c.School, c.Student, c.User, c.UserRole,
 	} {
 		n.Use(hooks...)
 	}
@@ -247,8 +253,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Class, c.College, c.File, c.Menu, c.Permission, c.Role, c.RolePermission,
-		c.SampleFile, c.School, c.Student, c.User, c.UserRole,
+		c.Class, c.College, c.File, c.Major, c.Menu, c.Permission, c.Role,
+		c.RolePermission, c.SampleFile, c.School, c.Student, c.User, c.UserRole,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -263,6 +269,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.College.mutate(ctx, m)
 	case *FileMutation:
 		return c.File.mutate(ctx, m)
+	case *MajorMutation:
+		return c.Major.mutate(ctx, m)
 	case *MenuMutation:
 		return c.Menu.mutate(ctx, m)
 	case *PermissionMutation:
@@ -379,15 +387,31 @@ func (c *ClassClient) GetX(ctx context.Context, id uint32) *Class {
 	return obj
 }
 
-// QueryCollege queries the college edge of a Class.
-func (c *ClassClient) QueryCollege(cl *Class) *CollegeQuery {
-	query := (&CollegeClient{config: c.config}).Query()
+// QueryMajor queries the major edge of a Class.
+func (c *ClassClient) QueryMajor(cl *Class) *MajorQuery {
+	query := (&MajorClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := cl.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(class.Table, class.FieldID, id),
-			sqlgraph.To(college.Table, college.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, class.CollegeTable, class.CollegeColumn),
+			sqlgraph.To(major.Table, major.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, class.MajorTable, class.MajorColumn),
+		)
+		fromV = sqlgraph.Neighbors(cl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStudents queries the students edge of a Class.
+func (c *ClassClient) QueryStudents(cl *Class) *StudentQuery {
+	query := (&StudentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(class.Table, class.FieldID, id),
+			sqlgraph.To(student.Table, student.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, class.StudentsTable, class.StudentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(cl.driver.Dialect(), step)
 		return fromV, nil
@@ -466,7 +490,7 @@ func (c *CollegeClient) UpdateOne(co *College) *CollegeUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *CollegeClient) UpdateOneID(id uint16) *CollegeUpdateOne {
+func (c *CollegeClient) UpdateOneID(id uint8) *CollegeUpdateOne {
 	mutation := newCollegeMutation(c.config, OpUpdateOne, withCollegeID(id))
 	return &CollegeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -483,7 +507,7 @@ func (c *CollegeClient) DeleteOne(co *College) *CollegeDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *CollegeClient) DeleteOneID(id uint16) *CollegeDeleteOne {
+func (c *CollegeClient) DeleteOneID(id uint8) *CollegeDeleteOne {
 	builder := c.Delete().Where(college.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -500,12 +524,12 @@ func (c *CollegeClient) Query() *CollegeQuery {
 }
 
 // Get returns a College entity by its id.
-func (c *CollegeClient) Get(ctx context.Context, id uint16) (*College, error) {
+func (c *CollegeClient) Get(ctx context.Context, id uint8) (*College, error) {
 	return c.Query().Where(college.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *CollegeClient) GetX(ctx context.Context, id uint16) *College {
+func (c *CollegeClient) GetX(ctx context.Context, id uint8) *College {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -513,15 +537,15 @@ func (c *CollegeClient) GetX(ctx context.Context, id uint16) *College {
 	return obj
 }
 
-// QueryClasses queries the classes edge of a College.
-func (c *CollegeClient) QueryClasses(co *College) *ClassQuery {
-	query := (&ClassClient{config: c.config}).Query()
+// QueryMajors queries the majors edge of a College.
+func (c *CollegeClient) QueryMajors(co *College) *MajorQuery {
+	query := (&MajorClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := co.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(college.Table, college.FieldID, id),
-			sqlgraph.To(class.Table, class.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, college.ClassesTable, college.ClassesColumn),
+			sqlgraph.To(major.Table, major.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, college.MajorsTable, college.MajorsColumn),
 		)
 		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
 		return fromV, nil
@@ -701,6 +725,156 @@ func (c *FileClient) mutate(ctx context.Context, m *FileMutation) (Value, error)
 		return (&FileDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown File mutation op: %q", m.Op())
+	}
+}
+
+// MajorClient is a client for the Major schema.
+type MajorClient struct {
+	config
+}
+
+// NewMajorClient returns a client for the Major from the given config.
+func NewMajorClient(c config) *MajorClient {
+	return &MajorClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `major.Hooks(f(g(h())))`.
+func (c *MajorClient) Use(hooks ...Hook) {
+	c.hooks.Major = append(c.hooks.Major, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `major.Intercept(f(g(h())))`.
+func (c *MajorClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Major = append(c.inters.Major, interceptors...)
+}
+
+// Create returns a builder for creating a Major entity.
+func (c *MajorClient) Create() *MajorCreate {
+	mutation := newMajorMutation(c.config, OpCreate)
+	return &MajorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Major entities.
+func (c *MajorClient) CreateBulk(builders ...*MajorCreate) *MajorCreateBulk {
+	return &MajorCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Major.
+func (c *MajorClient) Update() *MajorUpdate {
+	mutation := newMajorMutation(c.config, OpUpdate)
+	return &MajorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MajorClient) UpdateOne(m *Major) *MajorUpdateOne {
+	mutation := newMajorMutation(c.config, OpUpdateOne, withMajor(m))
+	return &MajorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MajorClient) UpdateOneID(id uint16) *MajorUpdateOne {
+	mutation := newMajorMutation(c.config, OpUpdateOne, withMajorID(id))
+	return &MajorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Major.
+func (c *MajorClient) Delete() *MajorDelete {
+	mutation := newMajorMutation(c.config, OpDelete)
+	return &MajorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MajorClient) DeleteOne(m *Major) *MajorDeleteOne {
+	return c.DeleteOneID(m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MajorClient) DeleteOneID(id uint16) *MajorDeleteOne {
+	builder := c.Delete().Where(major.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MajorDeleteOne{builder}
+}
+
+// Query returns a query builder for Major.
+func (c *MajorClient) Query() *MajorQuery {
+	return &MajorQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMajor},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Major entity by its id.
+func (c *MajorClient) Get(ctx context.Context, id uint16) (*Major, error) {
+	return c.Query().Where(major.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MajorClient) GetX(ctx context.Context, id uint16) *Major {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryCollege queries the college edge of a Major.
+func (c *MajorClient) QueryCollege(m *Major) *CollegeQuery {
+	query := (&CollegeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(major.Table, major.FieldID, id),
+			sqlgraph.To(college.Table, college.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, major.CollegeTable, major.CollegeColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryClasses queries the classes edge of a Major.
+func (c *MajorClient) QueryClasses(m *Major) *ClassQuery {
+	query := (&ClassClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(major.Table, major.FieldID, id),
+			sqlgraph.To(class.Table, class.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, major.ClassesTable, major.ClassesColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *MajorClient) Hooks() []Hook {
+	return c.hooks.Major
+}
+
+// Interceptors returns the client interceptors.
+func (c *MajorClient) Interceptors() []Interceptor {
+	return c.inters.Major
+}
+
+func (c *MajorClient) mutate(ctx context.Context, m *MajorMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MajorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MajorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MajorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MajorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Major mutation op: %q", m.Op())
 	}
 }
 
@@ -1648,15 +1822,15 @@ func (c *StudentClient) GetX(ctx context.Context, id uint32) *Student {
 	return obj
 }
 
-// QuerySchool queries the school edge of a Student.
-func (c *StudentClient) QuerySchool(s *Student) *SchoolQuery {
-	query := (&SchoolClient{config: c.config}).Query()
+// QueryClass queries the class edge of a Student.
+func (c *StudentClient) QueryClass(s *Student) *ClassQuery {
+	query := (&ClassClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := s.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(student.Table, student.FieldID, id),
-			sqlgraph.To(school.Table, school.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, student.SchoolTable, student.SchoolColumn),
+			sqlgraph.To(class.Table, class.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, student.ClassTable, student.ClassColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1991,11 +2165,11 @@ func (c *UserRoleClient) mutate(ctx context.Context, m *UserRoleMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Class, College, File, Menu, Permission, Role, RolePermission, SampleFile,
+		Class, College, File, Major, Menu, Permission, Role, RolePermission, SampleFile,
 		School, Student, User, UserRole []ent.Hook
 	}
 	inters struct {
-		Class, College, File, Menu, Permission, Role, RolePermission, SampleFile,
+		Class, College, File, Major, Menu, Permission, Role, RolePermission, SampleFile,
 		School, Student, User, UserRole []ent.Interceptor
 	}
 )

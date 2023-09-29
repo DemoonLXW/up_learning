@@ -60,9 +60,9 @@ func UID(v uint32) predicate.Student {
 	return predicate.Student(sql.FieldEQ(FieldUID, v))
 }
 
-// Sid applies equality check predicate on the "sid" field. It's identical to SidEQ.
-func Sid(v uint16) predicate.Student {
-	return predicate.Student(sql.FieldEQ(FieldSid, v))
+// Cid applies equality check predicate on the "cid" field. It's identical to CidEQ.
+func Cid(v uint32) predicate.Student {
+	return predicate.Student(sql.FieldEQ(FieldCid, v))
 }
 
 // StudentID applies equality check predicate on the "student_id" field. It's identical to StudentIDEQ.
@@ -130,24 +130,24 @@ func UIDNotNil() predicate.Student {
 	return predicate.Student(sql.FieldNotNull(FieldUID))
 }
 
-// SidEQ applies the EQ predicate on the "sid" field.
-func SidEQ(v uint16) predicate.Student {
-	return predicate.Student(sql.FieldEQ(FieldSid, v))
+// CidEQ applies the EQ predicate on the "cid" field.
+func CidEQ(v uint32) predicate.Student {
+	return predicate.Student(sql.FieldEQ(FieldCid, v))
 }
 
-// SidNEQ applies the NEQ predicate on the "sid" field.
-func SidNEQ(v uint16) predicate.Student {
-	return predicate.Student(sql.FieldNEQ(FieldSid, v))
+// CidNEQ applies the NEQ predicate on the "cid" field.
+func CidNEQ(v uint32) predicate.Student {
+	return predicate.Student(sql.FieldNEQ(FieldCid, v))
 }
 
-// SidIn applies the In predicate on the "sid" field.
-func SidIn(vs ...uint16) predicate.Student {
-	return predicate.Student(sql.FieldIn(FieldSid, vs...))
+// CidIn applies the In predicate on the "cid" field.
+func CidIn(vs ...uint32) predicate.Student {
+	return predicate.Student(sql.FieldIn(FieldCid, vs...))
 }
 
-// SidNotIn applies the NotIn predicate on the "sid" field.
-func SidNotIn(vs ...uint16) predicate.Student {
-	return predicate.Student(sql.FieldNotIn(FieldSid, vs...))
+// CidNotIn applies the NotIn predicate on the "cid" field.
+func CidNotIn(vs ...uint32) predicate.Student {
+	return predicate.Student(sql.FieldNotIn(FieldCid, vs...))
 }
 
 // StudentIDEQ applies the EQ predicate on the "student_id" field.
@@ -470,21 +470,21 @@ func ModifiedTimeNotNil() predicate.Student {
 	return predicate.Student(sql.FieldNotNull(FieldModifiedTime))
 }
 
-// HasSchool applies the HasEdge predicate on the "school" edge.
-func HasSchool() predicate.Student {
+// HasClass applies the HasEdge predicate on the "class" edge.
+func HasClass() predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, SchoolTable, SchoolColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, ClassTable, ClassColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSchoolWith applies the HasEdge predicate on the "school" edge with a given conditions (other predicates).
-func HasSchoolWith(preds ...predicate.School) predicate.Student {
+// HasClassWith applies the HasEdge predicate on the "class" edge with a given conditions (other predicates).
+func HasClassWith(preds ...predicate.Class) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
-		step := newSchoolStep()
+		step := newClassStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

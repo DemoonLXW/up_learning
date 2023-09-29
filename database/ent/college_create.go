@@ -10,8 +10,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
+	"github.com/DemoonLXW/up_learning/database/ent/major"
 )
 
 // CollegeCreate is the builder for creating a College entity.
@@ -19,12 +19,6 @@ type CollegeCreate struct {
 	config
 	mutation *CollegeMutation
 	hooks    []Hook
-}
-
-// SetSid sets the "sid" field.
-func (cc *CollegeCreate) SetSid(u uint16) *CollegeCreate {
-	cc.mutation.SetSid(u)
-	return cc
 }
 
 // SetName sets the "name" field.
@@ -90,24 +84,24 @@ func (cc *CollegeCreate) SetNillableModifiedTime(t *time.Time) *CollegeCreate {
 }
 
 // SetID sets the "id" field.
-func (cc *CollegeCreate) SetID(u uint16) *CollegeCreate {
+func (cc *CollegeCreate) SetID(u uint8) *CollegeCreate {
 	cc.mutation.SetID(u)
 	return cc
 }
 
-// AddClassIDs adds the "classes" edge to the Class entity by IDs.
-func (cc *CollegeCreate) AddClassIDs(ids ...uint32) *CollegeCreate {
-	cc.mutation.AddClassIDs(ids...)
+// AddMajorIDs adds the "majors" edge to the Major entity by IDs.
+func (cc *CollegeCreate) AddMajorIDs(ids ...uint16) *CollegeCreate {
+	cc.mutation.AddMajorIDs(ids...)
 	return cc
 }
 
-// AddClasses adds the "classes" edges to the Class entity.
-func (cc *CollegeCreate) AddClasses(c ...*Class) *CollegeCreate {
-	ids := make([]uint32, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// AddMajors adds the "majors" edges to the Major entity.
+func (cc *CollegeCreate) AddMajors(m ...*Major) *CollegeCreate {
+	ids := make([]uint16, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
 	}
-	return cc.AddClassIDs(ids...)
+	return cc.AddMajorIDs(ids...)
 }
 
 // Mutation returns the CollegeMutation object of the builder.
@@ -157,9 +151,6 @@ func (cc *CollegeCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (cc *CollegeCreate) check() error {
-	if _, ok := cc.mutation.Sid(); !ok {
-		return &ValidationError{Name: "sid", err: errors.New(`ent: missing required field "College.sid"`)}
-	}
 	if _, ok := cc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "College.name"`)}
 	}
@@ -185,7 +176,7 @@ func (cc *CollegeCreate) sqlSave(ctx context.Context) (*College, error) {
 	}
 	if _spec.ID.Value != _node.ID {
 		id := _spec.ID.Value.(int64)
-		_node.ID = uint16(id)
+		_node.ID = uint8(id)
 	}
 	cc.mutation.id = &_node.ID
 	cc.mutation.done = true
@@ -195,15 +186,11 @@ func (cc *CollegeCreate) sqlSave(ctx context.Context) (*College, error) {
 func (cc *CollegeCreate) createSpec() (*College, *sqlgraph.CreateSpec) {
 	var (
 		_node = &College{config: cc.config}
-		_spec = sqlgraph.NewCreateSpec(college.Table, sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16))
+		_spec = sqlgraph.NewCreateSpec(college.Table, sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint8))
 	)
 	if id, ok := cc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
-	}
-	if value, ok := cc.mutation.Sid(); ok {
-		_spec.SetField(college.FieldSid, field.TypeUint16, value)
-		_node.Sid = value
 	}
 	if value, ok := cc.mutation.Name(); ok {
 		_spec.SetField(college.FieldName, field.TypeString, value)
@@ -225,15 +212,15 @@ func (cc *CollegeCreate) createSpec() (*College, *sqlgraph.CreateSpec) {
 		_spec.SetField(college.FieldModifiedTime, field.TypeTime, value)
 		_node.ModifiedTime = &value
 	}
-	if nodes := cc.mutation.ClassesIDs(); len(nodes) > 0 {
+	if nodes := cc.mutation.MajorsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   college.ClassesTable,
-			Columns: []string{college.ClassesColumn},
+			Table:   college.MajorsTable,
+			Columns: []string{college.MajorsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(class.FieldID, field.TypeUint32),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
 			},
 		}
 		for _, k := range nodes {
@@ -287,7 +274,7 @@ func (ccb *CollegeCreateBulk) Save(ctx context.Context) ([]*College, error) {
 				mutation.id = &nodes[i].ID
 				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = uint16(id)
+					nodes[i].ID = uint8(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

@@ -55,9 +55,14 @@ func IDLTE(id uint32) predicate.Class {
 	return predicate.Class(sql.FieldLTE(FieldID, id))
 }
 
-// Cid applies equality check predicate on the "cid" field. It's identical to CidEQ.
-func Cid(v uint16) predicate.Class {
-	return predicate.Class(sql.FieldEQ(FieldCid, v))
+// Mid applies equality check predicate on the "mid" field. It's identical to MidEQ.
+func Mid(v uint16) predicate.Class {
+	return predicate.Class(sql.FieldEQ(FieldMid, v))
+}
+
+// Grade applies equality check predicate on the "grade" field. It's identical to GradeEQ.
+func Grade(v string) predicate.Class {
+	return predicate.Class(sql.FieldEQ(FieldGrade, v))
 }
 
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
@@ -85,24 +90,89 @@ func ModifiedTime(v time.Time) predicate.Class {
 	return predicate.Class(sql.FieldEQ(FieldModifiedTime, v))
 }
 
-// CidEQ applies the EQ predicate on the "cid" field.
-func CidEQ(v uint16) predicate.Class {
-	return predicate.Class(sql.FieldEQ(FieldCid, v))
+// MidEQ applies the EQ predicate on the "mid" field.
+func MidEQ(v uint16) predicate.Class {
+	return predicate.Class(sql.FieldEQ(FieldMid, v))
 }
 
-// CidNEQ applies the NEQ predicate on the "cid" field.
-func CidNEQ(v uint16) predicate.Class {
-	return predicate.Class(sql.FieldNEQ(FieldCid, v))
+// MidNEQ applies the NEQ predicate on the "mid" field.
+func MidNEQ(v uint16) predicate.Class {
+	return predicate.Class(sql.FieldNEQ(FieldMid, v))
 }
 
-// CidIn applies the In predicate on the "cid" field.
-func CidIn(vs ...uint16) predicate.Class {
-	return predicate.Class(sql.FieldIn(FieldCid, vs...))
+// MidIn applies the In predicate on the "mid" field.
+func MidIn(vs ...uint16) predicate.Class {
+	return predicate.Class(sql.FieldIn(FieldMid, vs...))
 }
 
-// CidNotIn applies the NotIn predicate on the "cid" field.
-func CidNotIn(vs ...uint16) predicate.Class {
-	return predicate.Class(sql.FieldNotIn(FieldCid, vs...))
+// MidNotIn applies the NotIn predicate on the "mid" field.
+func MidNotIn(vs ...uint16) predicate.Class {
+	return predicate.Class(sql.FieldNotIn(FieldMid, vs...))
+}
+
+// GradeEQ applies the EQ predicate on the "grade" field.
+func GradeEQ(v string) predicate.Class {
+	return predicate.Class(sql.FieldEQ(FieldGrade, v))
+}
+
+// GradeNEQ applies the NEQ predicate on the "grade" field.
+func GradeNEQ(v string) predicate.Class {
+	return predicate.Class(sql.FieldNEQ(FieldGrade, v))
+}
+
+// GradeIn applies the In predicate on the "grade" field.
+func GradeIn(vs ...string) predicate.Class {
+	return predicate.Class(sql.FieldIn(FieldGrade, vs...))
+}
+
+// GradeNotIn applies the NotIn predicate on the "grade" field.
+func GradeNotIn(vs ...string) predicate.Class {
+	return predicate.Class(sql.FieldNotIn(FieldGrade, vs...))
+}
+
+// GradeGT applies the GT predicate on the "grade" field.
+func GradeGT(v string) predicate.Class {
+	return predicate.Class(sql.FieldGT(FieldGrade, v))
+}
+
+// GradeGTE applies the GTE predicate on the "grade" field.
+func GradeGTE(v string) predicate.Class {
+	return predicate.Class(sql.FieldGTE(FieldGrade, v))
+}
+
+// GradeLT applies the LT predicate on the "grade" field.
+func GradeLT(v string) predicate.Class {
+	return predicate.Class(sql.FieldLT(FieldGrade, v))
+}
+
+// GradeLTE applies the LTE predicate on the "grade" field.
+func GradeLTE(v string) predicate.Class {
+	return predicate.Class(sql.FieldLTE(FieldGrade, v))
+}
+
+// GradeContains applies the Contains predicate on the "grade" field.
+func GradeContains(v string) predicate.Class {
+	return predicate.Class(sql.FieldContains(FieldGrade, v))
+}
+
+// GradeHasPrefix applies the HasPrefix predicate on the "grade" field.
+func GradeHasPrefix(v string) predicate.Class {
+	return predicate.Class(sql.FieldHasPrefix(FieldGrade, v))
+}
+
+// GradeHasSuffix applies the HasSuffix predicate on the "grade" field.
+func GradeHasSuffix(v string) predicate.Class {
+	return predicate.Class(sql.FieldHasSuffix(FieldGrade, v))
+}
+
+// GradeEqualFold applies the EqualFold predicate on the "grade" field.
+func GradeEqualFold(v string) predicate.Class {
+	return predicate.Class(sql.FieldEqualFold(FieldGrade, v))
+}
+
+// GradeContainsFold applies the ContainsFold predicate on the "grade" field.
+func GradeContainsFold(v string) predicate.Class {
+	return predicate.Class(sql.FieldContainsFold(FieldGrade, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -320,21 +390,44 @@ func ModifiedTimeNotNil() predicate.Class {
 	return predicate.Class(sql.FieldNotNull(FieldModifiedTime))
 }
 
-// HasCollege applies the HasEdge predicate on the "college" edge.
-func HasCollege() predicate.Class {
+// HasMajor applies the HasEdge predicate on the "major" edge.
+func HasMajor() predicate.Class {
 	return predicate.Class(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, CollegeTable, CollegeColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, MajorTable, MajorColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasCollegeWith applies the HasEdge predicate on the "college" edge with a given conditions (other predicates).
-func HasCollegeWith(preds ...predicate.College) predicate.Class {
+// HasMajorWith applies the HasEdge predicate on the "major" edge with a given conditions (other predicates).
+func HasMajorWith(preds ...predicate.Major) predicate.Class {
 	return predicate.Class(func(s *sql.Selector) {
-		step := newCollegeStep()
+		step := newMajorStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStudents applies the HasEdge predicate on the "students" edge.
+func HasStudents() predicate.Class {
+	return predicate.Class(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStudentsWith applies the HasEdge predicate on the "students" edge with a given conditions (other predicates).
+func HasStudentsWith(preds ...predicate.Student) predicate.Class {
+	return predicate.Class(func(s *sql.Selector) {
+		step := newStudentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

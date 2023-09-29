@@ -15,6 +15,9 @@ type College func(*sql.Selector)
 // File is the predicate function for file builders.
 type File func(*sql.Selector)
 
+// Major is the predicate function for major builders.
+type Major func(*sql.Selector)
+
 // Menu is the predicate function for menu builders.
 type Menu func(*sql.Selector)
 

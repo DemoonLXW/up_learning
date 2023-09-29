@@ -14,8 +14,10 @@ const (
 	Label = "class"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldCid holds the string denoting the cid field in the database.
-	FieldCid = "cid"
+	// FieldMid holds the string denoting the mid field in the database.
+	FieldMid = "mid"
+	// FieldGrade holds the string denoting the grade field in the database.
+	FieldGrade = "grade"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldIsDisabled holds the string denoting the is_disabled field in the database.
@@ -26,23 +28,33 @@ const (
 	FieldDeletedTime = "deleted_time"
 	// FieldModifiedTime holds the string denoting the modified_time field in the database.
 	FieldModifiedTime = "modified_time"
-	// EdgeCollege holds the string denoting the college edge name in mutations.
-	EdgeCollege = "college"
+	// EdgeMajor holds the string denoting the major edge name in mutations.
+	EdgeMajor = "major"
+	// EdgeStudents holds the string denoting the students edge name in mutations.
+	EdgeStudents = "students"
 	// Table holds the table name of the class in the database.
 	Table = "class"
-	// CollegeTable is the table that holds the college relation/edge.
-	CollegeTable = "class"
-	// CollegeInverseTable is the table name for the College entity.
-	// It exists in this package in order to avoid circular dependency with the "college" package.
-	CollegeInverseTable = "college"
-	// CollegeColumn is the table column denoting the college relation/edge.
-	CollegeColumn = "cid"
+	// MajorTable is the table that holds the major relation/edge.
+	MajorTable = "class"
+	// MajorInverseTable is the table name for the Major entity.
+	// It exists in this package in order to avoid circular dependency with the "major" package.
+	MajorInverseTable = "major"
+	// MajorColumn is the table column denoting the major relation/edge.
+	MajorColumn = "mid"
+	// StudentsTable is the table that holds the students relation/edge.
+	StudentsTable = "student"
+	// StudentsInverseTable is the table name for the Student entity.
+	// It exists in this package in order to avoid circular dependency with the "student" package.
+	StudentsInverseTable = "student"
+	// StudentsColumn is the table column denoting the students relation/edge.
+	StudentsColumn = "cid"
 )
 
 // Columns holds all SQL columns for class fields.
 var Columns = []string{
 	FieldID,
-	FieldCid,
+	FieldMid,
+	FieldGrade,
 	FieldName,
 	FieldIsDisabled,
 	FieldCreatedTime,
@@ -75,9 +87,14 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByCid orders the results by the cid field.
-func ByCid(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCid, opts...).ToFunc()
+// ByMid orders the results by the mid field.
+func ByMid(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMid, opts...).ToFunc()
+}
+
+// ByGrade orders the results by the grade field.
+func ByGrade(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldGrade, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.
@@ -105,16 +122,37 @@ func ByModifiedTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModifiedTime, opts...).ToFunc()
 }
 
-// ByCollegeField orders the results by college field.
-func ByCollegeField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByMajorField orders the results by major field.
+func ByMajorField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCollegeStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newMajorStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newCollegeStep() *sqlgraph.Step {
+
+// ByStudentsCount orders the results by students count.
+func ByStudentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newStudentsStep(), opts...)
+	}
+}
+
+// ByStudents orders the results by students terms.
+func ByStudents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newStudentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newMajorStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CollegeInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, CollegeTable, CollegeColumn),
+		sqlgraph.To(MajorInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, MajorTable, MajorColumn),
+	)
+}
+func newStudentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(StudentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
 	)
 }

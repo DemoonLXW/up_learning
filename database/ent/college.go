@@ -16,9 +16,7 @@ import (
 type College struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID uint16 `json:"id,omitempty"`
-	// Sid holds the value of the "sid" field.
-	Sid uint16 `json:"sid,omitempty"`
+	ID uint8 `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// IsDisabled holds the value of the "is_disabled" field.
@@ -37,20 +35,20 @@ type College struct {
 
 // CollegeEdges holds the relations/edges for other nodes in the graph.
 type CollegeEdges struct {
-	// Classes holds the value of the classes edge.
-	Classes []*Class `json:"classes,omitempty"`
+	// Majors holds the value of the majors edge.
+	Majors []*Major `json:"majors,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// ClassesOrErr returns the Classes value or an error if the edge
+// MajorsOrErr returns the Majors value or an error if the edge
 // was not loaded in eager-loading.
-func (e CollegeEdges) ClassesOrErr() ([]*Class, error) {
+func (e CollegeEdges) MajorsOrErr() ([]*Major, error) {
 	if e.loadedTypes[0] {
-		return e.Classes, nil
+		return e.Majors, nil
 	}
-	return nil, &NotLoadedError{edge: "classes"}
+	return nil, &NotLoadedError{edge: "majors"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -60,7 +58,7 @@ func (*College) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case college.FieldIsDisabled:
 			values[i] = new(sql.NullBool)
-		case college.FieldID, college.FieldSid:
+		case college.FieldID:
 			values[i] = new(sql.NullInt64)
 		case college.FieldName:
 			values[i] = new(sql.NullString)
@@ -86,13 +84,7 @@ func (c *College) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			c.ID = uint16(value.Int64)
-		case college.FieldSid:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field sid", values[i])
-			} else if value.Valid {
-				c.Sid = uint16(value.Int64)
-			}
+			c.ID = uint8(value.Int64)
 		case college.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -139,9 +131,9 @@ func (c *College) Value(name string) (ent.Value, error) {
 	return c.selectValues.Get(name)
 }
 
-// QueryClasses queries the "classes" edge of the College entity.
-func (c *College) QueryClasses() *ClassQuery {
-	return NewCollegeClient(c.config).QueryClasses(c)
+// QueryMajors queries the "majors" edge of the College entity.
+func (c *College) QueryMajors() *MajorQuery {
+	return NewCollegeClient(c.config).QueryMajors(c)
 }
 
 // Update returns a builder for updating this College.
@@ -167,9 +159,6 @@ func (c *College) String() string {
 	var builder strings.Builder
 	builder.WriteString("College(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", c.ID))
-	builder.WriteString("sid=")
-	builder.WriteString(fmt.Sprintf("%v", c.Sid))
-	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(c.Name)
 	builder.WriteString(", ")

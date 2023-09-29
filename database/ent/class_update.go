@@ -12,8 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/class"
-	"github.com/DemoonLXW/up_learning/database/ent/college"
+	"github.com/DemoonLXW/up_learning/database/ent/major"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
+	"github.com/DemoonLXW/up_learning/database/ent/student"
 )
 
 // ClassUpdate is the builder for updating Class entities.
@@ -29,9 +30,15 @@ func (cu *ClassUpdate) Where(ps ...predicate.Class) *ClassUpdate {
 	return cu
 }
 
-// SetCid sets the "cid" field.
-func (cu *ClassUpdate) SetCid(u uint16) *ClassUpdate {
-	cu.mutation.SetCid(u)
+// SetMid sets the "mid" field.
+func (cu *ClassUpdate) SetMid(u uint16) *ClassUpdate {
+	cu.mutation.SetMid(u)
+	return cu
+}
+
+// SetGrade sets the "grade" field.
+func (cu *ClassUpdate) SetGrade(s string) *ClassUpdate {
+	cu.mutation.SetGrade(s)
 	return cu
 }
 
@@ -109,15 +116,30 @@ func (cu *ClassUpdate) ClearModifiedTime() *ClassUpdate {
 	return cu
 }
 
-// SetCollegeID sets the "college" edge to the College entity by ID.
-func (cu *ClassUpdate) SetCollegeID(id uint16) *ClassUpdate {
-	cu.mutation.SetCollegeID(id)
+// SetMajorID sets the "major" edge to the Major entity by ID.
+func (cu *ClassUpdate) SetMajorID(id uint16) *ClassUpdate {
+	cu.mutation.SetMajorID(id)
 	return cu
 }
 
-// SetCollege sets the "college" edge to the College entity.
-func (cu *ClassUpdate) SetCollege(c *College) *ClassUpdate {
-	return cu.SetCollegeID(c.ID)
+// SetMajor sets the "major" edge to the Major entity.
+func (cu *ClassUpdate) SetMajor(m *Major) *ClassUpdate {
+	return cu.SetMajorID(m.ID)
+}
+
+// AddStudentIDs adds the "students" edge to the Student entity by IDs.
+func (cu *ClassUpdate) AddStudentIDs(ids ...uint32) *ClassUpdate {
+	cu.mutation.AddStudentIDs(ids...)
+	return cu
+}
+
+// AddStudents adds the "students" edges to the Student entity.
+func (cu *ClassUpdate) AddStudents(s ...*Student) *ClassUpdate {
+	ids := make([]uint32, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return cu.AddStudentIDs(ids...)
 }
 
 // Mutation returns the ClassMutation object of the builder.
@@ -125,10 +147,31 @@ func (cu *ClassUpdate) Mutation() *ClassMutation {
 	return cu.mutation
 }
 
-// ClearCollege clears the "college" edge to the College entity.
-func (cu *ClassUpdate) ClearCollege() *ClassUpdate {
-	cu.mutation.ClearCollege()
+// ClearMajor clears the "major" edge to the Major entity.
+func (cu *ClassUpdate) ClearMajor() *ClassUpdate {
+	cu.mutation.ClearMajor()
 	return cu
+}
+
+// ClearStudents clears all "students" edges to the Student entity.
+func (cu *ClassUpdate) ClearStudents() *ClassUpdate {
+	cu.mutation.ClearStudents()
+	return cu
+}
+
+// RemoveStudentIDs removes the "students" edge to Student entities by IDs.
+func (cu *ClassUpdate) RemoveStudentIDs(ids ...uint32) *ClassUpdate {
+	cu.mutation.RemoveStudentIDs(ids...)
+	return cu
+}
+
+// RemoveStudents removes "students" edges to Student entities.
+func (cu *ClassUpdate) RemoveStudents(s ...*Student) *ClassUpdate {
+	ids := make([]uint32, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return cu.RemoveStudentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -160,8 +203,8 @@ func (cu *ClassUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (cu *ClassUpdate) check() error {
-	if _, ok := cu.mutation.CollegeID(); cu.mutation.CollegeCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Class.college"`)
+	if _, ok := cu.mutation.MajorID(); cu.mutation.MajorCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Class.major"`)
 	}
 	return nil
 }
@@ -177,6 +220,9 @@ func (cu *ClassUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := cu.mutation.Grade(); ok {
+		_spec.SetField(class.FieldGrade, field.TypeString, value)
 	}
 	if value, ok := cu.mutation.Name(); ok {
 		_spec.SetField(class.FieldName, field.TypeString, value)
@@ -199,28 +245,73 @@ func (cu *ClassUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if cu.mutation.ModifiedTimeCleared() {
 		_spec.ClearField(class.FieldModifiedTime, field.TypeTime)
 	}
-	if cu.mutation.CollegeCleared() {
+	if cu.mutation.MajorCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   class.CollegeTable,
-			Columns: []string{class.CollegeColumn},
+			Table:   class.MajorTable,
+			Columns: []string{class.MajorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cu.mutation.CollegeIDs(); len(nodes) > 0 {
+	if nodes := cu.mutation.MajorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   class.CollegeTable,
-			Columns: []string{class.CollegeColumn},
+			Table:   class.MajorTable,
+			Columns: []string{class.MajorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cu.mutation.StudentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   class.StudentsTable,
+			Columns: []string{class.StudentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedStudentsIDs(); len(nodes) > 0 && !cu.mutation.StudentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   class.StudentsTable,
+			Columns: []string{class.StudentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.StudentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   class.StudentsTable,
+			Columns: []string{class.StudentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {
@@ -248,9 +339,15 @@ type ClassUpdateOne struct {
 	mutation *ClassMutation
 }
 
-// SetCid sets the "cid" field.
-func (cuo *ClassUpdateOne) SetCid(u uint16) *ClassUpdateOne {
-	cuo.mutation.SetCid(u)
+// SetMid sets the "mid" field.
+func (cuo *ClassUpdateOne) SetMid(u uint16) *ClassUpdateOne {
+	cuo.mutation.SetMid(u)
+	return cuo
+}
+
+// SetGrade sets the "grade" field.
+func (cuo *ClassUpdateOne) SetGrade(s string) *ClassUpdateOne {
+	cuo.mutation.SetGrade(s)
 	return cuo
 }
 
@@ -328,15 +425,30 @@ func (cuo *ClassUpdateOne) ClearModifiedTime() *ClassUpdateOne {
 	return cuo
 }
 
-// SetCollegeID sets the "college" edge to the College entity by ID.
-func (cuo *ClassUpdateOne) SetCollegeID(id uint16) *ClassUpdateOne {
-	cuo.mutation.SetCollegeID(id)
+// SetMajorID sets the "major" edge to the Major entity by ID.
+func (cuo *ClassUpdateOne) SetMajorID(id uint16) *ClassUpdateOne {
+	cuo.mutation.SetMajorID(id)
 	return cuo
 }
 
-// SetCollege sets the "college" edge to the College entity.
-func (cuo *ClassUpdateOne) SetCollege(c *College) *ClassUpdateOne {
-	return cuo.SetCollegeID(c.ID)
+// SetMajor sets the "major" edge to the Major entity.
+func (cuo *ClassUpdateOne) SetMajor(m *Major) *ClassUpdateOne {
+	return cuo.SetMajorID(m.ID)
+}
+
+// AddStudentIDs adds the "students" edge to the Student entity by IDs.
+func (cuo *ClassUpdateOne) AddStudentIDs(ids ...uint32) *ClassUpdateOne {
+	cuo.mutation.AddStudentIDs(ids...)
+	return cuo
+}
+
+// AddStudents adds the "students" edges to the Student entity.
+func (cuo *ClassUpdateOne) AddStudents(s ...*Student) *ClassUpdateOne {
+	ids := make([]uint32, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return cuo.AddStudentIDs(ids...)
 }
 
 // Mutation returns the ClassMutation object of the builder.
@@ -344,10 +456,31 @@ func (cuo *ClassUpdateOne) Mutation() *ClassMutation {
 	return cuo.mutation
 }
 
-// ClearCollege clears the "college" edge to the College entity.
-func (cuo *ClassUpdateOne) ClearCollege() *ClassUpdateOne {
-	cuo.mutation.ClearCollege()
+// ClearMajor clears the "major" edge to the Major entity.
+func (cuo *ClassUpdateOne) ClearMajor() *ClassUpdateOne {
+	cuo.mutation.ClearMajor()
 	return cuo
+}
+
+// ClearStudents clears all "students" edges to the Student entity.
+func (cuo *ClassUpdateOne) ClearStudents() *ClassUpdateOne {
+	cuo.mutation.ClearStudents()
+	return cuo
+}
+
+// RemoveStudentIDs removes the "students" edge to Student entities by IDs.
+func (cuo *ClassUpdateOne) RemoveStudentIDs(ids ...uint32) *ClassUpdateOne {
+	cuo.mutation.RemoveStudentIDs(ids...)
+	return cuo
+}
+
+// RemoveStudents removes "students" edges to Student entities.
+func (cuo *ClassUpdateOne) RemoveStudents(s ...*Student) *ClassUpdateOne {
+	ids := make([]uint32, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return cuo.RemoveStudentIDs(ids...)
 }
 
 // Where appends a list predicates to the ClassUpdate builder.
@@ -392,8 +525,8 @@ func (cuo *ClassUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (cuo *ClassUpdateOne) check() error {
-	if _, ok := cuo.mutation.CollegeID(); cuo.mutation.CollegeCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Class.college"`)
+	if _, ok := cuo.mutation.MajorID(); cuo.mutation.MajorCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Class.major"`)
 	}
 	return nil
 }
@@ -427,6 +560,9 @@ func (cuo *ClassUpdateOne) sqlSave(ctx context.Context) (_node *Class, err error
 			}
 		}
 	}
+	if value, ok := cuo.mutation.Grade(); ok {
+		_spec.SetField(class.FieldGrade, field.TypeString, value)
+	}
 	if value, ok := cuo.mutation.Name(); ok {
 		_spec.SetField(class.FieldName, field.TypeString, value)
 	}
@@ -448,28 +584,73 @@ func (cuo *ClassUpdateOne) sqlSave(ctx context.Context) (_node *Class, err error
 	if cuo.mutation.ModifiedTimeCleared() {
 		_spec.ClearField(class.FieldModifiedTime, field.TypeTime)
 	}
-	if cuo.mutation.CollegeCleared() {
+	if cuo.mutation.MajorCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   class.CollegeTable,
-			Columns: []string{class.CollegeColumn},
+			Table:   class.MajorTable,
+			Columns: []string{class.MajorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cuo.mutation.CollegeIDs(); len(nodes) > 0 {
+	if nodes := cuo.mutation.MajorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   class.CollegeTable,
-			Columns: []string{class.CollegeColumn},
+			Table:   class.MajorTable,
+			Columns: []string{class.MajorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(college.FieldID, field.TypeUint16),
+				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.StudentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   class.StudentsTable,
+			Columns: []string{class.StudentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedStudentsIDs(); len(nodes) > 0 && !cuo.mutation.StudentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   class.StudentsTable,
+			Columns: []string{class.StudentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.StudentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   class.StudentsTable,
+			Columns: []string{class.StudentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

@@ -45,6 +45,18 @@ func (f FileFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FileMutation", m)
 }
 
+// The MajorFunc type is an adapter to allow the use of ordinary
+// function as Major mutator.
+type MajorFunc func(context.Context, *ent.MajorMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MajorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.MajorMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MajorMutation", m)
+}
+
 // The MenuFunc type is an adapter to allow the use of ordinary
 // function as Menu mutator.
 type MenuFunc func(context.Context, *ent.MenuMutation) (ent.Value, error)
