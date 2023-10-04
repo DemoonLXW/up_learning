@@ -605,3 +605,18 @@ func TestGetTotalRetrievedColleges(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, total)
 }
+
+func TestReadMajorsFromFile(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	f, err := os.Open("../import.xlsx")
+	assert.Nil(t, err)
+
+	majors, err := serv.ReadMajorsFromFile(f)
+	assert.Nil(t, err)
+
+	for _, m := range majors {
+		fmt.Println(m.Name)
+	}
+}
