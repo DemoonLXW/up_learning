@@ -1628,11 +1628,12 @@ func (serv *ManagementService) RetrieveMajorWithCollege(current, pageSize *int, 
 					s.OrderBy(sql.Asc(sort))
 				}
 			}
-		}).WithCollege(func(cq *ent.CollegeQuery) {
-		cq.Where(func(s *sql.Selector) {
-			s.Where(sql.IsNull(college.FieldDeletedTime))
+		}).
+		WithCollege(func(cq *ent.CollegeQuery) {
+			cq.Where(func(s *sql.Selector) {
+				s.Where(sql.IsNull(college.FieldDeletedTime))
+			})
 		})
-	})
 
 	if pageSize != nil && current != nil {
 		offset := (*current - 1) * (*pageSize)
@@ -1794,4 +1795,55 @@ func (serv *ManagementService) CreateClassByMajorID(toCreates []*entity.ToAddCla
 	}
 
 	return nil
+}
+
+func (serv *ManagementService) RetrieveClassWithMajorAndCollege(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.Class, error) {
+	ctx := context.Background()
+
+	query := serv.DB.Class.Query().
+		Where(class.And(
+			class.Or(
+				class.GradeContains(like),
+				class.NameContains(like),
+			),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(class.FieldDeletedTime))
+				if isDisabled != nil {
+					s.Where(sql.EQ(class.FieldIsDisabled, *isDisabled))
+				}
+			},
+		)).
+		Order(func(s *sql.Selector) {
+			isSorted := sort != "" && (sort == class.FieldID || sort == class.FieldName || sort == class.FieldIsDisabled ||
+				sort == class.FieldGrade)
+			if isSorted && order != nil {
+				if *order {
+					s.OrderBy(sql.Desc(sort))
+				} else {
+					s.OrderBy(sql.Asc(sort))
+				}
+			}
+		}).
+		WithMajor(func(mq *ent.MajorQuery) {
+			mq.Where(func(s *sql.Selector) {
+				s.Where(sql.IsNull(major.FieldDeletedTime))
+			}).
+				WithCollege(func(cq *ent.CollegeQuery) {
+					cq.Where(func(s *sql.Selector) {
+						s.Where(sql.IsNull(college.FieldDeletedTime))
+					})
+				})
+		})
+
+	if pageSize != nil && current != nil {
+		offset := (*current - 1) * (*pageSize)
+		query.Limit(*pageSize).Offset(offset)
+	}
+	classes, err := query.All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("retrieve class query failed: %w", err)
+	}
+
+	return classes, nil
 }

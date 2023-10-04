@@ -705,3 +705,19 @@ func TestCreateClassByMajorID(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
+func TestRetrieveClassWithMajorAndCollege(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	current := 1
+	pageSize := 10
+	order := true
+	// disabled := true
+	classes, err := serv.RetrieveClassWithMajorAndCollege(&current, &pageSize, "2018", "id", &order, nil)
+	assert.Nil(t, err)
+	for _, v := range classes {
+		fmt.Println(v, v.Edges.Major.Name, v.Edges.Major.Edges.College.Name)
+	}
+	assert.Len(t, classes, 2)
+}
