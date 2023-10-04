@@ -165,3 +165,7 @@ type RetrievedStudent struct {
 	Gender     string `json:"gender"`
 	IsDisabled bool   `json:"is_disabled"`
 }
+
+type ToAddCollege struct {
+	Name string `json:"name"`
+}

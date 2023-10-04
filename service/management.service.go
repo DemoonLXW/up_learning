@@ -1186,7 +1186,7 @@ func (serv *ManagementService) CreateStudent(toCreates []*entity.ToAddStudent, s
 			SetName(toCreates[current].Name).
 			SetStudentID(toCreates[current].StudentID).
 			SetGender(toCreates[current].Gender).
-			SetSid(schoolID).
+			// SetSid(schoolID).
 			Save(ctx)
 		if err != nil {
 			return rollback(tx, "create student", err)
@@ -1207,8 +1207,8 @@ func (serv *ManagementService) CreateStudent(toCreates []*entity.ToAddStudent, s
 			bulk[i] = tx.Student.Create().SetID(uint32(num + i + 1)).
 				SetName(toCreates[current+i].Name).
 				SetStudentID(toCreates[current+i].StudentID).
-				SetGender(toCreates[current+i].Gender).
-				SetSid(schoolID)
+				SetGender(toCreates[current+i].Gender)
+			// SetSid(schoolID)
 		}
 
 		err = tx.Student.CreateBulk(bulk...).Exec(ctx)
@@ -1234,7 +1234,7 @@ func (serv *ManagementService) RetrieveStudentBySchoolID(current, pageSize *int,
 				student.NameContains(like),
 				student.StudentIDContains(like),
 			),
-			student.SidEQ(schoolID),
+			// student.SidEQ(schoolID),
 			func(s *sql.Selector) {
 				s.Where(sql.IsNull(student.FieldDeletedTime))
 				if isDisabled != nil {
@@ -1276,7 +1276,7 @@ func (serv *ManagementService) GetTotalRetrievedStudentsBySchoolID(like string, 
 				student.NameContains(like),
 				student.StudentIDContains(like),
 			),
-			student.SidEQ(schoolID),
+			// student.SidEQ(schoolID),
 			func(s *sql.Selector) {
 				s.Where(sql.IsNull(student.FieldDeletedTime))
 				if isDisabled != nil {
@@ -1290,4 +1290,59 @@ func (serv *ManagementService) GetTotalRetrievedStudentsBySchoolID(like string, 
 	}
 
 	return total, nil
+}
+
+func (serv *ManagementService) ReadCollegesFromFile(f *os.File) ([]*entity.ToAddCollege, error) {
+	book, err := excelize.OpenFile(f.Name())
+	if err != nil {
+		return nil, fmt.Errorf("read colleges from file open failed: %w", err)
+	}
+
+	rows, err := book.GetRows(book.GetSheetName(0))
+	if err != nil {
+		return nil, fmt.Errorf("read colleges from file get rows failed: %w", err)
+	}
+
+	length := len(rows)
+	if length < 2 {
+		return nil, fmt.Errorf("read colleges from file less than two rows failed: %w", err)
+	}
+
+	columnCheck := []string{"学院名称"}
+	for i, v := range columnCheck {
+		if rows[0][i] != v {
+			return nil, fmt.Errorf("read colleges from file header[%d] %s does not exist", i, v)
+		}
+	}
+
+	colleges := make([]*entity.ToAddCollege, length-1)
+	columnMap := map[int]string{0: "Name"}
+	fieldMap := make(map[string]int)
+	v := reflect.ValueOf(&entity.ToAddCollege{}).Elem()
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		fieldMap[t.Field(i).Name] = i
+	}
+
+	for i := 1; i < length; i++ {
+		var college entity.ToAddCollege
+		collegeValue := reflect.ValueOf(&college).Elem()
+
+		size := len(rows[i])
+		if size < 1 {
+			return nil, fmt.Errorf("read colleges from file less than one column failed: %w", err)
+		}
+
+		for j := 0; j < 1; j++ {
+			col := strings.Trim(rows[i][j], "")
+			if col == "" {
+				return nil, fmt.Errorf("read colleges from file cell[%d][%d] %s empty failed: %w", i, j, columnMap[j], err)
+			}
+			collegeValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(col))
+		}
+
+		colleges[i-1] = &college
+	}
+
+	return colleges, nil
 }

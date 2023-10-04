@@ -539,3 +539,18 @@ func TestGetTotalRetrievedStudentsBySchoolID(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 2, total)
 }
+
+func TestReadCollegesFromFile(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	f, err := os.Open("../importColleges.xlsx")
+	assert.Nil(t, err)
+
+	colleges, err := serv.ReadCollegesFromFile(f)
+	assert.Nil(t, err)
+
+	for _, c := range colleges {
+		fmt.Println(c.Name)
+	}
+}
