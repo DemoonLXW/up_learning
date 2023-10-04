@@ -669,3 +669,18 @@ func TestGetTotalRetrievedMajors(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, total)
 }
+
+func TestReadClassesFromFile(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	f, err := os.Open("../import.xlsx")
+	assert.Nil(t, err)
+
+	classes, err := serv.ReadClassesFromFile(f)
+	assert.Nil(t, err)
+
+	for _, c := range classes {
+		fmt.Println(c.Name)
+	}
+}

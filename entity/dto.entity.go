@@ -173,3 +173,7 @@ type ToAddCollege struct {
 type ToAddMajor struct {
 	Name string `json:"name"`
 }
+
+type ToAddClass struct {
+	Name string `json:"name"`
+}

@@ -1668,3 +1668,58 @@ func (serv *ManagementService) GetTotalRetrievedMajors(like string, isDisabled *
 
 	return total, nil
 }
+
+func (serv *ManagementService) ReadClassesFromFile(f *os.File) ([]*entity.ToAddClass, error) {
+	book, err := excelize.OpenFile(f.Name())
+	if err != nil {
+		return nil, fmt.Errorf("read classes from file open failed: %w", err)
+	}
+
+	rows, err := book.GetRows(book.GetSheetName(0))
+	if err != nil {
+		return nil, fmt.Errorf("read classes from file get rows failed: %w", err)
+	}
+
+	length := len(rows)
+	if length < 2 {
+		return nil, fmt.Errorf("read classes from file less than two rows failed: %w", err)
+	}
+
+	columnCheck := []string{"班级名称"}
+	for i, v := range columnCheck {
+		if rows[0][i] != v {
+			return nil, fmt.Errorf("read classes from file header[%d] %s does not exist", i, v)
+		}
+	}
+
+	classes := make([]*entity.ToAddClass, length-1)
+	columnMap := map[int]string{0: "Name"}
+	fieldMap := make(map[string]int)
+	v := reflect.ValueOf(&entity.ToAddClass{}).Elem()
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		fieldMap[t.Field(i).Name] = i
+	}
+
+	for i := 1; i < length; i++ {
+		var class entity.ToAddClass
+		classValue := reflect.ValueOf(&class).Elem()
+
+		size := len(rows[i])
+		if size < 1 {
+			return nil, fmt.Errorf("read classes from file less than one column failed: %w", err)
+		}
+
+		for j := 0; j < 1; j++ {
+			col := strings.Trim(rows[i][j], "")
+			if col == "" {
+				return nil, fmt.Errorf("read classes from file cell[%d][%d] %s empty failed: %w", i, j, columnMap[j], err)
+			}
+			classValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(col))
+		}
+
+		classes[i-1] = &class
+	}
+
+	return classes, nil
+}
