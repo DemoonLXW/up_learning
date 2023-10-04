@@ -595,3 +595,13 @@ func TestRetrieveCollege(t *testing.T) {
 	}
 	assert.Len(t, colleges, 3)
 }
+
+func TestGetTotalRetrievedColleges(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	disabled := true
+	total, err := serv.GetTotalRetrievedColleges("", &disabled)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, total)
+}

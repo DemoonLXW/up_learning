@@ -1453,3 +1453,27 @@ func (serv *ManagementService) RetrieveCollege(current, pageSize *int, like, sor
 
 	return colleges, nil
 }
+
+func (serv *ManagementService) GetTotalRetrievedColleges(like string, isDisabled *bool) (int, error) {
+	ctx := context.Background()
+
+	total, err := serv.DB.College.Query().
+		Where(college.And(
+			college.Or(
+				college.NameContains(like),
+			),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(college.FieldDeletedTime))
+				if isDisabled != nil {
+					s.Where(sql.EQ(college.FieldIsDisabled, *isDisabled))
+				}
+			},
+		)).
+		Count(ctx)
+
+	if err != nil {
+		return -1, fmt.Errorf("get retrieved total colleges query failed: %w", err)
+	}
+
+	return total, nil
+}
