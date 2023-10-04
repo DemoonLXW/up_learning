@@ -1106,6 +1106,17 @@ func (serv *ManagementService) ReadStudentsFromFile(f *os.File) ([]*entity.ToAdd
 		return nil, fmt.Errorf("read students from file less than two rows failed: %w", err)
 	}
 
+	columnCheck := []string{"学号", "姓名", "性别"}
+	columnSize := len(columnCheck)
+	if len(rows[0]) < columnSize {
+		return nil, fmt.Errorf("read students from file header less than %d", columnSize)
+	}
+	for i, v := range columnCheck {
+		if rows[0][i] != v {
+			return nil, fmt.Errorf("read students from file header[%d] %s does not exist", i, v)
+		}
+	}
+
 	students := make([]*entity.ToAddStudent, length-1)
 	columnMap := map[int]string{0: "StudentID", 1: "Name", 2: "Gender"}
 	fieldMap := make(map[string]int)
@@ -1119,15 +1130,14 @@ func (serv *ManagementService) ReadStudentsFromFile(f *os.File) ([]*entity.ToAdd
 		var student entity.ToAddStudent
 		studentValue := reflect.ValueOf(&student).Elem()
 
-		size := len(rows[i])
-		if size < 3 {
-			return nil, fmt.Errorf("read students from file less than three columns failed: %w", err)
+		if len(rows[i]) < columnSize {
+			return nil, fmt.Errorf("read students from file less than %d columns", columnSize)
 		}
 
 		for j := 0; j < 3; j++ {
 			col := strings.Trim(rows[i][j], "")
 			if col == "" {
-				return nil, fmt.Errorf("read students from file cell[%d][%d] %s empty failed: %w", i, j, columnMap[j], err)
+				return nil, fmt.Errorf("read students from file cell[%d][%d] %s empty", i, j, columnMap[j])
 			}
 			switch j {
 			case 2:
@@ -1139,7 +1149,7 @@ func (serv *ManagementService) ReadStudentsFromFile(f *os.File) ([]*entity.ToAdd
 					case "女":
 						gender = 1
 					default:
-						return nil, fmt.Errorf("read schools from file cell[%d][%d] %s invalid failed: %w", i, j, columnMap[j], err)
+						return nil, fmt.Errorf("read schools from file cell[%d][%d] %s invalid", i, j, columnMap[j])
 					}
 					studentValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(gender))
 
@@ -1312,6 +1322,10 @@ func (serv *ManagementService) ReadCollegesFromFile(f *os.File) ([]*entity.ToAdd
 	}
 
 	columnCheck := []string{"学院名称"}
+	columnSize := len(columnCheck)
+	if len(rows[0]) < columnSize {
+		return nil, fmt.Errorf("read colleges from file header less than %d", columnSize)
+	}
 	for i, v := range columnCheck {
 		if rows[0][i] != v {
 			return nil, fmt.Errorf("read colleges from file header[%d] %s does not exist", i, v)
@@ -1331,15 +1345,14 @@ func (serv *ManagementService) ReadCollegesFromFile(f *os.File) ([]*entity.ToAdd
 		var college entity.ToAddCollege
 		collegeValue := reflect.ValueOf(&college).Elem()
 
-		size := len(rows[i])
-		if size < 1 {
-			return nil, fmt.Errorf("read colleges from file less than one column failed: %w", err)
+		if len(rows[i]) < columnSize {
+			return nil, fmt.Errorf("read colleges from file less than %d column", columnSize)
 		}
 
 		for j := 0; j < 1; j++ {
 			col := strings.Trim(rows[i][j], "")
 			if col == "" {
-				return nil, fmt.Errorf("read colleges from file cell[%d][%d] %s empty failed: %w", i, j, columnMap[j], err)
+				return nil, fmt.Errorf("read colleges from file cell[%d][%d] %s empty", i, j, columnMap[j])
 			}
 			collegeValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(col))
 		}
@@ -1497,6 +1510,10 @@ func (serv *ManagementService) ReadMajorsFromFile(f *os.File) ([]*entity.ToAddMa
 	}
 
 	columnCheck := []string{"专业名称"}
+	columnSize := len(columnCheck)
+	if len(rows[0]) < columnSize {
+		return nil, fmt.Errorf("read majors from file header less than %d", columnSize)
+	}
 	for i, v := range columnCheck {
 		if rows[0][i] != v {
 			return nil, fmt.Errorf("read majors from file header[%d] %s does not exist", i, v)
@@ -1516,15 +1533,14 @@ func (serv *ManagementService) ReadMajorsFromFile(f *os.File) ([]*entity.ToAddMa
 		var major entity.ToAddMajor
 		majorValue := reflect.ValueOf(&major).Elem()
 
-		size := len(rows[i])
-		if size < 1 {
-			return nil, fmt.Errorf("read majors from file less than one column failed: %w", err)
+		if len(rows[i]) < columnSize {
+			return nil, fmt.Errorf("read majors from file less than %d column", columnSize)
 		}
 
 		for j := 0; j < 1; j++ {
 			col := strings.Trim(rows[i][j], "")
 			if col == "" {
-				return nil, fmt.Errorf("read majors from file cell[%d][%d] %s empty failed: %w", i, j, columnMap[j], err)
+				return nil, fmt.Errorf("read majors from file cell[%d][%d] %s empty", i, j, columnMap[j])
 			}
 			majorValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(col))
 		}
@@ -1688,6 +1704,10 @@ func (serv *ManagementService) ReadClassesFromFile(f *os.File) ([]*entity.ToAddC
 	}
 
 	columnCheck := []string{"年级", "班级名称"}
+	columnSize := len(columnCheck)
+	if len(rows[0]) < columnSize {
+		return nil, fmt.Errorf("read classes from file header less than %d", columnSize)
+	}
 	for i, v := range columnCheck {
 		if rows[0][i] != v {
 			return nil, fmt.Errorf("read classes from file header[%d] %s does not exist", i, v)
@@ -1707,15 +1727,14 @@ func (serv *ManagementService) ReadClassesFromFile(f *os.File) ([]*entity.ToAddC
 		var class entity.ToAddClass
 		classValue := reflect.ValueOf(&class).Elem()
 
-		size := len(rows[i])
-		if size < 2 {
-			return nil, fmt.Errorf("read classes from file less than two columns failed: %w", err)
+		if len(rows[i]) < columnSize {
+			return nil, fmt.Errorf("read classes from file less than %d columns", columnSize)
 		}
 
 		for j := 0; j < 2; j++ {
 			col := strings.Trim(rows[i][j], "")
 			if col == "" {
-				return nil, fmt.Errorf("read classes from file cell[%d][%d] %s empty failed: %w", i, j, columnMap[j], err)
+				return nil, fmt.Errorf("read classes from file cell[%d][%d] %s empty", i, j, columnMap[j])
 			}
 			classValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(col))
 		}

@@ -544,7 +544,7 @@ func TestReadCollegesFromFile(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	f, err := os.Open("../importColleges.xlsx")
+	f, err := os.Open("../import.xlsx")
 	assert.Nil(t, err)
 
 	colleges, err := serv.ReadCollegesFromFile(f)
