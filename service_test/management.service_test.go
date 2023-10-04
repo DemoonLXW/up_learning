@@ -721,3 +721,13 @@ func TestRetrieveClassWithMajorAndCollege(t *testing.T) {
 	}
 	assert.Len(t, classes, 2)
 }
+
+func TestGetTotalRetrievedClasses(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	disabled := false
+	total, err := serv.GetTotalRetrievedClasses("2", &disabled)
+	assert.Nil(t, err)
+	assert.Equal(t, 4, total)
+}

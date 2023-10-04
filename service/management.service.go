@@ -1847,3 +1847,27 @@ func (serv *ManagementService) RetrieveClassWithMajorAndCollege(current, pageSiz
 
 	return classes, nil
 }
+
+func (serv *ManagementService) GetTotalRetrievedClasses(like string, isDisabled *bool) (int, error) {
+	ctx := context.Background()
+
+	total, err := serv.DB.Class.Query().
+		Where(class.And(
+			class.Or(
+				class.GradeContains(like),
+				class.NameContains(like),
+			),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(class.FieldDeletedTime))
+				if isDisabled != nil {
+					s.Where(sql.EQ(class.FieldIsDisabled, *isDisabled))
+				}
+			},
+		)).Count(ctx)
+
+	if err != nil {
+		return -1, fmt.Errorf("get retrieved total classes query failed: %w", err)
+	}
+
+	return total, nil
+}
