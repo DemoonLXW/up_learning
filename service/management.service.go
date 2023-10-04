@@ -1602,3 +1602,42 @@ func (serv *ManagementService) CreateMajorByCollegeID(toCreates []*entity.ToAddM
 
 	return nil
 }
+
+func (serv *ManagementService) RetrieveMajor(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.Major, error) {
+	ctx := context.Background()
+
+	query := serv.DB.Major.Query().
+		Where(major.And(
+			major.Or(
+				major.NameContains(like),
+			),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(major.FieldDeletedTime))
+				if isDisabled != nil {
+					s.Where(sql.EQ(major.FieldIsDisabled, *isDisabled))
+				}
+			},
+		)).
+		Order(func(s *sql.Selector) {
+			isSorted := sort != "" && (sort == major.FieldID || sort == major.FieldName || sort == major.FieldIsDisabled)
+			if isSorted && order != nil {
+				if *order {
+					s.OrderBy(sql.Desc(sort))
+				} else {
+					s.OrderBy(sql.Asc(sort))
+				}
+			}
+		})
+
+	if pageSize != nil && current != nil {
+		offset := (*current - 1) * (*pageSize)
+		query.Limit(*pageSize).Offset(offset)
+	}
+	majors, err := query.All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("retrieve major query failed: %w", err)
+	}
+
+	return majors, nil
+}
