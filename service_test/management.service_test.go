@@ -621,7 +621,7 @@ func TestReadMajorsFromFile(t *testing.T) {
 	}
 }
 
-func TestCCreateMajorByCollegeID(t *testing.T) {
+func TestCreateMajorByCollegeID(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
@@ -683,4 +683,25 @@ func TestReadClassesFromFile(t *testing.T) {
 	for _, c := range classes {
 		fmt.Println(c.Name)
 	}
+}
+
+func TestCreateClassByMajorID(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	class1 := entity.ToAddClass{
+		Name:  "class3",
+		Grade: "2019",
+	}
+
+	class2 := entity.ToAddClass{
+		Name:  "class4",
+		Grade: "2020",
+	}
+
+	classes := []*entity.ToAddClass{&class1, &class2}
+
+	err = serv.CreateClassByMajorID(classes, 3)
+	assert.Nil(t, err)
+
 }

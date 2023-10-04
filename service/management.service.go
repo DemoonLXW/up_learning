@@ -12,6 +12,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/class"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/major"
@@ -1722,4 +1723,75 @@ func (serv *ManagementService) ReadClassesFromFile(f *os.File) ([]*entity.ToAddC
 	}
 
 	return classes, nil
+}
+
+func (serv *ManagementService) CreateClassByMajorID(toCreates []*entity.ToAddClass, majorID uint16) error {
+	ctx := context.Background()
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("create class start a transaction failed: %w", err)
+	}
+
+	current := 0
+	length := len(toCreates)
+	for ; current < length; current++ {
+		id, err := tx.Class.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(class.FieldDeletedTime))
+		}).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create class find a deleted class id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := tx.Class.Update().Where(class.And(
+			class.IDEQ(id),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(class.FieldDeletedTime))
+			},
+		)).
+			SetCreatedTime(time.Now()).
+			ClearDeletedTime().
+			ClearModifiedTime().
+			SetIsDisabled(false).
+			SetName(toCreates[current].Name).
+			SetGrade(toCreates[current].Grade).
+			SetMid(majorID).
+			Save(ctx)
+		if err != nil {
+			return rollback(tx, "create class", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create class", fmt.Errorf("create class update deleted class affect 0 row"))
+		}
+	}
+	if current < length {
+		num, err := tx.Class.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create class count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		bulk := make([]*ent.ClassCreate, bulkLength)
+		for i := 0; i < bulkLength; i++ {
+			bulk[i] = tx.Class.Create().SetID(uint32(num + i + 1)).
+				SetName(toCreates[current+i].Name).
+				SetGrade(toCreates[current+i].Grade).
+				SetMid(majorID)
+		}
+
+		err = tx.Class.CreateBulk(bulk...).Exec(ctx)
+		if err != nil {
+			return rollback(tx, "create class", err)
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("create class transaction commit failed: %w", err)
+	}
+
+	return nil
 }

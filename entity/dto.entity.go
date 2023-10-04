@@ -175,5 +175,6 @@ type ToAddMajor struct {
 }
 
 type ToAddClass struct {
-	Name string `json:"name"`
+	Grade string `json:"grade"`
+	Name  string `json:"name"`
 }
