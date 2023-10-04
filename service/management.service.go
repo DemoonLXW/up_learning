@@ -1687,7 +1687,7 @@ func (serv *ManagementService) ReadClassesFromFile(f *os.File) ([]*entity.ToAddC
 		return nil, fmt.Errorf("read classes from file less than two rows failed: %w", err)
 	}
 
-	columnCheck := []string{"班级名称"}
+	columnCheck := []string{"年级", "班级名称"}
 	for i, v := range columnCheck {
 		if rows[0][i] != v {
 			return nil, fmt.Errorf("read classes from file header[%d] %s does not exist", i, v)
@@ -1695,7 +1695,7 @@ func (serv *ManagementService) ReadClassesFromFile(f *os.File) ([]*entity.ToAddC
 	}
 
 	classes := make([]*entity.ToAddClass, length-1)
-	columnMap := map[int]string{0: "Name"}
+	columnMap := map[int]string{0: "Grade", 1: "Name"}
 	fieldMap := make(map[string]int)
 	v := reflect.ValueOf(&entity.ToAddClass{}).Elem()
 	t := v.Type()
@@ -1708,11 +1708,11 @@ func (serv *ManagementService) ReadClassesFromFile(f *os.File) ([]*entity.ToAddC
 		classValue := reflect.ValueOf(&class).Elem()
 
 		size := len(rows[i])
-		if size < 1 {
-			return nil, fmt.Errorf("read classes from file less than one column failed: %w", err)
+		if size < 2 {
+			return nil, fmt.Errorf("read classes from file less than two columns failed: %w", err)
 		}
 
-		for j := 0; j < 1; j++ {
+		for j := 0; j < 2; j++ {
 			col := strings.Trim(rows[i][j], "")
 			if col == "" {
 				return nil, fmt.Errorf("read classes from file cell[%d][%d] %s empty failed: %w", i, j, columnMap[j], err)

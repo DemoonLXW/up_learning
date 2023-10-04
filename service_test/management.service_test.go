@@ -681,7 +681,7 @@ func TestReadClassesFromFile(t *testing.T) {
 	assert.Nil(t, err)
 
 	for _, c := range classes {
-		fmt.Println(c.Name)
+		fmt.Println(c.Grade, c.Name)
 	}
 }
 
