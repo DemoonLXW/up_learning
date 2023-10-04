@@ -1414,3 +1414,42 @@ func (serv *ManagementService) CreateCollege(toCreates []*entity.ToAddCollege) e
 
 	return nil
 }
+
+func (serv *ManagementService) RetrieveCollege(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.College, error) {
+	ctx := context.Background()
+
+	query := serv.DB.College.Query().
+		Where(college.And(
+			college.Or(
+				college.NameContains(like),
+			),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(college.FieldDeletedTime))
+				if isDisabled != nil {
+					s.Where(sql.EQ(college.FieldIsDisabled, *isDisabled))
+				}
+			},
+		)).
+		Order(func(s *sql.Selector) {
+			isSorted := sort != "" && (sort == college.FieldID || sort == college.FieldName || sort == college.FieldIsDisabled)
+			if isSorted && order != nil {
+				if *order {
+					s.OrderBy(sql.Desc(sort))
+				} else {
+					s.OrderBy(sql.Asc(sort))
+				}
+			}
+		})
+
+	if pageSize != nil && current != nil {
+		offset := (*current - 1) * (*pageSize)
+		query.Limit(*pageSize).Offset(offset)
+	}
+	colleges, err := query.All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("retrieve college query failed: %w", err)
+	}
+
+	return colleges, nil
+}

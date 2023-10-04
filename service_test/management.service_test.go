@@ -579,3 +579,19 @@ func TestCreateCollege(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
+func TestRetrieveCollege(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	// current := 1
+	pageSize := 3
+	order := true
+	// disabled := true
+	colleges, err := serv.RetrieveCollege(nil, &pageSize, "", "id", &order, nil)
+	assert.Nil(t, err)
+	for _, v := range colleges {
+		fmt.Println(v)
+	}
+	assert.Len(t, colleges, 3)
+}
