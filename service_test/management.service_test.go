@@ -659,3 +659,13 @@ func TestRetrieveMajor(t *testing.T) {
 	}
 	assert.Len(t, majors, 2)
 }
+
+func TestGetTotalRetrievedMajors(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	disabled := false
+	total, err := serv.GetTotalRetrievedMajors("3", &disabled)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, total)
+}

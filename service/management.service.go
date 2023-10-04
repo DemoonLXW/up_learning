@@ -1641,3 +1641,26 @@ func (serv *ManagementService) RetrieveMajor(current, pageSize *int, like, sort 
 
 	return majors, nil
 }
+
+func (serv *ManagementService) GetTotalRetrievedMajors(like string, isDisabled *bool) (int, error) {
+	ctx := context.Background()
+
+	total, err := serv.DB.Major.Query().
+		Where(major.And(
+			major.Or(
+				major.NameContains(like),
+			),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(major.FieldDeletedTime))
+				if isDisabled != nil {
+					s.Where(sql.EQ(major.FieldIsDisabled, *isDisabled))
+				}
+			},
+		)).Count(ctx)
+
+	if err != nil {
+		return -1, fmt.Errorf("get retrieved total majors query failed: %w", err)
+	}
+
+	return total, nil
+}
