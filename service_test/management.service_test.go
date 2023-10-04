@@ -620,3 +620,26 @@ func TestReadMajorsFromFile(t *testing.T) {
 		fmt.Println(m.Name)
 	}
 }
+
+func TestCCreateMajorByCollegeID(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	major1 := entity.ToAddMajor{
+		Name: "major1",
+	}
+
+	major2 := entity.ToAddMajor{
+		Name: "major2",
+	}
+
+	major3 := entity.ToAddMajor{
+		Name: "major3",
+	}
+
+	majors := []*entity.ToAddMajor{&major2, &major1, &major3}
+
+	err = serv.CreateMajorByCollegeID(majors, 3)
+	assert.Nil(t, err)
+
+}

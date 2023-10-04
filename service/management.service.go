@@ -14,6 +14,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
+	"github.com/DemoonLXW/up_learning/database/ent/major"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
@@ -1531,4 +1532,73 @@ func (serv *ManagementService) ReadMajorsFromFile(f *os.File) ([]*entity.ToAddMa
 	}
 
 	return majors, nil
+}
+
+func (serv *ManagementService) CreateMajorByCollegeID(toCreates []*entity.ToAddMajor, collegeID uint8) error {
+	ctx := context.Background()
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("create major start a transaction failed: %w", err)
+	}
+
+	current := 0
+	length := len(toCreates)
+	for ; current < length; current++ {
+		id, err := tx.Major.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(major.FieldDeletedTime))
+		}).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create major find a deleted major id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := tx.Major.Update().Where(major.And(
+			major.IDEQ(id),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(major.FieldDeletedTime))
+			},
+		)).
+			SetCreatedTime(time.Now()).
+			ClearDeletedTime().
+			ClearModifiedTime().
+			SetIsDisabled(false).
+			SetName(toCreates[current].Name).
+			SetCid(collegeID).
+			Save(ctx)
+		if err != nil {
+			return rollback(tx, "create major", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create major", fmt.Errorf("create major update deleted major affect 0 row"))
+		}
+	}
+	if current < length {
+		num, err := tx.Major.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create major count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		bulk := make([]*ent.MajorCreate, bulkLength)
+		for i := 0; i < bulkLength; i++ {
+			bulk[i] = tx.Major.Create().SetID(uint16(num + i + 1)).
+				SetName(toCreates[current+i].Name).
+				SetCid(collegeID)
+		}
+
+		err = tx.Major.CreateBulk(bulk...).Exec(ctx)
+		if err != nil {
+			return rollback(tx, "create major", err)
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("create major transaction commit failed: %w", err)
+	}
+
+	return nil
 }
