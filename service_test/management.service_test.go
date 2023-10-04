@@ -554,3 +554,28 @@ func TestReadCollegesFromFile(t *testing.T) {
 		fmt.Println(c.Name)
 	}
 }
+
+func TestCreateCollege(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	// student1 := entity.ToAddStudent{
+	// 	StudentID: "20221050045",
+	// 	Name:      "lxw",
+	// 	Gender:    0,
+	// }
+
+	college1 := entity.ToAddCollege{
+		Name: "college3",
+	}
+
+	college2 := entity.ToAddCollege{
+		Name: "college2",
+	}
+
+	colleges := []*entity.ToAddCollege{&college1, &college2}
+
+	err = serv.CreateCollege(colleges)
+	assert.Nil(t, err)
+
+}

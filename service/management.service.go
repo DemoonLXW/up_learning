@@ -12,6 +12,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
@@ -1345,4 +1346,71 @@ func (serv *ManagementService) ReadCollegesFromFile(f *os.File) ([]*entity.ToAdd
 	}
 
 	return colleges, nil
+}
+
+func (serv *ManagementService) CreateCollege(toCreates []*entity.ToAddCollege) error {
+	ctx := context.Background()
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("create college start a transaction failed: %w", err)
+	}
+
+	current := 0
+	length := len(toCreates)
+	for ; current < length; current++ {
+		id, err := tx.College.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(college.FieldDeletedTime))
+		}).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create college find a deleted college id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := tx.College.Update().Where(college.And(
+			college.IDEQ(id),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(college.FieldDeletedTime))
+			},
+		)).
+			SetCreatedTime(time.Now()).
+			ClearDeletedTime().
+			ClearModifiedTime().
+			SetIsDisabled(false).
+			SetName(toCreates[current].Name).
+			Save(ctx)
+		if err != nil {
+			return rollback(tx, "create college", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create college", fmt.Errorf("create college update deleted student affect 0 row"))
+		}
+	}
+	if current < length {
+		num, err := tx.College.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create college count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		bulk := make([]*ent.CollegeCreate, bulkLength)
+		for i := 0; i < bulkLength; i++ {
+			bulk[i] = tx.College.Create().SetID(uint8(num + i + 1)).
+				SetName(toCreates[current+i].Name)
+		}
+
+		err = tx.College.CreateBulk(bulk...).Exec(ctx)
+		if err != nil {
+			return rollback(tx, "create college", err)
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("create college transaction commit failed: %w", err)
+	}
+
+	return nil
 }
