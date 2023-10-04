@@ -1603,7 +1603,7 @@ func (serv *ManagementService) CreateMajorByCollegeID(toCreates []*entity.ToAddM
 	return nil
 }
 
-func (serv *ManagementService) RetrieveMajor(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.Major, error) {
+func (serv *ManagementService) RetrieveMajorWithCollege(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.Major, error) {
 	ctx := context.Background()
 
 	query := serv.DB.Major.Query().
@@ -1627,7 +1627,11 @@ func (serv *ManagementService) RetrieveMajor(current, pageSize *int, like, sort 
 					s.OrderBy(sql.Asc(sort))
 				}
 			}
+		}).WithCollege(func(cq *ent.CollegeQuery) {
+		cq.Where(func(s *sql.Selector) {
+			s.Where(sql.IsNull(college.FieldDeletedTime))
 		})
+	})
 
 	if pageSize != nil && current != nil {
 		offset := (*current - 1) * (*pageSize)

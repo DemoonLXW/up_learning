@@ -644,7 +644,7 @@ func TestCCreateMajorByCollegeID(t *testing.T) {
 
 }
 
-func TestRetrieveMajor(t *testing.T) {
+func TestRetrieveMajorWithCollege(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
@@ -652,10 +652,10 @@ func TestRetrieveMajor(t *testing.T) {
 	pageSize := 3
 	order := false
 	// disabled := true
-	majors, err := serv.RetrieveMajor(&current, &pageSize, "2", "id", &order, nil)
+	majors, err := serv.RetrieveMajorWithCollege(&current, &pageSize, "2", "id", &order, nil)
 	assert.Nil(t, err)
 	for _, v := range majors {
-		fmt.Println(v)
+		fmt.Println(v, v.Edges.College.Name)
 	}
 	assert.Len(t, majors, 2)
 }
