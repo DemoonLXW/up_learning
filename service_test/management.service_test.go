@@ -514,20 +514,20 @@ func TestCreateStudentByClassID(t *testing.T) {
 
 }
 
-func TestRetrieveStudent(t *testing.T) {
+func TestRetrieveStudentWithClassAndUser(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
-	current := 2
+	// current := 2
 	pageSize := 1
-	order := false
-	disabled := true
-	students, err := serv.RetrieveStudentBySchoolID(&current, &pageSize, "ly", "id", &order, &disabled, 3)
+	order := true
+	disabled := false
+	students, err := serv.RetrieveStudentWithClassAndUser(nil, &pageSize, "ly", "id", &order, &disabled)
 	assert.Nil(t, err)
 	for _, v := range students {
-		fmt.Println(v)
+		fmt.Println(v, v.Edges.Class.Name, v.Edges.Class.Grade)
 	}
-	assert.Len(t, students, 0)
+	assert.Len(t, students, 3)
 }
 
 func TestGetTotalRetrievedStudentsBySchoolID(t *testing.T) {

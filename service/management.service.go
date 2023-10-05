@@ -1238,7 +1238,7 @@ func (serv *ManagementService) CreateStudentByClassID(toCreates []*entity.ToAddS
 	return nil
 }
 
-func (serv *ManagementService) RetrieveStudentBySchoolID(current, pageSize *int, like, sort string, order, isDisabled *bool, schoolID uint16) ([]*ent.Student, error) {
+func (serv *ManagementService) RetrieveStudentWithClassAndUser(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.Student, error) {
 	ctx := context.Background()
 
 	query := serv.DB.Student.Query().
@@ -1247,7 +1247,6 @@ func (serv *ManagementService) RetrieveStudentBySchoolID(current, pageSize *int,
 				student.NameContains(like),
 				student.StudentIDContains(like),
 			),
-			// student.SidEQ(schoolID),
 			func(s *sql.Selector) {
 				s.Where(sql.IsNull(student.FieldDeletedTime))
 				if isDisabled != nil {
@@ -1265,6 +1264,16 @@ func (serv *ManagementService) RetrieveStudentBySchoolID(current, pageSize *int,
 					s.OrderBy(sql.Asc(sort))
 				}
 			}
+		}).
+		WithClass(func(cq *ent.ClassQuery) {
+			cq.Where(func(s *sql.Selector) {
+				s.Where(sql.IsNull(class.FieldDeletedTime))
+			})
+		}).
+		WithUser(func(uq *ent.UserQuery) {
+			uq.Where(func(s *sql.Selector) {
+				s.Where(sql.IsNull(user.FieldDeletedTime))
+			})
 		})
 
 	if pageSize != nil && current != nil {
