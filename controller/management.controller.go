@@ -549,3 +549,40 @@ func (cont *ManagementController) GetStudentList(c *gin.Context) {
 	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) ImportCollege(c *gin.Context) {
+	fh, err := c.FormFile("import")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importCollege", "college")
+	defer os.Remove(f.Name())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	co, err := cont.Services.Management.ReadCollegesFromFile(f)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = cont.Services.Management.CreateCollege(co)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Import Colleges Successfully"
+	c.JSON(http.StatusOK, res)
+}

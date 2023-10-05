@@ -391,3 +391,36 @@ func TestGetStudentList(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestImportCollege(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	f, err := os.Open("../import.xlsx")
+	assert.Nil(t, err)
+	defer f.Close()
+
+	b := bytes.Buffer{}
+	writer := multipart.NewWriter(&b)
+	part, err := writer.CreateFormFile("import", filepath.Base(f.Name()))
+	assert.Nil(t, err)
+
+	_, err = io.Copy(part, f)
+	assert.Nil(t, err)
+	err = writer.Close()
+	assert.Nil(t, err)
+
+	req, _ := http.NewRequest(http.MethodPost, "/college/import", &b)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "3efd0f809c9dc5d317369d38a374201c"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}

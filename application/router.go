@@ -57,6 +57,11 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 			student.GET("/getlist", Check(authService, []string{entity.GetStudentList}), controllers.Management.GetStudentList)
 		}
 
+		college := auth.Group("/college")
+		{
+			college.POST("/import", Check(authService, []string{entity.ImportCollege}), controllers.Management.ImportCollege)
+		}
+
 	}
 
 	return app
