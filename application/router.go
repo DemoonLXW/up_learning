@@ -55,6 +55,7 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 		student := auth.Group("/student")
 		{
 			student.GET("/getlist", Check(authService, []string{entity.GetStudentList}), controllers.Management.GetStudentList)
+			student.POST("import", Check(authService, []string{entity.ImportStudentByClassID}), controllers.Management.ImportStudentByClassID)
 		}
 
 		college := auth.Group("/college")

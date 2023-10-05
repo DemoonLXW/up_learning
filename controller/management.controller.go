@@ -860,3 +860,50 @@ func (cont *ManagementController) GetClassList(c *gin.Context) {
 	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) ImportStudentByClassID(c *gin.Context) {
+	type Params struct {
+		ID uint32 `form:"id" binding:"required"`
+	}
+
+	var param Params
+	if err := c.ShouldBind(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fh, err := c.FormFile("import")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importClass", "class")
+	defer os.Remove(f.Name())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	s, err := cont.Services.Management.ReadStudentsFromFile(f)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = cont.Services.Management.CreateStudentByClassID(s, param.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Import Students By Class ID Successfully"
+	c.JSON(http.StatusOK, res)
+}
