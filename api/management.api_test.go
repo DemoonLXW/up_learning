@@ -442,3 +442,39 @@ func TestGetCollegeList(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestImportMajorByCollegeID(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	f, err := os.Open("../import.xlsx")
+	assert.Nil(t, err)
+	defer f.Close()
+
+	b := bytes.Buffer{}
+	writer := multipart.NewWriter(&b)
+	part, err := writer.CreateFormFile("import", filepath.Base(f.Name()))
+	assert.Nil(t, err)
+	_, err = io.Copy(part, f)
+	assert.Nil(t, err)
+
+	err = writer.WriteField("id", "4")
+	assert.Nil(t, err)
+
+	err = writer.Close()
+	assert.Nil(t, err)
+
+	req, _ := http.NewRequest(http.MethodPost, "/major/import", &b)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "70a076f5888b9faffe576891656fe6cc"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
