@@ -206,19 +206,23 @@ func (uu *UserUpdate) AddRoles(r ...*Role) *UserUpdate {
 	return uu.AddRoleIDs(ids...)
 }
 
-// AddStudentIDs adds the "students" edge to the Student entity by IDs.
-func (uu *UserUpdate) AddStudentIDs(ids ...uint32) *UserUpdate {
-	uu.mutation.AddStudentIDs(ids...)
+// SetStudentID sets the "student" edge to the Student entity by ID.
+func (uu *UserUpdate) SetStudentID(id uint32) *UserUpdate {
+	uu.mutation.SetStudentID(id)
 	return uu
 }
 
-// AddStudents adds the "students" edges to the Student entity.
-func (uu *UserUpdate) AddStudents(s ...*Student) *UserUpdate {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// SetNillableStudentID sets the "student" edge to the Student entity by ID if the given value is not nil.
+func (uu *UserUpdate) SetNillableStudentID(id *uint32) *UserUpdate {
+	if id != nil {
+		uu = uu.SetStudentID(*id)
 	}
-	return uu.AddStudentIDs(ids...)
+	return uu
+}
+
+// SetStudent sets the "student" edge to the Student entity.
+func (uu *UserUpdate) SetStudent(s *Student) *UserUpdate {
+	return uu.SetStudentID(s.ID)
 }
 
 // AddFileIDs adds the "files" edge to the File entity by IDs.
@@ -262,25 +266,10 @@ func (uu *UserUpdate) RemoveRoles(r ...*Role) *UserUpdate {
 	return uu.RemoveRoleIDs(ids...)
 }
 
-// ClearStudents clears all "students" edges to the Student entity.
-func (uu *UserUpdate) ClearStudents() *UserUpdate {
-	uu.mutation.ClearStudents()
+// ClearStudent clears the "student" edge to the Student entity.
+func (uu *UserUpdate) ClearStudent() *UserUpdate {
+	uu.mutation.ClearStudent()
 	return uu
-}
-
-// RemoveStudentIDs removes the "students" edge to Student entities by IDs.
-func (uu *UserUpdate) RemoveStudentIDs(ids ...uint32) *UserUpdate {
-	uu.mutation.RemoveStudentIDs(ids...)
-	return uu
-}
-
-// RemoveStudents removes "students" edges to Student entities.
-func (uu *UserUpdate) RemoveStudents(s ...*Student) *UserUpdate {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uu.RemoveStudentIDs(ids...)
 }
 
 // ClearFiles clears all "files" edges to the File entity.
@@ -463,12 +452,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		edge.Target.Fields = specE.Fields
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uu.mutation.StudentsCleared() {
+	if uu.mutation.StudentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   user.StudentsTable,
-			Columns: []string{user.StudentsColumn},
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
@@ -476,28 +465,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.RemovedStudentsIDs(); len(nodes) > 0 && !uu.mutation.StudentsCleared() {
+	if nodes := uu.mutation.StudentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   user.StudentsTable,
-			Columns: []string{user.StudentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.StudentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.StudentsTable,
-			Columns: []string{user.StudentsColumn},
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
@@ -748,19 +721,23 @@ func (uuo *UserUpdateOne) AddRoles(r ...*Role) *UserUpdateOne {
 	return uuo.AddRoleIDs(ids...)
 }
 
-// AddStudentIDs adds the "students" edge to the Student entity by IDs.
-func (uuo *UserUpdateOne) AddStudentIDs(ids ...uint32) *UserUpdateOne {
-	uuo.mutation.AddStudentIDs(ids...)
+// SetStudentID sets the "student" edge to the Student entity by ID.
+func (uuo *UserUpdateOne) SetStudentID(id uint32) *UserUpdateOne {
+	uuo.mutation.SetStudentID(id)
 	return uuo
 }
 
-// AddStudents adds the "students" edges to the Student entity.
-func (uuo *UserUpdateOne) AddStudents(s ...*Student) *UserUpdateOne {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// SetNillableStudentID sets the "student" edge to the Student entity by ID if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableStudentID(id *uint32) *UserUpdateOne {
+	if id != nil {
+		uuo = uuo.SetStudentID(*id)
 	}
-	return uuo.AddStudentIDs(ids...)
+	return uuo
+}
+
+// SetStudent sets the "student" edge to the Student entity.
+func (uuo *UserUpdateOne) SetStudent(s *Student) *UserUpdateOne {
+	return uuo.SetStudentID(s.ID)
 }
 
 // AddFileIDs adds the "files" edge to the File entity by IDs.
@@ -804,25 +781,10 @@ func (uuo *UserUpdateOne) RemoveRoles(r ...*Role) *UserUpdateOne {
 	return uuo.RemoveRoleIDs(ids...)
 }
 
-// ClearStudents clears all "students" edges to the Student entity.
-func (uuo *UserUpdateOne) ClearStudents() *UserUpdateOne {
-	uuo.mutation.ClearStudents()
+// ClearStudent clears the "student" edge to the Student entity.
+func (uuo *UserUpdateOne) ClearStudent() *UserUpdateOne {
+	uuo.mutation.ClearStudent()
 	return uuo
-}
-
-// RemoveStudentIDs removes the "students" edge to Student entities by IDs.
-func (uuo *UserUpdateOne) RemoveStudentIDs(ids ...uint32) *UserUpdateOne {
-	uuo.mutation.RemoveStudentIDs(ids...)
-	return uuo
-}
-
-// RemoveStudents removes "students" edges to Student entities.
-func (uuo *UserUpdateOne) RemoveStudents(s ...*Student) *UserUpdateOne {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uuo.RemoveStudentIDs(ids...)
 }
 
 // ClearFiles clears all "files" edges to the File entity.
@@ -1035,12 +997,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		edge.Target.Fields = specE.Fields
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uuo.mutation.StudentsCleared() {
+	if uuo.mutation.StudentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   user.StudentsTable,
-			Columns: []string{user.StudentsColumn},
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
@@ -1048,28 +1010,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.RemovedStudentsIDs(); len(nodes) > 0 && !uuo.mutation.StudentsCleared() {
+	if nodes := uuo.mutation.StudentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   user.StudentsTable,
-			Columns: []string{user.StudentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.StudentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.StudentsTable,
-			Columns: []string{user.StudentsColumn},
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),

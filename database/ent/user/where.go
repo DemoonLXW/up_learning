@@ -708,21 +708,21 @@ func HasRolesWith(preds ...predicate.Role) predicate.User {
 	})
 }
 
-// HasStudents applies the HasEdge predicate on the "students" edge.
-func HasStudents() predicate.User {
+// HasStudent applies the HasEdge predicate on the "student" edge.
+func HasStudent() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, StudentTable, StudentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasStudentsWith applies the HasEdge predicate on the "students" edge with a given conditions (other predicates).
-func HasStudentsWith(preds ...predicate.Student) predicate.User {
+// HasStudentWith applies the HasEdge predicate on the "student" edge with a given conditions (other predicates).
+func HasStudentWith(preds ...predicate.Student) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		step := newStudentsStep()
+		step := newStudentStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -1846,7 +1846,7 @@ func (c *StudentClient) QueryUser(s *Student) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(student.Table, student.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, student.UserTable, student.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, student.UserTable, student.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1988,15 +1988,15 @@ func (c *UserClient) QueryRoles(u *User) *RoleQuery {
 	return query
 }
 
-// QueryStudents queries the students edge of a User.
-func (c *UserClient) QueryStudents(u *User) *StudentQuery {
+// QueryStudent queries the student edge of a User.
+func (c *UserClient) QueryStudent(u *User) *StudentQuery {
 	query := (&StudentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(student.Table, student.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.StudentsTable, user.StudentsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.StudentTable, user.StudentColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

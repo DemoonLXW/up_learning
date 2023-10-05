@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
 
@@ -47,8 +48,8 @@ type User struct {
 type UserEdges struct {
 	// Roles holds the value of the roles edge.
 	Roles []*Role `json:"roles,omitempty"`
-	// Students holds the value of the students edge.
-	Students []*Student `json:"students,omitempty"`
+	// Student holds the value of the student edge.
+	Student *Student `json:"student,omitempty"`
 	// Files holds the value of the files edge.
 	Files []*File `json:"files,omitempty"`
 	// UserRole holds the value of the user_role edge.
@@ -67,13 +68,17 @@ func (e UserEdges) RolesOrErr() ([]*Role, error) {
 	return nil, &NotLoadedError{edge: "roles"}
 }
 
-// StudentsOrErr returns the Students value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) StudentsOrErr() ([]*Student, error) {
+// StudentOrErr returns the Student value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) StudentOrErr() (*Student, error) {
 	if e.loadedTypes[1] {
-		return e.Students, nil
+		if e.Student == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: student.Label}
+		}
+		return e.Student, nil
 	}
-	return nil, &NotLoadedError{edge: "students"}
+	return nil, &NotLoadedError{edge: "student"}
 }
 
 // FilesOrErr returns the Files value or an error if the edge
@@ -211,9 +216,9 @@ func (u *User) QueryRoles() *RoleQuery {
 	return NewUserClient(u.config).QueryRoles(u)
 }
 
-// QueryStudents queries the "students" edge of the User entity.
-func (u *User) QueryStudents() *StudentQuery {
-	return NewUserClient(u.config).QueryStudents(u)
+// QueryStudent queries the "student" edge of the User entity.
+func (u *User) QueryStudent() *StudentQuery {
+	return NewUserClient(u.config).QueryStudent(u)
 }
 
 // QueryFiles queries the "files" edge of the User entity.

@@ -168,19 +168,23 @@ func (uc *UserCreate) AddRoles(r ...*Role) *UserCreate {
 	return uc.AddRoleIDs(ids...)
 }
 
-// AddStudentIDs adds the "students" edge to the Student entity by IDs.
-func (uc *UserCreate) AddStudentIDs(ids ...uint32) *UserCreate {
-	uc.mutation.AddStudentIDs(ids...)
+// SetStudentID sets the "student" edge to the Student entity by ID.
+func (uc *UserCreate) SetStudentID(id uint32) *UserCreate {
+	uc.mutation.SetStudentID(id)
 	return uc
 }
 
-// AddStudents adds the "students" edges to the Student entity.
-func (uc *UserCreate) AddStudents(s ...*Student) *UserCreate {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// SetNillableStudentID sets the "student" edge to the Student entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableStudentID(id *uint32) *UserCreate {
+	if id != nil {
+		uc = uc.SetStudentID(*id)
 	}
-	return uc.AddStudentIDs(ids...)
+	return uc
+}
+
+// SetStudent sets the "student" edge to the Student entity.
+func (uc *UserCreate) SetStudent(s *Student) *UserCreate {
+	return uc.SetStudentID(s.ID)
 }
 
 // AddFileIDs adds the "files" edge to the File entity by IDs.
@@ -359,12 +363,12 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		edge.Target.Fields = specE.Fields
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.StudentsIDs(); len(nodes) > 0 {
+	if nodes := uc.mutation.StudentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   user.StudentsTable,
-			Columns: []string{user.StudentsColumn},
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),

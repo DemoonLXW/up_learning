@@ -8920,32 +8920,31 @@ func (m *StudentMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uint32
-	account         *string
-	password        *string
-	username        *string
-	email           *string
-	phone           *string
-	introduction    *string
-	is_disabled     *bool
-	created_time    *time.Time
-	deleted_time    *time.Time
-	modified_time   *time.Time
-	clearedFields   map[string]struct{}
-	roles           map[uint8]struct{}
-	removedroles    map[uint8]struct{}
-	clearedroles    bool
-	students        map[uint32]struct{}
-	removedstudents map[uint32]struct{}
-	clearedstudents bool
-	files           map[uint32]struct{}
-	removedfiles    map[uint32]struct{}
-	clearedfiles    bool
-	done            bool
-	oldValue        func(context.Context) (*User, error)
-	predicates      []predicate.User
+	op             Op
+	typ            string
+	id             *uint32
+	account        *string
+	password       *string
+	username       *string
+	email          *string
+	phone          *string
+	introduction   *string
+	is_disabled    *bool
+	created_time   *time.Time
+	deleted_time   *time.Time
+	modified_time  *time.Time
+	clearedFields  map[string]struct{}
+	roles          map[uint8]struct{}
+	removedroles   map[uint8]struct{}
+	clearedroles   bool
+	student        *uint32
+	clearedstudent bool
+	files          map[uint32]struct{}
+	removedfiles   map[uint32]struct{}
+	clearedfiles   bool
+	done           bool
+	oldValue       func(context.Context) (*User, error)
+	predicates     []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -9544,58 +9543,43 @@ func (m *UserMutation) ResetRoles() {
 	m.removedroles = nil
 }
 
-// AddStudentIDs adds the "students" edge to the Student entity by ids.
-func (m *UserMutation) AddStudentIDs(ids ...uint32) {
-	if m.students == nil {
-		m.students = make(map[uint32]struct{})
-	}
-	for i := range ids {
-		m.students[ids[i]] = struct{}{}
-	}
+// SetStudentID sets the "student" edge to the Student entity by id.
+func (m *UserMutation) SetStudentID(id uint32) {
+	m.student = &id
 }
 
-// ClearStudents clears the "students" edge to the Student entity.
-func (m *UserMutation) ClearStudents() {
-	m.clearedstudents = true
+// ClearStudent clears the "student" edge to the Student entity.
+func (m *UserMutation) ClearStudent() {
+	m.clearedstudent = true
 }
 
-// StudentsCleared reports if the "students" edge to the Student entity was cleared.
-func (m *UserMutation) StudentsCleared() bool {
-	return m.clearedstudents
+// StudentCleared reports if the "student" edge to the Student entity was cleared.
+func (m *UserMutation) StudentCleared() bool {
+	return m.clearedstudent
 }
 
-// RemoveStudentIDs removes the "students" edge to the Student entity by IDs.
-func (m *UserMutation) RemoveStudentIDs(ids ...uint32) {
-	if m.removedstudents == nil {
-		m.removedstudents = make(map[uint32]struct{})
-	}
-	for i := range ids {
-		delete(m.students, ids[i])
-		m.removedstudents[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedStudents returns the removed IDs of the "students" edge to the Student entity.
-func (m *UserMutation) RemovedStudentsIDs() (ids []uint32) {
-	for id := range m.removedstudents {
-		ids = append(ids, id)
+// StudentID returns the "student" edge ID in the mutation.
+func (m *UserMutation) StudentID() (id uint32, exists bool) {
+	if m.student != nil {
+		return *m.student, true
 	}
 	return
 }
 
-// StudentsIDs returns the "students" edge IDs in the mutation.
-func (m *UserMutation) StudentsIDs() (ids []uint32) {
-	for id := range m.students {
-		ids = append(ids, id)
+// StudentIDs returns the "student" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StudentID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) StudentIDs() (ids []uint32) {
+	if id := m.student; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetStudents resets all changes to the "students" edge.
-func (m *UserMutation) ResetStudents() {
-	m.students = nil
-	m.clearedstudents = false
-	m.removedstudents = nil
+// ResetStudent resets all changes to the "student" edge.
+func (m *UserMutation) ResetStudent() {
+	m.student = nil
+	m.clearedstudent = false
 }
 
 // AddFileIDs adds the "files" edge to the File entity by ids.
@@ -9981,8 +9965,8 @@ func (m *UserMutation) AddedEdges() []string {
 	if m.roles != nil {
 		edges = append(edges, user.EdgeRoles)
 	}
-	if m.students != nil {
-		edges = append(edges, user.EdgeStudents)
+	if m.student != nil {
+		edges = append(edges, user.EdgeStudent)
 	}
 	if m.files != nil {
 		edges = append(edges, user.EdgeFiles)
@@ -10000,12 +9984,10 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeStudents:
-		ids := make([]ent.Value, 0, len(m.students))
-		for id := range m.students {
-			ids = append(ids, id)
+	case user.EdgeStudent:
+		if id := m.student; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case user.EdgeFiles:
 		ids := make([]ent.Value, 0, len(m.files))
 		for id := range m.files {
@@ -10022,9 +10004,6 @@ func (m *UserMutation) RemovedEdges() []string {
 	if m.removedroles != nil {
 		edges = append(edges, user.EdgeRoles)
 	}
-	if m.removedstudents != nil {
-		edges = append(edges, user.EdgeStudents)
-	}
 	if m.removedfiles != nil {
 		edges = append(edges, user.EdgeFiles)
 	}
@@ -10038,12 +10017,6 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	case user.EdgeRoles:
 		ids := make([]ent.Value, 0, len(m.removedroles))
 		for id := range m.removedroles {
-			ids = append(ids, id)
-		}
-		return ids
-	case user.EdgeStudents:
-		ids := make([]ent.Value, 0, len(m.removedstudents))
-		for id := range m.removedstudents {
 			ids = append(ids, id)
 		}
 		return ids
@@ -10063,8 +10036,8 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedroles {
 		edges = append(edges, user.EdgeRoles)
 	}
-	if m.clearedstudents {
-		edges = append(edges, user.EdgeStudents)
+	if m.clearedstudent {
+		edges = append(edges, user.EdgeStudent)
 	}
 	if m.clearedfiles {
 		edges = append(edges, user.EdgeFiles)
@@ -10078,8 +10051,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeRoles:
 		return m.clearedroles
-	case user.EdgeStudents:
-		return m.clearedstudents
+	case user.EdgeStudent:
+		return m.clearedstudent
 	case user.EdgeFiles:
 		return m.clearedfiles
 	}
@@ -10090,6 +10063,9 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
+	case user.EdgeStudent:
+		m.ClearStudent()
+		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
@@ -10101,8 +10077,8 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgeRoles:
 		m.ResetRoles()
 		return nil
-	case user.EdgeStudents:
-		m.ResetStudents()
+	case user.EdgeStudent:
+		m.ResetStudent()
 		return nil
 	case user.EdgeFiles:
 		m.ResetFiles()

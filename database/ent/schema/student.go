@@ -59,7 +59,7 @@ func (Student) Edges() []ent.Edge {
 			Required().
 			Field("cid"),
 		edge.From("user", User.Type).
-			Ref("students").
+			Ref("student").
 			Unique().
 			Field("uid"),
 	}

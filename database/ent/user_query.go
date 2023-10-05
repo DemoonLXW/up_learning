@@ -27,7 +27,7 @@ type UserQuery struct {
 	inters       []Interceptor
 	predicates   []predicate.User
 	withRoles    *RoleQuery
-	withStudents *StudentQuery
+	withStudent  *StudentQuery
 	withFiles    *FileQuery
 	withUserRole *UserRoleQuery
 	// intermediate query (i.e. traversal path).
@@ -88,8 +88,8 @@ func (uq *UserQuery) QueryRoles() *RoleQuery {
 	return query
 }
 
-// QueryStudents chains the current query on the "students" edge.
-func (uq *UserQuery) QueryStudents() *StudentQuery {
+// QueryStudent chains the current query on the "student" edge.
+func (uq *UserQuery) QueryStudent() *StudentQuery {
 	query := (&StudentClient{config: uq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
@@ -102,7 +102,7 @@ func (uq *UserQuery) QueryStudents() *StudentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(student.Table, student.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.StudentsTable, user.StudentsColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.StudentTable, user.StudentColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -347,7 +347,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		inters:       append([]Interceptor{}, uq.inters...),
 		predicates:   append([]predicate.User{}, uq.predicates...),
 		withRoles:    uq.withRoles.Clone(),
-		withStudents: uq.withStudents.Clone(),
+		withStudent:  uq.withStudent.Clone(),
 		withFiles:    uq.withFiles.Clone(),
 		withUserRole: uq.withUserRole.Clone(),
 		// clone intermediate query.
@@ -367,14 +367,14 @@ func (uq *UserQuery) WithRoles(opts ...func(*RoleQuery)) *UserQuery {
 	return uq
 }
 
-// WithStudents tells the query-builder to eager-load the nodes that are connected to
-// the "students" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithStudents(opts ...func(*StudentQuery)) *UserQuery {
+// WithStudent tells the query-builder to eager-load the nodes that are connected to
+// the "student" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithStudent(opts ...func(*StudentQuery)) *UserQuery {
 	query := (&StudentClient{config: uq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	uq.withStudents = query
+	uq.withStudent = query
 	return uq
 }
 
@@ -480,7 +480,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		_spec       = uq.querySpec()
 		loadedTypes = [4]bool{
 			uq.withRoles != nil,
-			uq.withStudents != nil,
+			uq.withStudent != nil,
 			uq.withFiles != nil,
 			uq.withUserRole != nil,
 		}
@@ -510,10 +510,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
-	if query := uq.withStudents; query != nil {
-		if err := uq.loadStudents(ctx, query, nodes,
-			func(n *User) { n.Edges.Students = []*Student{} },
-			func(n *User, e *Student) { n.Edges.Students = append(n.Edges.Students, e) }); err != nil {
+	if query := uq.withStudent; query != nil {
+		if err := uq.loadStudent(ctx, query, nodes, nil,
+			func(n *User, e *Student) { n.Edges.Student = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -595,22 +594,19 @@ func (uq *UserQuery) loadRoles(ctx context.Context, query *RoleQuery, nodes []*U
 	}
 	return nil
 }
-func (uq *UserQuery) loadStudents(ctx context.Context, query *StudentQuery, nodes []*User, init func(*User), assign func(*User, *Student)) error {
+func (uq *UserQuery) loadStudent(ctx context.Context, query *StudentQuery, nodes []*User, init func(*User), assign func(*User, *Student)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uint32]*User)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
 	}
 	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(student.FieldUID)
 	}
 	query.Where(predicate.Student(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.StudentsColumn), fks...))
+		s.Where(sql.InValues(s.C(user.StudentColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

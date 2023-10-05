@@ -36,8 +36,8 @@ const (
 	FieldModifiedTime = "modified_time"
 	// EdgeRoles holds the string denoting the roles edge name in mutations.
 	EdgeRoles = "roles"
-	// EdgeStudents holds the string denoting the students edge name in mutations.
-	EdgeStudents = "students"
+	// EdgeStudent holds the string denoting the student edge name in mutations.
+	EdgeStudent = "student"
 	// EdgeFiles holds the string denoting the files edge name in mutations.
 	EdgeFiles = "files"
 	// EdgeUserRole holds the string denoting the user_role edge name in mutations.
@@ -49,13 +49,13 @@ const (
 	// RolesInverseTable is the table name for the Role entity.
 	// It exists in this package in order to avoid circular dependency with the "role" package.
 	RolesInverseTable = "role"
-	// StudentsTable is the table that holds the students relation/edge.
-	StudentsTable = "student"
-	// StudentsInverseTable is the table name for the Student entity.
+	// StudentTable is the table that holds the student relation/edge.
+	StudentTable = "student"
+	// StudentInverseTable is the table name for the Student entity.
 	// It exists in this package in order to avoid circular dependency with the "student" package.
-	StudentsInverseTable = "student"
-	// StudentsColumn is the table column denoting the students relation/edge.
-	StudentsColumn = "uid"
+	StudentInverseTable = "student"
+	// StudentColumn is the table column denoting the student relation/edge.
+	StudentColumn = "uid"
 	// FilesTable is the table that holds the files relation/edge.
 	FilesTable = "file"
 	// FilesInverseTable is the table name for the File entity.
@@ -186,17 +186,10 @@ func ByRoles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByStudentsCount orders the results by students count.
-func ByStudentsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByStudentField orders the results by student field.
+func ByStudentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newStudentsStep(), opts...)
-	}
-}
-
-// ByStudents orders the results by students terms.
-func ByStudents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newStudentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newStudentStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -234,11 +227,11 @@ func newRolesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, false, RolesTable, RolesPrimaryKey...),
 	)
 }
-func newStudentsStep() *sqlgraph.Step {
+func newStudentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(StudentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
+		sqlgraph.To(StudentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, StudentTable, StudentColumn),
 	)
 }
 func newFilesStep() *sqlgraph.Step {
