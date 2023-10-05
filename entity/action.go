@@ -31,4 +31,5 @@ const (
 	GetMajorList           = "get major list"
 
 	ImportClassByMajorID = "import class by major id"
+	GetClassList         = "get class list"
 )

@@ -72,7 +72,7 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 		class := auth.Group("/class")
 		{
 			class.POST("/import", Check(authService, []string{entity.ImportClassByMajorID}), controllers.Management.ImportClassByMajorID)
-
+			class.GET("/getlist", Check(authService, []string{entity.GetClassList}), controllers.Management.GetClassList)
 		}
 
 		file := auth.Group("/file")

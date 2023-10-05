@@ -507,7 +507,17 @@ func (cont *ManagementController) GetStudentList(c *gin.Context) {
 		return
 	}
 
-	students := make([]entity.RetrievedStudent, len(ss))
+	type RStudent struct {
+		ID         uint32                 `json:"id"`
+		StudentID  string                 `json:"studentID"`
+		Name       string                 `json:"name"`
+		Gender     string                 `json:"gender"`
+		Class      *entity.RetrievedClass `json:"class"`
+		User       *entity.RetrievedUser  `json:"user"`
+		IsDisabled bool                   `json:"isDisabled"`
+	}
+
+	students := make([]RStudent, len(ss))
 	for i, v := range ss {
 		students[i].ID = v.ID
 		students[i].StudentID = v.StudentID
@@ -703,7 +713,14 @@ func (cont *ManagementController) GetMajorList(c *gin.Context) {
 		return
 	}
 
-	majors := make([]entity.RetrievedMajor, len(ms))
+	type RMajor struct {
+		ID         uint16                   `json:"id"`
+		Name       string                   `json:"name"`
+		College    *entity.RetrievedCollege `json:"college"`
+		IsDisabled bool                     `json:"isDisabled"`
+	}
+
+	majors := make([]RMajor, len(ms))
 	for i, v := range ms {
 		majors[i].ID = v.ID
 		majors[i].Name = v.Name
@@ -775,5 +792,71 @@ func (cont *ManagementController) ImportClassByMajorID(c *gin.Context) {
 
 	var res entity.Result
 	res.Message = "Import Classes By Major ID Successfully"
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *ManagementController) GetClassList(c *gin.Context) {
+	var search entity.Search
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	cs, err := cont.Services.Management.RetrieveClassWithMajorAndCollege(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	total, err := cont.Services.Management.GetTotalRetrievedClasses(search.Like, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	type RClass struct {
+		ID         uint32                   `json:"id"`
+		Grade      string                   `json:"grade"`
+		Name       string                   `json:"name"`
+		IsDisabled bool                     `json:"isDisabled"`
+		Major      *entity.RetrievedMajor   `json:"major"`
+		College    *entity.RetrievedCollege `json:"college"`
+	}
+
+	classes := make([]RClass, len(cs))
+	for i, v := range cs {
+		classes[i].ID = v.ID
+		classes[i].Grade = v.Grade
+		classes[i].Name = v.Name
+		classes[i].IsDisabled = v.IsDisabled
+		major := v.Edges.Major
+		if major != nil {
+			classes[i].Major = &entity.RetrievedMajor{
+				ID:         major.ID,
+				Name:       major.Name,
+				IsDisabled: major.IsDisabled,
+			}
+		}
+		college := v.Edges.Major.Edges.College
+		if college != nil {
+			classes[i].College = &entity.RetrievedCollege{
+				ID:         college.ID,
+				Name:       college.Name,
+				IsDisabled: college.IsDisabled,
+			}
+		}
+	}
+
+	var data entity.RetrievedListData
+	data.Record = classes
+	data.Total = total
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < int(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
+
+	var res entity.Result
+	res.Message = "Get List of Classes Successfully"
+	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
