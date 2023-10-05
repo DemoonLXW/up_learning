@@ -1289,7 +1289,7 @@ func (serv *ManagementService) RetrieveStudentWithClassAndUser(current, pageSize
 	return students, nil
 }
 
-func (serv *ManagementService) GetTotalRetrievedStudentsBySchoolID(like string, isDisabled *bool, schoolID uint16) (int, error) {
+func (serv *ManagementService) GetTotalRetrievedStudents(like string, isDisabled *bool) (int, error) {
 	ctx := context.Background()
 
 	total, err := serv.DB.Student.Query().
@@ -1298,7 +1298,6 @@ func (serv *ManagementService) GetTotalRetrievedStudentsBySchoolID(like string, 
 				student.NameContains(like),
 				student.StudentIDContains(like),
 			),
-			// student.SidEQ(schoolID),
 			func(s *sql.Selector) {
 				s.Where(sql.IsNull(student.FieldDeletedTime))
 				if isDisabled != nil {
