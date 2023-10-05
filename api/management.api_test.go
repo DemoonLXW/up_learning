@@ -350,9 +350,9 @@ func TestGetSampleOfImport(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/file/getsample?type=import major", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/file/getsample?type=import class", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "70a076f5888b9faffe576891656fe6cc"}
+	token_cookie := &http.Cookie{Name: "token", Value: "d0082b284c33f13c2cdea0a76c942caf"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -488,6 +488,42 @@ func TestGetMajorList(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/major/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
 	token_cookie := &http.Cookie{Name: "token", Value: "70a076f5888b9faffe576891656fe6cc"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
+
+func TestImportClassByMajorID(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	f, err := os.Open("../import.xlsx")
+	assert.Nil(t, err)
+	defer f.Close()
+
+	b := bytes.Buffer{}
+	writer := multipart.NewWriter(&b)
+	part, err := writer.CreateFormFile("import", filepath.Base(f.Name()))
+	assert.Nil(t, err)
+	_, err = io.Copy(part, f)
+	assert.Nil(t, err)
+
+	err = writer.WriteField("id", "6")
+	assert.Nil(t, err)
+
+	err = writer.Close()
+	assert.Nil(t, err)
+
+	req, _ := http.NewRequest(http.MethodPost, "/class/import", &b)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "d0082b284c33f13c2cdea0a76c942caf"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

@@ -730,3 +730,50 @@ func (cont *ManagementController) GetMajorList(c *gin.Context) {
 	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) ImportClassByMajorID(c *gin.Context) {
+	type Params struct {
+		ID uint16 `form:"id" binding:"required"`
+	}
+
+	var param Params
+	if err := c.ShouldBind(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fh, err := c.FormFile("import")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importClass", "class")
+	defer os.Remove(f.Name())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	cl, err := cont.Services.Management.ReadClassesFromFile(f)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = cont.Services.Management.CreateClassByMajorID(cl, param.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Import Classes By Major ID Successfully"
+	c.JSON(http.StatusOK, res)
+}
