@@ -586,3 +586,43 @@ func (cont *ManagementController) ImportCollege(c *gin.Context) {
 	res.Message = "Import Colleges Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) GetCollegeList(c *gin.Context) {
+	var search entity.Search
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	cs, err := cont.Services.Management.RetrieveCollege(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	total, err := cont.Services.Management.GetTotalRetrievedColleges(search.Like, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	colleges := make([]entity.RetrievedCollege, len(cs))
+	for i, v := range cs {
+		colleges[i].ID = v.ID
+		colleges[i].Name = v.Name
+		colleges[i].IsDisabled = v.IsDisabled
+	}
+
+	var data entity.RetrievedListData
+	data.Record = colleges
+	data.Total = total
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < int(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
+
+	var res entity.Result
+	res.Message = "Get List of Colleges Successfully"
+	res.Data = data
+	c.JSON(http.StatusOK, res)
+}

@@ -23,5 +23,6 @@ const (
 
 	GetStudentList = "get student list"
 
-	ImportCollege = "import college"
+	ImportCollege  = "import college"
+	GetCollegeList = "get college list"
 )
