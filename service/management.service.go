@@ -1165,7 +1165,7 @@ func (serv *ManagementService) ReadStudentsFromFile(f *os.File) ([]*entity.ToAdd
 	return students, nil
 }
 
-func (serv *ManagementService) CreateStudent(toCreates []*entity.ToAddStudent, schoolID uint16) error {
+func (serv *ManagementService) CreateStudentByClassID(toCreates []*entity.ToAddStudent, classID uint32) error {
 	ctx := context.Background()
 
 	tx, err := serv.DB.Tx(ctx)
@@ -1199,7 +1199,7 @@ func (serv *ManagementService) CreateStudent(toCreates []*entity.ToAddStudent, s
 			SetName(toCreates[current].Name).
 			SetStudentID(toCreates[current].StudentID).
 			SetGender(toCreates[current].Gender).
-			// SetSid(schoolID).
+			SetCid(classID).
 			Save(ctx)
 		if err != nil {
 			return rollback(tx, "create student", err)
@@ -1220,8 +1220,8 @@ func (serv *ManagementService) CreateStudent(toCreates []*entity.ToAddStudent, s
 			bulk[i] = tx.Student.Create().SetID(uint32(num + i + 1)).
 				SetName(toCreates[current+i].Name).
 				SetStudentID(toCreates[current+i].StudentID).
-				SetGender(toCreates[current+i].Gender)
-			// SetSid(schoolID)
+				SetGender(toCreates[current+i].Gender).
+				SetCid(classID)
 		}
 
 		err = tx.Student.CreateBulk(bulk...).Exec(ctx)

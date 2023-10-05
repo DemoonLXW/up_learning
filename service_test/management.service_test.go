@@ -485,7 +485,7 @@ func TestReadStudentsFromFile(t *testing.T) {
 	}
 }
 
-func TestCreateStudent(t *testing.T) {
+func TestCreateStudentByClassID(t *testing.T) {
 	serv, err := CreateTestManagementService()
 	assert.Nil(t, err)
 
@@ -496,20 +496,20 @@ func TestCreateStudent(t *testing.T) {
 	// }
 
 	student2 := entity.ToAddStudent{
-		StudentID: "20221050046",
-		Name:      "lyj",
+		StudentID: "20221050001",
+		Name:      "ly",
 		Gender:    1,
 	}
 
 	student3 := entity.ToAddStudent{
-		StudentID: "20221050047",
-		Name:      "lyk",
+		StudentID: "20221050002",
+		Name:      "lyky",
 		Gender:    0,
 	}
 
 	students := []*entity.ToAddStudent{&student3, &student2}
 
-	err = serv.CreateStudent(students, 3)
+	err = serv.CreateStudentByClassID(students, 2)
 	assert.Nil(t, err)
 
 }
