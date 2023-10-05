@@ -159,11 +159,13 @@ type ToAddStudent struct {
 }
 
 type RetrievedStudent struct {
-	ID         uint32 `json:"id"`
-	StudentID  string `json:"student_id"`
-	Name       string `json:"name"`
-	Gender     string `json:"gender"`
-	IsDisabled bool   `json:"is_disabled"`
+	ID         uint32          `json:"id"`
+	StudentID  string          `json:"student_id"`
+	Name       string          `json:"name"`
+	Gender     string          `json:"gender"`
+	Class      *RetrievedClass `json:"class"`
+	User       *RetrievedUser  `json:"user"`
+	IsDisabled bool            `json:"is_disabled"`
 }
 
 type ToAddCollege struct {
@@ -177,4 +179,11 @@ type ToAddMajor struct {
 type ToAddClass struct {
 	Grade string `json:"grade"`
 	Name  string `json:"name"`
+}
+
+type RetrievedClass struct {
+	ID         uint32 `json:"id"`
+	Grade      string `json:"grade"`
+	Name       string `json:"name"`
+	IsDisabled bool   `json:"is_disabled"`
 }

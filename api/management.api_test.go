@@ -374,15 +374,15 @@ func TestGetSampleOfSchoolImport(t *testing.T) {
 	// fmt.Println(recorder.Body.String())
 }
 
-func TestGetStudentListBySchoolID(t *testing.T) {
+func TestGetStudentList(t *testing.T) {
 	app, err := CreateTestApp()
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	query := "?current=2&pagesize=1&sort=id&order=true"
-	req, _ := http.NewRequest(http.MethodGet, "/school/3/get/students"+query, nil)
+	query := "?pagesize=1&sort=id&order=true&like=ly"
+	req, _ := http.NewRequest(http.MethodGet, "/student/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "37cff7a5c6ab20cfcd3ee0a2f44bb6ce"}
+	token_cookie := &http.Cookie{Name: "token", Value: "3efd0f809c9dc5d317369d38a374201c"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

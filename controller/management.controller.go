@@ -477,16 +477,7 @@ func (cont *ManagementController) GetSampleOfSchoolImport(c *gin.Context) {
 	c.FileAttachment(wd+"/"+f.Path, f.Name)
 }
 
-func (cont *ManagementController) GetStudentListBySchoolID(c *gin.Context) {
-	type School struct {
-		SchoolID uint16 `uri:"school_id" binding:"required"`
-	}
-
-	var s School
-	if err := c.ShouldBindUri(&s); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+func (cont *ManagementController) GetStudentList(c *gin.Context) {
 
 	var search entity.Search
 	if err := c.ShouldBindQuery(&search); err != nil {
@@ -494,13 +485,13 @@ func (cont *ManagementController) GetStudentListBySchoolID(c *gin.Context) {
 		return
 	}
 
-	ss, err := cont.Services.Management.RetrieveStudentBySchoolID(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled, s.SchoolID)
+	ss, err := cont.Services.Management.RetrieveStudentWithClassAndUser(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	total, err := cont.Services.Management.GetTotalRetrievedStudentsBySchoolID(search.Like, search.IsDisabled, s.SchoolID)
+	total, err := cont.Services.Management.GetTotalRetrievedStudents(search.Like, search.IsDisabled)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -518,6 +509,31 @@ func (cont *ManagementController) GetStudentListBySchoolID(c *gin.Context) {
 		case 1:
 			students[i].Gender = "女"
 		}
+		vClass := v.Edges.Class
+		if vClass != nil {
+			students[i].Class = &entity.RetrievedClass{
+				ID:         vClass.ID,
+				Grade:      vClass.Grade,
+				Name:       vClass.Name,
+				IsDisabled: vClass.IsDisabled,
+			}
+		}
+		vUser := v.Edges.User
+		if vUser != nil {
+			students[i].User = &entity.RetrievedUser{
+				ID:         vUser.ID,
+				Account:    vUser.Account,
+				Username:   vUser.Username,
+				IsDisabled: vUser.IsDisabled,
+			}
+			if vUser.Email != nil {
+				students[i].User.Email = *vUser.Email
+			}
+			if vUser.Phone != nil {
+				students[i].User.Phone = *vUser.Phone
+
+			}
+		}
 	}
 
 	var data entity.RetrievedListData
@@ -529,7 +545,7 @@ func (cont *ManagementController) GetStudentListBySchoolID(c *gin.Context) {
 	}
 
 	var res entity.Result
-	res.Message = "Get List of Students by School Id Successfully"
+	res.Message = "Get List of Students Successfully"
 	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
