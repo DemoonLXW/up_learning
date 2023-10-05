@@ -350,9 +350,9 @@ func TestGetSampleOfImport(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/file/getsample?type=import college", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/file/getsample?type=import major", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "4a91f00f7d3dbd6a2a7c078a9e7ce62b"}
+	token_cookie := &http.Cookie{Name: "token", Value: "70a076f5888b9faffe576891656fe6cc"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -468,6 +468,24 @@ func TestImportMajorByCollegeID(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodPost, "/major/import", &b)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "70a076f5888b9faffe576891656fe6cc"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
+
+func TestGetMajorList(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	query := "?pagesize=1&sort=id"
+	req, _ := http.NewRequest(http.MethodGet, "/major/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
 	token_cookie := &http.Cookie{Name: "token", Value: "70a076f5888b9faffe576891656fe6cc"}
 	req.AddCookie(uid_cookie)

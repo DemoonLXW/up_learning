@@ -683,3 +683,50 @@ func (cont *ManagementController) ImportMajorByCollegeID(c *gin.Context) {
 	res.Message = "Import Majors By College ID Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) GetMajorList(c *gin.Context) {
+	var search entity.Search
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ms, err := cont.Services.Management.RetrieveMajorWithCollege(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	total, err := cont.Services.Management.GetTotalRetrievedMajors(search.Like, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	majors := make([]entity.RetrievedMajor, len(ms))
+	for i, v := range ms {
+		majors[i].ID = v.ID
+		majors[i].Name = v.Name
+		majors[i].IsDisabled = v.IsDisabled
+		if v.Edges.College != nil {
+			majors[i].College = &entity.RetrievedCollege{
+				ID:         v.Edges.College.ID,
+				Name:       v.Edges.College.Name,
+				IsDisabled: v.Edges.College.IsDisabled,
+			}
+		}
+	}
+
+	var data entity.RetrievedListData
+	data.Record = majors
+	data.Total = total
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < int(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
+
+	var res entity.Result
+	res.Message = "Get List of Majors Successfully"
+	res.Data = data
+	c.JSON(http.StatusOK, res)
+}

@@ -28,4 +28,5 @@ const (
 	GetCollegeList = "get college list"
 
 	ImportMajorByCollegeID = "import major by college id"
+	GetMajorList           = "get major list"
 )
