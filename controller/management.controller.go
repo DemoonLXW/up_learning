@@ -456,9 +456,19 @@ func (cont *ManagementController) GetSchoolList(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func (cont *ManagementController) GetSampleOfSchoolImport(c *gin.Context) {
+func (cont *ManagementController) GetSampleOfImport(c *gin.Context) {
+	type ImportType struct {
+		Type string `form:"type"`
+	}
 
-	f, err := cont.Services.Management.FindOneSampleFileByType("import school")
+	var it ImportType
+
+	if err := c.ShouldBindQuery(&it); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	f, err := cont.Services.Management.FindOneSampleFileByType(it.Type)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

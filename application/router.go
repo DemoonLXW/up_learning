@@ -63,6 +63,11 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 			college.GET("/getlist", Check(authService, []string{entity.GetCollegeList}), controllers.Management.GetCollegeList)
 		}
 
+		file := auth.Group("/file")
+		{
+			file.GET("/getsample", Check(authService, []string{entity.GetSampleOfImport}), controllers.Management.GetSampleOfImport)
+		}
+
 	}
 
 	return app

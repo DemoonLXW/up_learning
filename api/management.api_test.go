@@ -345,14 +345,14 @@ func TestGetSchoolList(t *testing.T) {
 	fmt.Println(recorder.Body.String())
 }
 
-func TestGetSampleOfSchoolImport(t *testing.T) {
+func TestGetSampleOfImport(t *testing.T) {
 	app, err := CreateTestApp()
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/school/getsample", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/file/getsample?type=import college", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "21ebe8e1c59695c381209a9a4219f2c5"}
+	token_cookie := &http.Cookie{Name: "token", Value: "4a91f00f7d3dbd6a2a7c078a9e7ce62b"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
