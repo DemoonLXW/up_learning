@@ -2,7 +2,6 @@ package controller
 
 import (
 	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -23,15 +22,18 @@ func (cont *AuthController) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	hex_password := []byte(*login.Password)
-	original_password := make([]byte, hex.DecodedLen(len(hex_password)))
+	// hex_password := []byte(*login.Password)
+	// original_password := make([]byte, hex.DecodedLen(len(hex_password)))
 
-	if _, err := hex.Decode(original_password, hex_password); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	sha1_password := fmt.Sprintf("%x", sha256.Sum256(original_password))
-	user, token, err := cont.Services.Auth.Login(*login.Account, sha1_password)
+	// if _, err := hex.Decode(original_password, hex_password); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// sha1_password := fmt.Sprintf("%x", sha256.Sum256(original_password))
+
+	lower_pwd := strings.ToLower(*login.Password)
+	sha256_pwd := fmt.Sprintf("%x", sha256.Sum256([]byte(lower_pwd)))
+	user, token, err := cont.Services.Auth.Login(*login.Account, sha256_pwd)
 	if err != nil {
 		err_string := err.Error()
 		switch {
