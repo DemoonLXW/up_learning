@@ -731,3 +731,18 @@ func TestGetTotalRetrievedClasses(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 4, total)
 }
+
+func TestReadTeachersFromFile(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	f, err := os.Open("../import.xlsx")
+	assert.Nil(t, err)
+
+	teachers, err := serv.ReadTeachersFromFile(f)
+	assert.Nil(t, err)
+
+	for _, t := range teachers {
+		fmt.Println(t.Name, t.Gender, t.TeacherID)
+	}
+}

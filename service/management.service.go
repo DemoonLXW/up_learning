@@ -1149,7 +1149,7 @@ func (serv *ManagementService) ReadStudentsFromFile(f *os.File) ([]*entity.ToAdd
 					case "女":
 						gender = 1
 					default:
-						return nil, fmt.Errorf("read schools from file cell[%d][%d] %s invalid", i, j, columnMap[j])
+						return nil, fmt.Errorf("read students from file cell[%d][%d] %s invalid", i, j, columnMap[j])
 					}
 					studentValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(gender))
 
@@ -1897,4 +1897,79 @@ func (serv *ManagementService) GetTotalRetrievedClasses(like string, isDisabled 
 	}
 
 	return total, nil
+}
+
+func (serv *ManagementService) ReadTeachersFromFile(f *os.File) ([]*entity.ToAddTeacher, error) {
+	book, err := excelize.OpenFile(f.Name())
+	if err != nil {
+		return nil, fmt.Errorf("read teachers from file open failed: %w", err)
+	}
+
+	rows, err := book.GetRows(book.GetSheetName(0))
+	if err != nil {
+		return nil, fmt.Errorf("read teachers from file get rows failed: %w", err)
+	}
+
+	length := len(rows)
+	if length < 2 {
+		return nil, fmt.Errorf("read teachers from file less than two rows failed: %w", err)
+	}
+
+	columnCheck := []string{"工号", "姓名", "性别"}
+	columnSize := len(columnCheck)
+	if len(rows[0]) < columnSize {
+		return nil, fmt.Errorf("read teachers from file header less than %d", columnSize)
+	}
+	for i, v := range columnCheck {
+		if rows[0][i] != v {
+			return nil, fmt.Errorf("read teachers from file header[%d] %s does not exist", i, v)
+		}
+	}
+
+	teachers := make([]*entity.ToAddTeacher, length-1)
+	columnMap := map[int]string{0: "TeacherID", 1: "Name", 2: "Gender"}
+	fieldMap := make(map[string]int)
+	v := reflect.ValueOf(&entity.ToAddTeacher{}).Elem()
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		fieldMap[t.Field(i).Name] = i
+	}
+
+	for i := 1; i < length; i++ {
+		var teacher entity.ToAddTeacher
+		teacherValue := reflect.ValueOf(&teacher).Elem()
+
+		if len(rows[i]) < columnSize {
+			return nil, fmt.Errorf("read teachers from file less than %d columns", columnSize)
+		}
+
+		for j := 0; j < columnSize; j++ {
+			col := strings.Trim(rows[i][j], "")
+			if col == "" {
+				return nil, fmt.Errorf("read teachers from file cell[%d][%d] %s empty", i, j, columnMap[j])
+			}
+			switch j {
+			case 2:
+				{
+					var gender uint8
+					switch col {
+					case "男":
+						gender = 0
+					case "女":
+						gender = 1
+					default:
+						return nil, fmt.Errorf("read teachers from file cell[%d][%d] %s invalid", i, j, columnMap[j])
+					}
+					teacherValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(gender))
+
+				}
+			default:
+				teacherValue.Field(fieldMap[columnMap[j]]).Set(reflect.ValueOf(col))
+			}
+		}
+
+		teachers[i-1] = &teacher
+	}
+
+	return teachers, nil
 }
