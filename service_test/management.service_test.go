@@ -746,3 +746,32 @@ func TestReadTeachersFromFile(t *testing.T) {
 		fmt.Println(t.Name, t.Gender, t.TeacherID)
 	}
 }
+
+func TestCreateTeacherByCollegeIDAndCreateUser(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	// student1 := entity.ToAddStudent{
+	// 	StudentID: "20221050045",
+	// 	Name:      "lxw",
+	// 	Gender:    0,
+	// }
+
+	teacher1 := entity.ToAddTeacher{
+		TeacherID: "2014105010",
+		Name:      "jsy",
+		Gender:    1,
+	}
+
+	teacher2 := entity.ToAddTeacher{
+		TeacherID: "2014105011",
+		Name:      "lyk",
+		Gender:    0,
+	}
+
+	teachers := []*entity.ToAddTeacher{&teacher2, &teacher1}
+
+	err = serv.CreateTeacherByCollegeIDAndCreateUser(teachers, 4)
+	assert.Nil(t, err)
+
+}

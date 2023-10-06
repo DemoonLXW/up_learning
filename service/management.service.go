@@ -23,6 +23,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
+	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/xuri/excelize/v2"
@@ -2032,4 +2033,168 @@ func (serv *ManagementService) ReadTeachersFromFile(f *os.File) ([]*entity.ToAdd
 	}
 
 	return teachers, nil
+}
+
+func (serv *ManagementService) CreateTeacherByCollegeIDAndCreateUser(toCreates []*entity.ToAddTeacher, collegeID uint8) error {
+	ctx := context.Background()
+
+	tx, err := serv.DB.Tx(ctx)
+	if err != nil {
+		return fmt.Errorf("create teacher start a transaction failed: %w", err)
+	}
+
+	current := 0
+	length := len(toCreates)
+	for ; current < length; current++ {
+		id, err := tx.Teacher.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(teacher.FieldDeletedTime))
+		}).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create teacher find a deleted student id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := tx.Teacher.Update().Where(teacher.And(
+			teacher.IDEQ(id),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(teacher.FieldDeletedTime))
+			},
+		)).
+			SetCreatedTime(time.Now()).
+			ClearDeletedTime().
+			ClearModifiedTime().
+			SetIsDisabled(false).
+			SetName(toCreates[current].Name).
+			SetTeacherID(toCreates[current].TeacherID).
+			SetGender(toCreates[current].Gender).
+			SetCid(collegeID).
+			Save(ctx)
+		if err != nil {
+			return rollback(tx, "create teacher", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create teacher", fmt.Errorf("create teacher update deleted teacher affect 0 row"))
+		}
+	}
+	if current < length {
+		num, err := tx.Teacher.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create teacher count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		bulk := make([]*ent.TeacherCreate, bulkLength)
+		for i := 0; i < bulkLength; i++ {
+			bulk[i] = tx.Teacher.Create().SetID(uint32(num + i + 1)).
+				SetName(toCreates[current+i].Name).
+				SetTeacherID(toCreates[current+i].TeacherID).
+				SetGender(toCreates[current+i].Gender).
+				SetCid(collegeID)
+		}
+
+		err = tx.Teacher.CreateBulk(bulk...).Exec(ctx)
+		if err != nil {
+			return rollback(tx, "create teacher", err)
+		}
+	}
+
+	r, err := tx.Role.Query().Where(role.And(
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(role.FieldDeletedTime))
+		},
+		role.NameEQ("teacher"),
+	)).First(ctx)
+	if err != nil {
+		return rollback(tx, "create user", fmt.Errorf("create user found role by name failed: %w", err))
+	}
+
+	teacherIDs := make([]string, length)
+	for i, v := range toCreates {
+		teacherIDs[i] = v.TeacherID
+	}
+	t, err := tx.Teacher.Query().Where(teacher.And(
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(teacher.FieldDeletedTime))
+		},
+		teacher.TeacherIDIn(teacherIDs...),
+	)).All(ctx)
+	if err != nil {
+		return rollback(tx, "create user", fmt.Errorf("create user found teacher by teacher ids failed: %w", err))
+	}
+	if len(t) != length {
+		return rollback(tx, "create user", fmt.Errorf("create user found teacher by teacher ids not enough failed"))
+	}
+
+	original_pwd := "123456"
+	md5_pwd := fmt.Sprintf("%x", md5.Sum([]byte(original_pwd)))
+	sha256_pwd := fmt.Sprintf("%x", sha256.Sum256([]byte(md5_pwd)))
+
+	current = 0
+	for ; current < length; current++ {
+		id, err := tx.User.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(user.FieldDeletedTime))
+		}).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create user find a deleted user id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := tx.User.Update().Where(user.And(
+			user.IDEQ(id),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(user.FieldDeletedTime))
+			},
+		)).
+			SetCreatedTime(time.Now()).
+			ClearModifiedTime().
+			ClearDeletedTime().
+			SetAccount(t[current].TeacherID).
+			SetUsername(t[current].Name).
+			SetIntroduction("").
+			SetIsDisabled(false).
+			SetPassword(sha256_pwd).
+			AddRoles(r).
+			SetTeacherID(t[current].ID).
+			Save(ctx)
+
+		if err != nil {
+			return rollback(tx, "create user", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create user", fmt.Errorf("create user update deleted user affect 0 row"))
+		}
+	}
+	if current < length {
+		num, err := tx.User.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create users count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		for i := 0; i < bulkLength; i++ {
+			err = tx.User.Create().SetID(uint32(num + i + 1)).
+				SetAccount(t[current+i].TeacherID).
+				SetUsername(t[current+i].Name).
+				SetPassword(sha256_pwd).
+				SetIntroduction("").
+				AddRoles(r).
+				SetTeacherID(t[current].ID).
+				Exec(ctx)
+			if err != nil {
+				return rollback(tx, "create users", err)
+			}
+		}
+
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("create teacher transaction commit failed: %w", err)
+	}
+
+	return nil
 }
