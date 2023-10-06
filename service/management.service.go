@@ -2198,3 +2198,54 @@ func (serv *ManagementService) CreateTeacherByCollegeIDAndCreateUser(toCreates [
 
 	return nil
 }
+
+func (serv *ManagementService) RetrieveTeacherWithCollegeAndUser(current, pageSize *int, like, sort string, order, isDisabled *bool) ([]*ent.Teacher, error) {
+	ctx := context.Background()
+
+	query := serv.DB.Teacher.Query().
+		Where(teacher.And(
+			teacher.Or(
+				teacher.NameContains(like),
+				teacher.TeacherIDContains(like),
+			),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(teacher.FieldDeletedTime))
+				if isDisabled != nil {
+					s.Where(sql.EQ(teacher.FieldIsDisabled, *isDisabled))
+				}
+			},
+		)).
+		Order(func(s *sql.Selector) {
+			isSorted := sort != "" && (sort == teacher.FieldID || sort == teacher.FieldTeacherID || sort == teacher.FieldName ||
+				sort == teacher.FieldGender || sort == teacher.FieldIsDisabled)
+			if isSorted && order != nil {
+				if *order {
+					s.OrderBy(sql.Desc(sort))
+				} else {
+					s.OrderBy(sql.Asc(sort))
+				}
+			}
+		}).
+		WithCollege(func(cq *ent.CollegeQuery) {
+			cq.Where(func(s *sql.Selector) {
+				s.Where(sql.IsNull(college.FieldDeletedTime))
+			})
+		}).
+		WithUser(func(uq *ent.UserQuery) {
+			uq.Where(func(s *sql.Selector) {
+				s.Where(sql.IsNull(user.FieldDeletedTime))
+			})
+		})
+
+	if pageSize != nil && current != nil {
+		offset := (*current - 1) * (*pageSize)
+		query.Limit(*pageSize).Offset(offset)
+	}
+	teachers, err := query.All(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("retrieve teacher query failed: %w", err)
+	}
+
+	return teachers, nil
+}

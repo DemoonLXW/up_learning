@@ -775,3 +775,22 @@ func TestCreateTeacherByCollegeIDAndCreateUser(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
+func TestRetrieveTeacherWithCollegeAndUser(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	current := 1
+	pageSize := 2
+	order := false
+	disabled := false
+	teachers, err := serv.RetrieveTeacherWithCollegeAndUser(&current, &pageSize, "ly", "id", &order, &disabled)
+	assert.Nil(t, err)
+	for _, v := range teachers {
+		fmt.Println(v, v.Edges.College.Name)
+		if v.Edges.User != nil {
+			fmt.Println(v.Edges.User.ID)
+		}
+	}
+	assert.Len(t, teachers, 2)
+}
