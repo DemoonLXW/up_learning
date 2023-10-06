@@ -1088,3 +1088,34 @@ func (cont *ManagementController) GetMajorsByCollegeID(c *gin.Context) {
 	res.Data = majors
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) GetClassesByMajorID(c *gin.Context) {
+	var major entity.RetrievedMajor
+	if err := c.ShouldBindUri(&major); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	cs, err := cont.Services.Management.FindClassesByMajorID(major.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	classes := make([]entity.RetrievedClass, 0, len(cs))
+	for _, v := range cs {
+		if !v.IsDisabled {
+			classes = append(classes, entity.RetrievedClass{
+				ID:         v.ID,
+				Grade:      v.Grade,
+				Name:       v.Name,
+				IsDisabled: v.IsDisabled,
+			})
+		}
+	}
+
+	var res entity.Result
+	res.Message = "Get classes by major id Successfully"
+	res.Data = classes
+	c.JSON(http.StatusOK, res)
+}

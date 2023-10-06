@@ -35,6 +35,7 @@ const (
 
 	ImportMajorByCollegeID = "import major by college id"
 	GetMajorList           = "get major list"
+	GetClassesByMajorID    = "get class by major id"
 
 	ImportClassByMajorID = "import class by major id"
 	GetClassList         = "get class list"

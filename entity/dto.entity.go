@@ -197,7 +197,7 @@ type ToAddMajor struct {
 }
 
 type RetrievedMajor struct {
-	ID   uint16 `json:"id"`
+	ID   uint16 `json:"id" uri:"id"`
 	Name string `json:"name"`
 	// College    *RetrievedCollege `json:"college"`
 	IsDisabled bool `json:"isDisabled"`
