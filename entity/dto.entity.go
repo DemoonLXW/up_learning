@@ -187,7 +187,7 @@ type ToAddCollege struct {
 }
 
 type RetrievedCollege struct {
-	ID         uint8  `json:"id"`
+	ID         uint8  `json:"id" uri:"id"`
 	Name       string `json:"name"`
 	IsDisabled bool   `json:"isDisabled"`
 }

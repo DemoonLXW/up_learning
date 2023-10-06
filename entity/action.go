@@ -28,9 +28,10 @@ const (
 	GetStudentList         = "get student list"
 	ImportStudentByClassID = "import student by class id"
 
-	ImportCollege  = "import college"
-	GetCollegeList = "get college list"
-	GetColleges    = "get college"
+	ImportCollege        = "import college"
+	GetCollegeList       = "get college list"
+	GetColleges          = "get college"
+	GetMajorsByCollegeID = "get major by college id"
 
 	ImportMajorByCollegeID = "import major by college id"
 	GetMajorList           = "get major list"
