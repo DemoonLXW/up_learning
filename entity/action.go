@@ -22,6 +22,8 @@ const (
 
 	GetSampleOfImport = "get sample of import"
 
+	GetTeacherList = "get teacher list"
+
 	GetStudentList         = "get student list"
 	ImportStudentByClassID = "import student by class id"
 

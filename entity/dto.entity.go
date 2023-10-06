@@ -174,6 +174,14 @@ type ToAddTeacher struct {
 	Gender    uint8  `json:"gender"`
 }
 
+type RetrievedTeacher struct {
+	ID         uint32 `json:"id"`
+	TeacherID  string `json:"teacherID"`
+	Name       string `json:"name"`
+	Gender     string `json:"gender"`
+	IsDisabled bool   `json:"isDisabled"`
+}
+
 type ToAddCollege struct {
 	Name string `json:"name"`
 }

@@ -907,3 +907,82 @@ func (cont *ManagementController) ImportStudentByClassID(c *gin.Context) {
 	res.Message = "Import Students By Class ID Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) GetTeacherList(c *gin.Context) {
+	var search entity.Search
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ts, err := cont.Services.Management.RetrieveTeacherWithCollegeAndUser(search.Current, search.PageSize, search.Like, search.Sort, search.Order, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	total, err := cont.Services.Management.GetTotalRetrievedTeachers(search.Like, search.IsDisabled)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	type RTeacher struct {
+		ID         uint32                   `json:"id"`
+		TeacherID  string                   `json:"teacherID"`
+		Name       string                   `json:"name"`
+		Gender     string                   `json:"gender"`
+		College    *entity.RetrievedCollege `json:"college"`
+		User       *entity.RetrievedUser    `json:"user"`
+		IsDisabled bool                     `json:"isDisabled"`
+	}
+
+	teachers := make([]RTeacher, len(ts))
+	for i, v := range ts {
+		teachers[i].ID = v.ID
+		teachers[i].TeacherID = v.TeacherID
+		teachers[i].Name = v.Name
+		switch v.Gender {
+		case 0:
+			teachers[i].Gender = "男"
+		case 1:
+			teachers[i].Gender = "女"
+		}
+		vCollege := v.Edges.College
+		if vCollege != nil {
+			teachers[i].College = &entity.RetrievedCollege{
+				ID:         vCollege.ID,
+				Name:       vCollege.Name,
+				IsDisabled: vCollege.IsDisabled,
+			}
+		}
+		vUser := v.Edges.User
+		if vUser != nil {
+			teachers[i].User = &entity.RetrievedUser{
+				ID:         vUser.ID,
+				Account:    vUser.Account,
+				Username:   vUser.Username,
+				IsDisabled: vUser.IsDisabled,
+			}
+			if vUser.Email != nil {
+				teachers[i].User.Email = *vUser.Email
+			}
+			if vUser.Phone != nil {
+				teachers[i].User.Phone = *vUser.Phone
+			}
+		}
+	}
+
+	var data entity.RetrievedListData
+	data.Record = teachers
+	data.Total = total
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < int(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
+
+	var res entity.Result
+	res.Message = "Get List of Teachers Successfully"
+	res.Data = data
+	c.JSON(http.StatusOK, res)
+}
