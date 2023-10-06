@@ -2249,3 +2249,27 @@ func (serv *ManagementService) RetrieveTeacherWithCollegeAndUser(current, pageSi
 
 	return teachers, nil
 }
+
+func (serv *ManagementService) GetTotalRetrievedTeachers(like string, isDisabled *bool) (int, error) {
+	ctx := context.Background()
+
+	total, err := serv.DB.Teacher.Query().
+		Where(teacher.And(
+			teacher.Or(
+				teacher.NameContains(like),
+				teacher.TeacherIDContains(like),
+			),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(teacher.FieldDeletedTime))
+				if isDisabled != nil {
+					s.Where(sql.EQ(teacher.FieldIsDisabled, *isDisabled))
+				}
+			},
+		)).Count(ctx)
+
+	if err != nil {
+		return -1, fmt.Errorf("get retrieved total students query failed: %w", err)
+	}
+
+	return total, nil
+}

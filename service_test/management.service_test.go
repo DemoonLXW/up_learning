@@ -794,3 +794,13 @@ func TestRetrieveTeacherWithCollegeAndUser(t *testing.T) {
 	}
 	assert.Len(t, teachers, 2)
 }
+
+func TestGetTotalRetrievedTeachers(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	disabled := false
+	total, err := serv.GetTotalRetrievedTeachers("l", &disabled)
+	assert.Nil(t, err)
+	assert.Equal(t, 3, total)
+}
