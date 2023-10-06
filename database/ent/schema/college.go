@@ -45,5 +45,6 @@ func (College) Fields() []ent.Field {
 func (College) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("majors", Major.Type),
+		edge.To("teachers", Teacher.Type),
 	}
 }

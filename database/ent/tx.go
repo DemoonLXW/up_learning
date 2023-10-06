@@ -34,6 +34,8 @@ type Tx struct {
 	School *SchoolClient
 	// Student is the client for interacting with the Student builders.
 	Student *StudentClient
+	// Teacher is the client for interacting with the Teacher builders.
+	Teacher *TeacherClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserRole is the client for interacting with the UserRole builders.
@@ -180,6 +182,7 @@ func (tx *Tx) init() {
 	tx.SampleFile = NewSampleFileClient(tx.config)
 	tx.School = NewSchoolClient(tx.config)
 	tx.Student = NewStudentClient(tx.config)
+	tx.Teacher = NewTeacherClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserRole = NewUserRoleClient(tx.config)
 }

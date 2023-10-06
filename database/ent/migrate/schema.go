@@ -266,6 +266,39 @@ var (
 			},
 		},
 	}
+	// TeacherColumns holds the columns for the "teacher" table.
+	TeacherColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "teacher_id", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "gender", Type: field.TypeUint8},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
+		{Name: "cid", Type: field.TypeUint8},
+		{Name: "uid", Type: field.TypeUint32, Unique: true, Nullable: true},
+	}
+	// TeacherTable holds the schema information for the "teacher" table.
+	TeacherTable = &schema.Table{
+		Name:       "teacher",
+		Columns:    TeacherColumns,
+		PrimaryKey: []*schema.Column{TeacherColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "teacher_college_teachers",
+				Columns:    []*schema.Column{TeacherColumns[8]},
+				RefColumns: []*schema.Column{CollegeColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "teacher_user_teacher",
+				Columns:    []*schema.Column{TeacherColumns[9]},
+				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UserColumns holds the columns for the "user" table.
 	UserColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true},
@@ -325,6 +358,7 @@ var (
 		SampleFileTable,
 		SchoolTable,
 		StudentTable,
+		TeacherTable,
 		UserTable,
 		UserRoleTable,
 	}
@@ -373,6 +407,11 @@ func init() {
 	StudentTable.ForeignKeys[2].RefTable = UserTable
 	StudentTable.Annotation = &entsql.Annotation{
 		Table: "student",
+	}
+	TeacherTable.ForeignKeys[0].RefTable = CollegeTable
+	TeacherTable.ForeignKeys[1].RefTable = UserTable
+	TeacherTable.Annotation = &entsql.Annotation{
+		Table: "teacher",
 	}
 	UserTable.Annotation = &entsql.Annotation{
 		Table: "user",

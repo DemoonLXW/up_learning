@@ -38,6 +38,8 @@ const (
 	EdgeRoles = "roles"
 	// EdgeStudent holds the string denoting the student edge name in mutations.
 	EdgeStudent = "student"
+	// EdgeTeacher holds the string denoting the teacher edge name in mutations.
+	EdgeTeacher = "teacher"
 	// EdgeFiles holds the string denoting the files edge name in mutations.
 	EdgeFiles = "files"
 	// EdgeUserRole holds the string denoting the user_role edge name in mutations.
@@ -56,6 +58,13 @@ const (
 	StudentInverseTable = "student"
 	// StudentColumn is the table column denoting the student relation/edge.
 	StudentColumn = "uid"
+	// TeacherTable is the table that holds the teacher relation/edge.
+	TeacherTable = "teacher"
+	// TeacherInverseTable is the table name for the Teacher entity.
+	// It exists in this package in order to avoid circular dependency with the "teacher" package.
+	TeacherInverseTable = "teacher"
+	// TeacherColumn is the table column denoting the teacher relation/edge.
+	TeacherColumn = "uid"
 	// FilesTable is the table that holds the files relation/edge.
 	FilesTable = "file"
 	// FilesInverseTable is the table name for the File entity.
@@ -193,6 +202,13 @@ func ByStudentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByTeacherField orders the results by teacher field.
+func ByTeacherField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTeacherStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByFilesCount orders the results by files count.
 func ByFilesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -232,6 +248,13 @@ func newStudentStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(StudentInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, StudentTable, StudentColumn),
+	)
+}
+func newTeacherStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TeacherInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, TeacherTable, TeacherColumn),
 	)
 }
 func newFilesStep() *sqlgraph.Step {

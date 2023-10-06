@@ -23,6 +23,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
+	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/database/ent/userrole"
 )
@@ -96,6 +97,7 @@ func checkColumn(table, column string) error {
 			samplefile.Table:     samplefile.ValidColumn,
 			school.Table:         school.ValidColumn,
 			student.Table:        student.ValidColumn,
+			teacher.Table:        teacher.ValidColumn,
 			user.Table:           user.ValidColumn,
 			userrole.Table:       userrole.ValidColumn,
 		})

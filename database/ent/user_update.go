@@ -15,6 +15,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
+	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
 
@@ -225,6 +226,25 @@ func (uu *UserUpdate) SetStudent(s *Student) *UserUpdate {
 	return uu.SetStudentID(s.ID)
 }
 
+// SetTeacherID sets the "teacher" edge to the Teacher entity by ID.
+func (uu *UserUpdate) SetTeacherID(id uint32) *UserUpdate {
+	uu.mutation.SetTeacherID(id)
+	return uu
+}
+
+// SetNillableTeacherID sets the "teacher" edge to the Teacher entity by ID if the given value is not nil.
+func (uu *UserUpdate) SetNillableTeacherID(id *uint32) *UserUpdate {
+	if id != nil {
+		uu = uu.SetTeacherID(*id)
+	}
+	return uu
+}
+
+// SetTeacher sets the "teacher" edge to the Teacher entity.
+func (uu *UserUpdate) SetTeacher(t *Teacher) *UserUpdate {
+	return uu.SetTeacherID(t.ID)
+}
+
 // AddFileIDs adds the "files" edge to the File entity by IDs.
 func (uu *UserUpdate) AddFileIDs(ids ...uint32) *UserUpdate {
 	uu.mutation.AddFileIDs(ids...)
@@ -269,6 +289,12 @@ func (uu *UserUpdate) RemoveRoles(r ...*Role) *UserUpdate {
 // ClearStudent clears the "student" edge to the Student entity.
 func (uu *UserUpdate) ClearStudent() *UserUpdate {
 	uu.mutation.ClearStudent()
+	return uu
+}
+
+// ClearTeacher clears the "teacher" edge to the Teacher entity.
+func (uu *UserUpdate) ClearTeacher() *UserUpdate {
+	uu.mutation.ClearTeacher()
 	return uu
 }
 
@@ -474,6 +500,35 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.TeacherCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.TeacherTable,
+			Columns: []string{user.TeacherColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.TeacherIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.TeacherTable,
+			Columns: []string{user.TeacherColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {
@@ -740,6 +795,25 @@ func (uuo *UserUpdateOne) SetStudent(s *Student) *UserUpdateOne {
 	return uuo.SetStudentID(s.ID)
 }
 
+// SetTeacherID sets the "teacher" edge to the Teacher entity by ID.
+func (uuo *UserUpdateOne) SetTeacherID(id uint32) *UserUpdateOne {
+	uuo.mutation.SetTeacherID(id)
+	return uuo
+}
+
+// SetNillableTeacherID sets the "teacher" edge to the Teacher entity by ID if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableTeacherID(id *uint32) *UserUpdateOne {
+	if id != nil {
+		uuo = uuo.SetTeacherID(*id)
+	}
+	return uuo
+}
+
+// SetTeacher sets the "teacher" edge to the Teacher entity.
+func (uuo *UserUpdateOne) SetTeacher(t *Teacher) *UserUpdateOne {
+	return uuo.SetTeacherID(t.ID)
+}
+
 // AddFileIDs adds the "files" edge to the File entity by IDs.
 func (uuo *UserUpdateOne) AddFileIDs(ids ...uint32) *UserUpdateOne {
 	uuo.mutation.AddFileIDs(ids...)
@@ -784,6 +858,12 @@ func (uuo *UserUpdateOne) RemoveRoles(r ...*Role) *UserUpdateOne {
 // ClearStudent clears the "student" edge to the Student entity.
 func (uuo *UserUpdateOne) ClearStudent() *UserUpdateOne {
 	uuo.mutation.ClearStudent()
+	return uuo
+}
+
+// ClearTeacher clears the "teacher" edge to the Teacher entity.
+func (uuo *UserUpdateOne) ClearTeacher() *UserUpdateOne {
+	uuo.mutation.ClearTeacher()
 	return uuo
 }
 
@@ -1019,6 +1099,35 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.TeacherCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.TeacherTable,
+			Columns: []string{user.TeacherColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.TeacherIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.TeacherTable,
+			Columns: []string{user.TeacherColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

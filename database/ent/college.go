@@ -37,9 +37,11 @@ type College struct {
 type CollegeEdges struct {
 	// Majors holds the value of the majors edge.
 	Majors []*Major `json:"majors,omitempty"`
+	// Teachers holds the value of the teachers edge.
+	Teachers []*Teacher `json:"teachers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // MajorsOrErr returns the Majors value or an error if the edge
@@ -49,6 +51,15 @@ func (e CollegeEdges) MajorsOrErr() ([]*Major, error) {
 		return e.Majors, nil
 	}
 	return nil, &NotLoadedError{edge: "majors"}
+}
+
+// TeachersOrErr returns the Teachers value or an error if the edge
+// was not loaded in eager-loading.
+func (e CollegeEdges) TeachersOrErr() ([]*Teacher, error) {
+	if e.loadedTypes[1] {
+		return e.Teachers, nil
+	}
+	return nil, &NotLoadedError{edge: "teachers"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -134,6 +145,11 @@ func (c *College) Value(name string) (ent.Value, error) {
 // QueryMajors queries the "majors" edge of the College entity.
 func (c *College) QueryMajors() *MajorQuery {
 	return NewCollegeClient(c.config).QueryMajors(c)
+}
+
+// QueryTeachers queries the "teachers" edge of the College entity.
+func (c *College) QueryTeachers() *TeacherQuery {
+	return NewCollegeClient(c.config).QueryTeachers(c)
 }
 
 // Update returns a builder for updating this College.

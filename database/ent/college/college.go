@@ -26,6 +26,8 @@ const (
 	FieldModifiedTime = "modified_time"
 	// EdgeMajors holds the string denoting the majors edge name in mutations.
 	EdgeMajors = "majors"
+	// EdgeTeachers holds the string denoting the teachers edge name in mutations.
+	EdgeTeachers = "teachers"
 	// Table holds the table name of the college in the database.
 	Table = "college"
 	// MajorsTable is the table that holds the majors relation/edge.
@@ -35,6 +37,13 @@ const (
 	MajorsInverseTable = "major"
 	// MajorsColumn is the table column denoting the majors relation/edge.
 	MajorsColumn = "cid"
+	// TeachersTable is the table that holds the teachers relation/edge.
+	TeachersTable = "teacher"
+	// TeachersInverseTable is the table name for the Teacher entity.
+	// It exists in this package in order to avoid circular dependency with the "teacher" package.
+	TeachersInverseTable = "teacher"
+	// TeachersColumn is the table column denoting the teachers relation/edge.
+	TeachersColumn = "cid"
 )
 
 // Columns holds all SQL columns for college fields.
@@ -110,10 +119,31 @@ func ByMajors(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newMajorsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTeachersCount orders the results by teachers count.
+func ByTeachersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTeachersStep(), opts...)
+	}
+}
+
+// ByTeachers orders the results by teachers terms.
+func ByTeachers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTeachersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newMajorsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MajorsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, MajorsTable, MajorsColumn),
+	)
+}
+func newTeachersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TeachersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TeachersTable, TeachersColumn),
 	)
 }

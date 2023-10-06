@@ -14,6 +14,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/major"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
+	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 )
 
 // CollegeUpdate is the builder for updating College entities.
@@ -118,6 +119,21 @@ func (cu *CollegeUpdate) AddMajors(m ...*Major) *CollegeUpdate {
 	return cu.AddMajorIDs(ids...)
 }
 
+// AddTeacherIDs adds the "teachers" edge to the Teacher entity by IDs.
+func (cu *CollegeUpdate) AddTeacherIDs(ids ...uint32) *CollegeUpdate {
+	cu.mutation.AddTeacherIDs(ids...)
+	return cu
+}
+
+// AddTeachers adds the "teachers" edges to the Teacher entity.
+func (cu *CollegeUpdate) AddTeachers(t ...*Teacher) *CollegeUpdate {
+	ids := make([]uint32, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cu.AddTeacherIDs(ids...)
+}
+
 // Mutation returns the CollegeMutation object of the builder.
 func (cu *CollegeUpdate) Mutation() *CollegeMutation {
 	return cu.mutation
@@ -142,6 +158,27 @@ func (cu *CollegeUpdate) RemoveMajors(m ...*Major) *CollegeUpdate {
 		ids[i] = m[i].ID
 	}
 	return cu.RemoveMajorIDs(ids...)
+}
+
+// ClearTeachers clears all "teachers" edges to the Teacher entity.
+func (cu *CollegeUpdate) ClearTeachers() *CollegeUpdate {
+	cu.mutation.ClearTeachers()
+	return cu
+}
+
+// RemoveTeacherIDs removes the "teachers" edge to Teacher entities by IDs.
+func (cu *CollegeUpdate) RemoveTeacherIDs(ids ...uint32) *CollegeUpdate {
+	cu.mutation.RemoveTeacherIDs(ids...)
+	return cu
+}
+
+// RemoveTeachers removes "teachers" edges to Teacher entities.
+func (cu *CollegeUpdate) RemoveTeachers(t ...*Teacher) *CollegeUpdate {
+	ids := make([]uint32, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cu.RemoveTeacherIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -239,6 +276,51 @@ func (cu *CollegeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cu.mutation.TeachersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   college.TeachersTable,
+			Columns: []string{college.TeachersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedTeachersIDs(); len(nodes) > 0 && !cu.mutation.TeachersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   college.TeachersTable,
+			Columns: []string{college.TeachersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.TeachersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   college.TeachersTable,
+			Columns: []string{college.TeachersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {
@@ -355,6 +437,21 @@ func (cuo *CollegeUpdateOne) AddMajors(m ...*Major) *CollegeUpdateOne {
 	return cuo.AddMajorIDs(ids...)
 }
 
+// AddTeacherIDs adds the "teachers" edge to the Teacher entity by IDs.
+func (cuo *CollegeUpdateOne) AddTeacherIDs(ids ...uint32) *CollegeUpdateOne {
+	cuo.mutation.AddTeacherIDs(ids...)
+	return cuo
+}
+
+// AddTeachers adds the "teachers" edges to the Teacher entity.
+func (cuo *CollegeUpdateOne) AddTeachers(t ...*Teacher) *CollegeUpdateOne {
+	ids := make([]uint32, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cuo.AddTeacherIDs(ids...)
+}
+
 // Mutation returns the CollegeMutation object of the builder.
 func (cuo *CollegeUpdateOne) Mutation() *CollegeMutation {
 	return cuo.mutation
@@ -379,6 +476,27 @@ func (cuo *CollegeUpdateOne) RemoveMajors(m ...*Major) *CollegeUpdateOne {
 		ids[i] = m[i].ID
 	}
 	return cuo.RemoveMajorIDs(ids...)
+}
+
+// ClearTeachers clears all "teachers" edges to the Teacher entity.
+func (cuo *CollegeUpdateOne) ClearTeachers() *CollegeUpdateOne {
+	cuo.mutation.ClearTeachers()
+	return cuo
+}
+
+// RemoveTeacherIDs removes the "teachers" edge to Teacher entities by IDs.
+func (cuo *CollegeUpdateOne) RemoveTeacherIDs(ids ...uint32) *CollegeUpdateOne {
+	cuo.mutation.RemoveTeacherIDs(ids...)
+	return cuo
+}
+
+// RemoveTeachers removes "teachers" edges to Teacher entities.
+func (cuo *CollegeUpdateOne) RemoveTeachers(t ...*Teacher) *CollegeUpdateOne {
+	ids := make([]uint32, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cuo.RemoveTeacherIDs(ids...)
 }
 
 // Where appends a list predicates to the CollegeUpdate builder.
@@ -506,6 +624,51 @@ func (cuo *CollegeUpdateOne) sqlSave(ctx context.Context) (_node *College, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.TeachersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   college.TeachersTable,
+			Columns: []string{college.TeachersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedTeachersIDs(); len(nodes) > 0 && !cuo.mutation.TeachersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   college.TeachersTable,
+			Columns: []string{college.TeachersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.TeachersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   college.TeachersTable,
+			Columns: []string{college.TeachersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

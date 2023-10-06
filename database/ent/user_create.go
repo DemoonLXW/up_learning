@@ -13,6 +13,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
+	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
 
@@ -185,6 +186,25 @@ func (uc *UserCreate) SetNillableStudentID(id *uint32) *UserCreate {
 // SetStudent sets the "student" edge to the Student entity.
 func (uc *UserCreate) SetStudent(s *Student) *UserCreate {
 	return uc.SetStudentID(s.ID)
+}
+
+// SetTeacherID sets the "teacher" edge to the Teacher entity by ID.
+func (uc *UserCreate) SetTeacherID(id uint32) *UserCreate {
+	uc.mutation.SetTeacherID(id)
+	return uc
+}
+
+// SetNillableTeacherID sets the "teacher" edge to the Teacher entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableTeacherID(id *uint32) *UserCreate {
+	if id != nil {
+		uc = uc.SetTeacherID(*id)
+	}
+	return uc
+}
+
+// SetTeacher sets the "teacher" edge to the Teacher entity.
+func (uc *UserCreate) SetTeacher(t *Teacher) *UserCreate {
+	return uc.SetTeacherID(t.ID)
 }
 
 // AddFileIDs adds the "files" edge to the File entity by IDs.
@@ -372,6 +392,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.TeacherIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.TeacherTable,
+			Columns: []string{user.TeacherColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/major"
+	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 )
 
 // CollegeCreate is the builder for creating a College entity.
@@ -102,6 +103,21 @@ func (cc *CollegeCreate) AddMajors(m ...*Major) *CollegeCreate {
 		ids[i] = m[i].ID
 	}
 	return cc.AddMajorIDs(ids...)
+}
+
+// AddTeacherIDs adds the "teachers" edge to the Teacher entity by IDs.
+func (cc *CollegeCreate) AddTeacherIDs(ids ...uint32) *CollegeCreate {
+	cc.mutation.AddTeacherIDs(ids...)
+	return cc
+}
+
+// AddTeachers adds the "teachers" edges to the Teacher entity.
+func (cc *CollegeCreate) AddTeachers(t ...*Teacher) *CollegeCreate {
+	ids := make([]uint32, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cc.AddTeacherIDs(ids...)
 }
 
 // Mutation returns the CollegeMutation object of the builder.
@@ -221,6 +237,22 @@ func (cc *CollegeCreate) createSpec() (*College, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(major.FieldID, field.TypeUint16),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.TeachersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   college.TeachersTable,
+			Columns: []string{college.TeachersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teacher.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

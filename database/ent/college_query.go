@@ -14,16 +14,18 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/college"
 	"github.com/DemoonLXW/up_learning/database/ent/major"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
+	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 )
 
 // CollegeQuery is the builder for querying College entities.
 type CollegeQuery struct {
 	config
-	ctx        *QueryContext
-	order      []college.OrderOption
-	inters     []Interceptor
-	predicates []predicate.College
-	withMajors *MajorQuery
+	ctx          *QueryContext
+	order        []college.OrderOption
+	inters       []Interceptor
+	predicates   []predicate.College
+	withMajors   *MajorQuery
+	withTeachers *TeacherQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -75,6 +77,28 @@ func (cq *CollegeQuery) QueryMajors() *MajorQuery {
 			sqlgraph.From(college.Table, college.FieldID, selector),
 			sqlgraph.To(major.Table, major.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, college.MajorsTable, college.MajorsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTeachers chains the current query on the "teachers" edge.
+func (cq *CollegeQuery) QueryTeachers() *TeacherQuery {
+	query := (&TeacherClient{config: cq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(college.Table, college.FieldID, selector),
+			sqlgraph.To(teacher.Table, teacher.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, college.TeachersTable, college.TeachersColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -269,12 +293,13 @@ func (cq *CollegeQuery) Clone() *CollegeQuery {
 		return nil
 	}
 	return &CollegeQuery{
-		config:     cq.config,
-		ctx:        cq.ctx.Clone(),
-		order:      append([]college.OrderOption{}, cq.order...),
-		inters:     append([]Interceptor{}, cq.inters...),
-		predicates: append([]predicate.College{}, cq.predicates...),
-		withMajors: cq.withMajors.Clone(),
+		config:       cq.config,
+		ctx:          cq.ctx.Clone(),
+		order:        append([]college.OrderOption{}, cq.order...),
+		inters:       append([]Interceptor{}, cq.inters...),
+		predicates:   append([]predicate.College{}, cq.predicates...),
+		withMajors:   cq.withMajors.Clone(),
+		withTeachers: cq.withTeachers.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -289,6 +314,17 @@ func (cq *CollegeQuery) WithMajors(opts ...func(*MajorQuery)) *CollegeQuery {
 		opt(query)
 	}
 	cq.withMajors = query
+	return cq
+}
+
+// WithTeachers tells the query-builder to eager-load the nodes that are connected to
+// the "teachers" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CollegeQuery) WithTeachers(opts ...func(*TeacherQuery)) *CollegeQuery {
+	query := (&TeacherClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withTeachers = query
 	return cq
 }
 
@@ -370,8 +406,9 @@ func (cq *CollegeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Coll
 	var (
 		nodes       = []*College{}
 		_spec       = cq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			cq.withMajors != nil,
+			cq.withTeachers != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -399,6 +436,13 @@ func (cq *CollegeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Coll
 			return nil, err
 		}
 	}
+	if query := cq.withTeachers; query != nil {
+		if err := cq.loadTeachers(ctx, query, nodes,
+			func(n *College) { n.Edges.Teachers = []*Teacher{} },
+			func(n *College, e *Teacher) { n.Edges.Teachers = append(n.Edges.Teachers, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -417,6 +461,36 @@ func (cq *CollegeQuery) loadMajors(ctx context.Context, query *MajorQuery, nodes
 	}
 	query.Where(predicate.Major(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(college.MajorsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.Cid
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "cid" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (cq *CollegeQuery) loadTeachers(ctx context.Context, query *TeacherQuery, nodes []*College, init func(*College), assign func(*College, *Teacher)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint8]*College)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(teacher.FieldCid)
+	}
+	query.Where(predicate.Teacher(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(college.TeachersColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

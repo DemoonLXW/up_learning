@@ -66,6 +66,8 @@ func (User) Edges() []ent.Edge {
 			Through("user_role", UserRole.Type),
 		edge.To("student", Student.Type).
 			Unique(),
+		edge.To("teacher", Teacher.Type).
+			Unique(),
 		edge.To("files", File.Type),
 	}
 }

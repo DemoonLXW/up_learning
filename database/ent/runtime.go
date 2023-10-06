@@ -17,6 +17,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/schema"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
+	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/database/ent/userrole"
 )
@@ -159,6 +160,24 @@ func init() {
 	studentDescCreatedTime := studentFields[7].Descriptor()
 	// student.DefaultCreatedTime holds the default value on creation for the created_time field.
 	student.DefaultCreatedTime = studentDescCreatedTime.Default.(func() time.Time)
+	teacherFields := schema.Teacher{}.Fields()
+	_ = teacherFields
+	// teacherDescTeacherID is the schema descriptor for teacher_id field.
+	teacherDescTeacherID := teacherFields[3].Descriptor()
+	// teacher.TeacherIDValidator is a validator for the "teacher_id" field. It is called by the builders before save.
+	teacher.TeacherIDValidator = teacherDescTeacherID.Validators[0].(func(string) error)
+	// teacherDescName is the schema descriptor for name field.
+	teacherDescName := teacherFields[4].Descriptor()
+	// teacher.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	teacher.NameValidator = teacherDescName.Validators[0].(func(string) error)
+	// teacherDescIsDisabled is the schema descriptor for is_disabled field.
+	teacherDescIsDisabled := teacherFields[6].Descriptor()
+	// teacher.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	teacher.DefaultIsDisabled = teacherDescIsDisabled.Default.(bool)
+	// teacherDescCreatedTime is the schema descriptor for created_time field.
+	teacherDescCreatedTime := teacherFields[7].Descriptor()
+	// teacher.DefaultCreatedTime holds the default value on creation for the created_time field.
+	teacher.DefaultCreatedTime = teacherDescCreatedTime.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescAccount is the schema descriptor for account field.

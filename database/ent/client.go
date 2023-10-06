@@ -25,6 +25,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
+	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/database/ent/userrole"
 )
@@ -56,6 +57,8 @@ type Client struct {
 	School *SchoolClient
 	// Student is the client for interacting with the Student builders.
 	Student *StudentClient
+	// Teacher is the client for interacting with the Teacher builders.
+	Teacher *TeacherClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserRole is the client for interacting with the UserRole builders.
@@ -84,6 +87,7 @@ func (c *Client) init() {
 	c.SampleFile = NewSampleFileClient(c.config)
 	c.School = NewSchoolClient(c.config)
 	c.Student = NewStudentClient(c.config)
+	c.Teacher = NewTeacherClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.UserRole = NewUserRoleClient(c.config)
 }
@@ -179,6 +183,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		SampleFile:     NewSampleFileClient(cfg),
 		School:         NewSchoolClient(cfg),
 		Student:        NewStudentClient(cfg),
+		Teacher:        NewTeacherClient(cfg),
 		User:           NewUserClient(cfg),
 		UserRole:       NewUserRoleClient(cfg),
 	}, nil
@@ -211,6 +216,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		SampleFile:     NewSampleFileClient(cfg),
 		School:         NewSchoolClient(cfg),
 		Student:        NewStudentClient(cfg),
+		Teacher:        NewTeacherClient(cfg),
 		User:           NewUserClient(cfg),
 		UserRole:       NewUserRoleClient(cfg),
 	}, nil
@@ -243,7 +249,8 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Class, c.College, c.File, c.Major, c.Menu, c.Permission, c.Role,
-		c.RolePermission, c.SampleFile, c.School, c.Student, c.User, c.UserRole,
+		c.RolePermission, c.SampleFile, c.School, c.Student, c.Teacher, c.User,
+		c.UserRole,
 	} {
 		n.Use(hooks...)
 	}
@@ -254,7 +261,8 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Class, c.College, c.File, c.Major, c.Menu, c.Permission, c.Role,
-		c.RolePermission, c.SampleFile, c.School, c.Student, c.User, c.UserRole,
+		c.RolePermission, c.SampleFile, c.School, c.Student, c.Teacher, c.User,
+		c.UserRole,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -285,6 +293,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.School.mutate(ctx, m)
 	case *StudentMutation:
 		return c.Student.mutate(ctx, m)
+	case *TeacherMutation:
+		return c.Teacher.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	case *UserRoleMutation:
@@ -546,6 +556,22 @@ func (c *CollegeClient) QueryMajors(co *College) *MajorQuery {
 			sqlgraph.From(college.Table, college.FieldID, id),
 			sqlgraph.To(major.Table, major.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, college.MajorsTable, college.MajorsColumn),
+		)
+		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTeachers queries the teachers edge of a College.
+func (c *CollegeClient) QueryTeachers(co *College) *TeacherQuery {
+	query := (&TeacherClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := co.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(college.Table, college.FieldID, id),
+			sqlgraph.To(teacher.Table, teacher.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, college.TeachersTable, college.TeachersColumn),
 		)
 		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
 		return fromV, nil
@@ -1879,6 +1905,156 @@ func (c *StudentClient) mutate(ctx context.Context, m *StudentMutation) (Value, 
 	}
 }
 
+// TeacherClient is a client for the Teacher schema.
+type TeacherClient struct {
+	config
+}
+
+// NewTeacherClient returns a client for the Teacher from the given config.
+func NewTeacherClient(c config) *TeacherClient {
+	return &TeacherClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `teacher.Hooks(f(g(h())))`.
+func (c *TeacherClient) Use(hooks ...Hook) {
+	c.hooks.Teacher = append(c.hooks.Teacher, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `teacher.Intercept(f(g(h())))`.
+func (c *TeacherClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Teacher = append(c.inters.Teacher, interceptors...)
+}
+
+// Create returns a builder for creating a Teacher entity.
+func (c *TeacherClient) Create() *TeacherCreate {
+	mutation := newTeacherMutation(c.config, OpCreate)
+	return &TeacherCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Teacher entities.
+func (c *TeacherClient) CreateBulk(builders ...*TeacherCreate) *TeacherCreateBulk {
+	return &TeacherCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Teacher.
+func (c *TeacherClient) Update() *TeacherUpdate {
+	mutation := newTeacherMutation(c.config, OpUpdate)
+	return &TeacherUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TeacherClient) UpdateOne(t *Teacher) *TeacherUpdateOne {
+	mutation := newTeacherMutation(c.config, OpUpdateOne, withTeacher(t))
+	return &TeacherUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TeacherClient) UpdateOneID(id uint32) *TeacherUpdateOne {
+	mutation := newTeacherMutation(c.config, OpUpdateOne, withTeacherID(id))
+	return &TeacherUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Teacher.
+func (c *TeacherClient) Delete() *TeacherDelete {
+	mutation := newTeacherMutation(c.config, OpDelete)
+	return &TeacherDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TeacherClient) DeleteOne(t *Teacher) *TeacherDeleteOne {
+	return c.DeleteOneID(t.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TeacherClient) DeleteOneID(id uint32) *TeacherDeleteOne {
+	builder := c.Delete().Where(teacher.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TeacherDeleteOne{builder}
+}
+
+// Query returns a query builder for Teacher.
+func (c *TeacherClient) Query() *TeacherQuery {
+	return &TeacherQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTeacher},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Teacher entity by its id.
+func (c *TeacherClient) Get(ctx context.Context, id uint32) (*Teacher, error) {
+	return c.Query().Where(teacher.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TeacherClient) GetX(ctx context.Context, id uint32) *Teacher {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryCollege queries the college edge of a Teacher.
+func (c *TeacherClient) QueryCollege(t *Teacher) *CollegeQuery {
+	query := (&CollegeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(teacher.Table, teacher.FieldID, id),
+			sqlgraph.To(college.Table, college.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, teacher.CollegeTable, teacher.CollegeColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a Teacher.
+func (c *TeacherClient) QueryUser(t *Teacher) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(teacher.Table, teacher.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, teacher.UserTable, teacher.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TeacherClient) Hooks() []Hook {
+	return c.hooks.Teacher
+}
+
+// Interceptors returns the client interceptors.
+func (c *TeacherClient) Interceptors() []Interceptor {
+	return c.inters.Teacher
+}
+
+func (c *TeacherClient) mutate(ctx context.Context, m *TeacherMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TeacherCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TeacherUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TeacherUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TeacherDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Teacher mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -1997,6 +2173,22 @@ func (c *UserClient) QueryStudent(u *User) *StudentQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(student.Table, student.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, user.StudentTable, user.StudentColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTeacher queries the teacher edge of a User.
+func (c *UserClient) QueryTeacher(u *User) *TeacherQuery {
+	query := (&TeacherClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(teacher.Table, teacher.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.TeacherTable, user.TeacherColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil
@@ -2166,10 +2358,10 @@ func (c *UserRoleClient) mutate(ctx context.Context, m *UserRoleMutation) (Value
 type (
 	hooks struct {
 		Class, College, File, Major, Menu, Permission, Role, RolePermission, SampleFile,
-		School, Student, User, UserRole []ent.Hook
+		School, Student, Teacher, User, UserRole []ent.Hook
 	}
 	inters struct {
 		Class, College, File, Major, Menu, Permission, Role, RolePermission, SampleFile,
-		School, Student, User, UserRole []ent.Interceptor
+		School, Student, Teacher, User, UserRole []ent.Interceptor
 	}
 )
