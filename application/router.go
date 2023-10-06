@@ -68,14 +68,14 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 			college.POST("/import", Check(authService, []string{entity.ImportCollege}), controllers.Management.ImportCollege)
 			college.GET("/getlist", Check(authService, []string{entity.GetCollegeList}), controllers.Management.GetCollegeList)
 			college.GET("/get", Check(authService, []string{entity.GetColleges}), controllers.Management.GetColleges)
-			college.GET("/:id/get/major", Check(authService, []string{entity.GetMajorsByCollegeID}), controllers.Management.GetMajorsByCollegeID)
+			college.GET("/:id/get/majors", Check(authService, []string{entity.GetMajorsByCollegeID}), controllers.Management.GetMajorsByCollegeID)
 		}
 
 		major := auth.Group("/major")
 		{
 			major.POST("/import", Check(authService, []string{entity.ImportMajorByCollegeID}), controllers.Management.ImportMajorByCollegeID)
 			major.GET("/getlist", Check(authService, []string{entity.GetMajorList}), controllers.Management.GetMajorList)
-			major.GET("/:id/get/class", Check(authService, []string{entity.GetClassesByMajorID}), controllers.Management.GetClassesByMajorID)
+			major.GET("/:id/get/classes", Check(authService, []string{entity.GetClassesByMajorID}), controllers.Management.GetClassesByMajorID)
 		}
 
 		class := auth.Group("/class")
