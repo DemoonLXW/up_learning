@@ -897,7 +897,7 @@ func (cont *ManagementController) ImportStudentByClassID(c *gin.Context) {
 		return
 	}
 
-	err = cont.Services.Management.CreateStudentByClassID(s, param.ID)
+	err = cont.Services.Management.CreateStudentByClassIDAndCreateUser(s, param.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

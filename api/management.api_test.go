@@ -568,7 +568,7 @@ func TestImportStudentByClassID(t *testing.T) {
 	_, err = io.Copy(part, f)
 	assert.Nil(t, err)
 
-	err = writer.WriteField("id", "5")
+	err = writer.WriteField("id", "1")
 	assert.Nil(t, err)
 
 	err = writer.Close()
@@ -577,7 +577,7 @@ func TestImportStudentByClassID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodPost, "/student/import", &b)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "d0082b284c33f13c2cdea0a76c942caf"}
+	token_cookie := &http.Cookie{Name: "token", Value: "f87fb5fd46a93314cf9b46d0f253a838"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
