@@ -640,3 +640,20 @@ func TestImportTeacherByCollegeID(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestGetColleges(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/college/get", nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "917f6cd13b307b54c46e341b4c4e24ba"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}

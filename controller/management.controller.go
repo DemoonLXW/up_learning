@@ -1033,3 +1033,28 @@ func (cont *ManagementController) ImportTeacherByCollegeID(c *gin.Context) {
 	res.Message = "Import Teachers By College ID Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ManagementController) GetColleges(c *gin.Context) {
+
+	cs, err := cont.Services.Management.FindColleges()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	colleges := make([]entity.RetrievedCollege, 0, len(cs))
+	for _, v := range cs {
+		if !v.IsDisabled {
+			colleges = append(colleges, entity.RetrievedCollege{
+				ID:         v.ID,
+				Name:       v.Name,
+				IsDisabled: v.IsDisabled,
+			})
+		}
+	}
+
+	var res entity.Result
+	res.Message = "Get Colleges Successfully"
+	res.Data = colleges
+	c.JSON(http.StatusOK, res)
+}
