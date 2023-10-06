@@ -2273,3 +2273,17 @@ func (serv *ManagementService) GetTotalRetrievedTeachers(like string, isDisabled
 
 	return total, nil
 }
+
+func (serv *ManagementService) FindColleges() ([]*ent.College, error) {
+	ctx := context.Background()
+
+	c, err := serv.DB.College.Query().Where(
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(college.FieldDeletedTime))
+		},
+	).All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("college find all failed: %w", err)
+	}
+	return c, nil
+}

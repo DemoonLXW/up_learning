@@ -804,3 +804,16 @@ func TestGetTotalRetrievedTeachers(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 3, total)
 }
+
+func TestFindColleges(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	cs, err := serv.FindColleges()
+	assert.Nil(t, err)
+	for _, v := range cs {
+
+		fmt.Println(v)
+	}
+
+}
