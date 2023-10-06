@@ -817,3 +817,15 @@ func TestFindColleges(t *testing.T) {
 	}
 
 }
+
+func TestFindMajorsByCollegeID(t *testing.T) {
+	serv, err := CreateTestManagementService()
+	assert.Nil(t, err)
+
+	ms, err := serv.FindMajorsByCollegeID(uint8(4))
+	assert.Nil(t, err)
+	for _, v := range ms {
+		fmt.Println(v)
+	}
+
+}

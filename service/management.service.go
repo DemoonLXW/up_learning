@@ -2287,3 +2287,18 @@ func (serv *ManagementService) FindColleges() ([]*ent.College, error) {
 	}
 	return c, nil
 }
+
+func (serv *ManagementService) FindMajorsByCollegeID(id uint8) ([]*ent.Major, error) {
+	ctx := context.Background()
+
+	m, err := serv.DB.Major.Query().Where(
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(major.FieldDeletedTime))
+		},
+		major.CidEQ(id),
+	).All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("major find by college id failed: %w", err)
+	}
+	return m, nil
+}
