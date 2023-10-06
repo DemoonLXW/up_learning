@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"crypto/md5"
+	"crypto/sha256"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -885,42 +887,6 @@ func (serv *ManagementService) ReadSchoolsFromFile(f *os.File) ([]*entity.ToAddS
 			school.Remark = rows[i][5]
 		}
 
-		// if rows[i][0] == "" {
-		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] name empty failed: %w", i, 0, err)
-		// }
-		// school.Name = rows[i][0]
-
-		// if rows[i][1] == "" {
-		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] code empty failed: %w", i, 1, err)
-		// }
-		// school.Code = rows[i][1]
-
-		// if rows[i][2] == "" {
-		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] competent department empty failed: %w", i, 2, err)
-		// }
-		// school.CompetentDepartment = rows[i][2]
-
-		// if rows[i][3] == "" {
-		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] location empty failed: %w", i, 3, err)
-		// }
-		// school.Location = rows[i][3]
-
-		// if rows[i][4] == "" {
-		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] education level empty failed: %w", i, 4, err)
-		// }
-		// switch rows[i][4] {
-		// case "本科":
-		// 	school.EducationLevel = 0
-		// case "专科":
-		// 	school.EducationLevel = 1
-		// default:
-		// 	return nil, fmt.Errorf("read schools from file cell[%d][%d] education level invalid failed: %w", i, 4, err)
-		// }
-
-		// if size == 6 {
-		// 	school.Remark = rows[i][5]
-		// }
-
 		// note that i
 		schools[i-1] = &school
 	}
@@ -1165,7 +1131,7 @@ func (serv *ManagementService) ReadStudentsFromFile(f *os.File) ([]*entity.ToAdd
 	return students, nil
 }
 
-func (serv *ManagementService) CreateStudentByClassID(toCreates []*entity.ToAddStudent, classID uint32) error {
+func (serv *ManagementService) CreateStudentByClassIDAndCreateUser(toCreates []*entity.ToAddStudent, classID uint32) error {
 	ctx := context.Background()
 
 	tx, err := serv.DB.Tx(ctx)
@@ -1207,6 +1173,7 @@ func (serv *ManagementService) CreateStudentByClassID(toCreates []*entity.ToAddS
 		if num == 0 {
 			return rollback(tx, "create student", fmt.Errorf("create student update deleted student affect 0 row"))
 		}
+
 	}
 	if current < length {
 		num, err := tx.Student.Query().Aggregate(ent.Count()).Int(ctx)
@@ -1228,6 +1195,99 @@ func (serv *ManagementService) CreateStudentByClassID(toCreates []*entity.ToAddS
 		if err != nil {
 			return rollback(tx, "create student", err)
 		}
+	}
+
+	// create user for student
+
+	r, err := tx.Role.Query().Where(role.And(
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(role.FieldDeletedTime))
+		},
+		role.NameEQ("student"),
+	)).First(ctx)
+	if err != nil {
+		return rollback(tx, "create user", fmt.Errorf("create user found role by name failed: %w", err))
+	}
+
+	studentIDs := make([]string, length)
+	for i, v := range toCreates {
+		studentIDs[i] = v.StudentID
+	}
+	s, err := tx.Student.Query().Where(student.And(
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(student.FieldDeletedTime))
+		},
+		student.StudentIDIn(studentIDs...),
+	)).All(ctx)
+	if err != nil {
+		return rollback(tx, "create user", fmt.Errorf("create user found student by student ids failed: %w", err))
+	}
+	if len(s) != length {
+		return rollback(tx, "create user", fmt.Errorf("create user found student by student ids not enough failed"))
+	}
+
+	original_pwd := "123456"
+	md5_pwd := fmt.Sprintf("%x", md5.Sum([]byte(original_pwd)))
+	sha256_pwd := fmt.Sprintf("%x", sha256.Sum256([]byte(md5_pwd)))
+
+	current = 0
+	for ; current < length; current++ {
+		id, err := tx.User.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(user.FieldDeletedTime))
+		}).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create user find a deleted user id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := tx.User.Update().Where(user.And(
+			user.IDEQ(id),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(user.FieldDeletedTime))
+			},
+		)).
+			SetCreatedTime(time.Now()).
+			ClearModifiedTime().
+			ClearDeletedTime().
+			SetAccount(s[current].StudentID).
+			SetUsername(s[current].Name).
+			SetIntroduction("").
+			SetIsDisabled(false).
+			SetPassword(sha256_pwd).
+			AddRoles(r).
+			SetStudentID(s[current].ID).
+			Save(ctx)
+
+		if err != nil {
+			return rollback(tx, "create user", err)
+		}
+		if num == 0 {
+			return rollback(tx, "create user", fmt.Errorf("create user update deleted user affect 0 row"))
+		}
+	}
+	if current < length {
+		num, err := tx.User.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create users count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		for i := 0; i < bulkLength; i++ {
+			err = tx.User.Create().SetID(uint32(num + i + 1)).
+				SetAccount(s[current+i].StudentID).
+				SetUsername(s[current+i].Name).
+				SetPassword(sha256_pwd).
+				SetIntroduction("").
+				AddRoles(r).
+				SetStudentID(s[current+i].ID).
+				Exec(ctx)
+			if err != nil {
+				return rollback(tx, "create users", err)
+			}
+		}
+
 	}
 
 	err = tx.Commit()
