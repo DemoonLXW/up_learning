@@ -2302,3 +2302,18 @@ func (serv *ManagementService) FindMajorsByCollegeID(id uint8) ([]*ent.Major, er
 	}
 	return m, nil
 }
+
+func (serv *ManagementService) FindClassesByMajorID(id uint16) ([]*ent.Class, error) {
+	ctx := context.Background()
+
+	c, err := serv.DB.Class.Query().Where(
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(class.FieldDeletedTime))
+		},
+		class.MidEQ(id),
+	).All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("class find by major id failed: %w", err)
+	}
+	return c, nil
+}
