@@ -884,7 +884,7 @@ func (cont *ManagementController) ImportStudentByClassID(c *gin.Context) {
 		return
 	}
 
-	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importClass", "class")
+	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importStudent", "student")
 	defer os.Remove(f.Name())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -984,5 +984,52 @@ func (cont *ManagementController) GetTeacherList(c *gin.Context) {
 	var res entity.Result
 	res.Message = "Get List of Teachers Successfully"
 	res.Data = data
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *ManagementController) ImportTeacherByCollegeID(c *gin.Context) {
+	type Params struct {
+		ID uint8 `form:"id" binding:"required"`
+	}
+
+	var param Params
+	if err := c.ShouldBind(&param); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fh, err := c.FormFile("import")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importTeacher", "teacher")
+	defer os.Remove(f.Name())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	t, err := cont.Services.Management.ReadTeachersFromFile(f)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = cont.Services.Management.CreateTeacherByCollegeIDAndCreateUser(t, param.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Import Teachers By College ID Successfully"
 	c.JSON(http.StatusOK, res)
 }

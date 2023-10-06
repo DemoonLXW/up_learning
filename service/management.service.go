@@ -2182,7 +2182,7 @@ func (serv *ManagementService) CreateTeacherByCollegeIDAndCreateUser(toCreates [
 				SetPassword(sha256_pwd).
 				SetIntroduction("").
 				AddRoles(r).
-				SetTeacherID(t[current].ID).
+				SetTeacherID(t[current+i].ID).
 				Exec(ctx)
 			if err != nil {
 				return rollback(tx, "create users", err)

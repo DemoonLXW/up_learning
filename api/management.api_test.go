@@ -350,9 +350,9 @@ func TestGetSampleOfImport(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/file/getsample?type=import student", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/file/getsample?type=import teacher", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "42ac5ef975c2b8c56416996a78e5d7e9"}
+	token_cookie := &http.Cookie{Name: "token", Value: "917f6cd13b307b54c46e341b4c4e24ba"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -594,6 +594,42 @@ func TestGetTeacherList(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	query := "?current=2&pagesize=2&sort=id&order=true"
 	req, _ := http.NewRequest(http.MethodGet, "/teacher/getlist"+query, nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "917f6cd13b307b54c46e341b4c4e24ba"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
+
+func TestImportTeacherByCollegeID(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	f, err := os.Open("../import.xlsx")
+	assert.Nil(t, err)
+	defer f.Close()
+
+	b := bytes.Buffer{}
+	writer := multipart.NewWriter(&b)
+	part, err := writer.CreateFormFile("import", filepath.Base(f.Name()))
+	assert.Nil(t, err)
+	_, err = io.Copy(part, f)
+	assert.Nil(t, err)
+
+	err = writer.WriteField("id", "2")
+	assert.Nil(t, err)
+
+	err = writer.Close()
+	assert.Nil(t, err)
+
+	req, _ := http.NewRequest(http.MethodPost, "/teacher/import", &b)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
 	token_cookie := &http.Cookie{Name: "token", Value: "917f6cd13b307b54c46e341b4c4e24ba"}
 	req.AddCookie(uid_cookie)
