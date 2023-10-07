@@ -65,10 +65,14 @@ func ProvideService() (*service.Services, error) {
 	commonService := &service.CommonService{
 		DB: client,
 	}
+	teacherService := &service.TeacherService{
+		DB: client,
+	}
 	services := &service.Services{
 		Management: managementService,
 		Auth:       authService,
 		Common:     commonService,
+		Teacher:    teacherService,
 	}
 	return services, nil
 }
@@ -96,10 +100,14 @@ func ProvideController() (*controller.Controllers, error) {
 	commonService := &service.CommonService{
 		DB: client,
 	}
+	teacherService := &service.TeacherService{
+		DB: client,
+	}
 	services := &service.Services{
 		Management: managementService,
 		Auth:       authService,
 		Common:     commonService,
+		Teacher:    teacherService,
 	}
 	authController := &controller.AuthController{
 		Services: services,
@@ -141,10 +149,14 @@ func ProvideApplication() (*gin.Engine, error) {
 	commonService := &service.CommonService{
 		DB: client,
 	}
+	teacherService := &service.TeacherService{
+		DB: client,
+	}
 	services := &service.Services{
 		Management: managementService,
 		Auth:       authService,
 		Common:     commonService,
+		Teacher:    teacherService,
 	}
 	authController := &controller.AuthController{
 		Services: services,

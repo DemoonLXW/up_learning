@@ -23,6 +23,8 @@ func SetupApplication(controllers *controller.Controllers) *gin.Engine {
 
 	app := gin.New()
 
+	app.Static("/images", "./files/images")
+
 	middlewared_app := SetupMiddleware(app)
 
 	routed_app := SetupRouter(middlewared_app, controllers)
