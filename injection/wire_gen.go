@@ -62,9 +62,13 @@ func ProvideService() (*service.Services, error) {
 		DB:    client,
 		Redis: redisClient,
 	}
+	commonService := &service.CommonService{
+		DB: client,
+	}
 	services := &service.Services{
 		Management: managementService,
 		Auth:       authService,
+		Common:     commonService,
 	}
 	return services, nil
 }
@@ -89,9 +93,13 @@ func ProvideController() (*controller.Controllers, error) {
 		DB:    client,
 		Redis: redisClient,
 	}
+	commonService := &service.CommonService{
+		DB: client,
+	}
 	services := &service.Services{
 		Management: managementService,
 		Auth:       authService,
+		Common:     commonService,
 	}
 	authController := &controller.AuthController{
 		Services: services,
@@ -126,9 +134,13 @@ func ProvideApplication() (*gin.Engine, error) {
 		DB:    client,
 		Redis: redisClient,
 	}
+	commonService := &service.CommonService{
+		DB: client,
+	}
 	services := &service.Services{
 		Management: managementService,
 		Auth:       authService,
+		Common:     commonService,
 	}
 	authController := &controller.AuthController{
 		Services: services,
