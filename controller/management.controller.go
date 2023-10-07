@@ -381,7 +381,7 @@ func (cont *ManagementController) ImportSchool(c *gin.Context) {
 		return
 	}
 
-	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importSchool", "school")
+	f, err := cont.Services.Common.SaveImportedFile(fh, wd+"/temp/importSchool", "school")
 	defer os.Remove(f.Name())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -583,7 +583,7 @@ func (cont *ManagementController) ImportCollege(c *gin.Context) {
 		return
 	}
 
-	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importCollege", "college")
+	f, err := cont.Services.Common.SaveImportedFile(fh, wd+"/temp/importCollege", "college")
 	defer os.Remove(f.Name())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -670,7 +670,7 @@ func (cont *ManagementController) ImportMajorByCollegeID(c *gin.Context) {
 		return
 	}
 
-	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importMajor", "major")
+	f, err := cont.Services.Common.SaveImportedFile(fh, wd+"/temp/importMajor", "major")
 	defer os.Remove(f.Name())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -771,7 +771,7 @@ func (cont *ManagementController) ImportClassByMajorID(c *gin.Context) {
 		return
 	}
 
-	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importClass", "class")
+	f, err := cont.Services.Common.SaveImportedFile(fh, wd+"/temp/importClass", "class")
 	defer os.Remove(f.Name())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -884,7 +884,7 @@ func (cont *ManagementController) ImportStudentByClassID(c *gin.Context) {
 		return
 	}
 
-	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importStudent", "student")
+	f, err := cont.Services.Common.SaveImportedFile(fh, wd+"/temp/importStudent", "student")
 	defer os.Remove(f.Name())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -1010,7 +1010,7 @@ func (cont *ManagementController) ImportTeacherByCollegeID(c *gin.Context) {
 		return
 	}
 
-	f, err := cont.Services.Management.SaveImportedFile(fh, wd+"/temp/importTeacher", "teacher")
+	f, err := cont.Services.Common.SaveImportedFile(fh, wd+"/temp/importTeacher", "teacher")
 	defer os.Remove(f.Name())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
