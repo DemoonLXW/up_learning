@@ -59,3 +59,34 @@ func TestSaveImportedFile(t *testing.T) {
 	fmt.Println(o.Name())
 	// os.Remove(o.Name())
 }
+
+func TestSaveUploadImage(t *testing.T) {
+	serv, err := CreateTestCommonService()
+	assert.Nil(t, err)
+
+	f, err := os.Open("../domain.config.json")
+	assert.Nil(t, err)
+	defer f.Close()
+
+	b := bytes.Buffer{}
+	writer := multipart.NewWriter(&b)
+	part, err := writer.CreateFormFile("upload", filepath.Base(f.Name()))
+	assert.Nil(t, err)
+
+	_, err = io.Copy(part, f)
+	assert.Nil(t, err)
+	err = writer.Close()
+	assert.Nil(t, err)
+
+	req, err := http.NewRequest(http.MethodPost, "localhost:8080", &b)
+	assert.Nil(t, err)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	_, fh, err := req.FormFile("upload")
+	assert.Nil(t, err)
+
+	dir := "../temp/uploadImage"
+
+	o, err := serv.SaveUploadImage(fh, dir)
+	assert.Nil(t, err)
+	fmt.Println(o.Name())
+}
