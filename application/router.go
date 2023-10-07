@@ -87,6 +87,7 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 		file := auth.Group("/file")
 		{
 			file.GET("/getsample", Check(authService, []string{entity.GetSampleOfImport}), controllers.Management.GetSampleOfImport)
+			file.POST("/uploadimage", Check(authService, []string{entity.UploadDocumentImage}), controllers.Common.UploadDocumentImage)
 		}
 
 	}

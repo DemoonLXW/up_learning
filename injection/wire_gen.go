@@ -107,13 +107,13 @@ func ProvideController() (*controller.Controllers, error) {
 	managementController := &controller.ManagementController{
 		Services: services,
 	}
-	teacherController := &controller.TeacherController{
+	commonController := &controller.CommonController{
 		Services: services,
 	}
 	controllers := &controller.Controllers{
 		Auth:       authController,
 		Management: managementController,
-		Teacher:    teacherController,
+		Common:     commonController,
 	}
 	return controllers, nil
 }
@@ -152,13 +152,13 @@ func ProvideApplication() (*gin.Engine, error) {
 	managementController := &controller.ManagementController{
 		Services: services,
 	}
-	teacherController := &controller.TeacherController{
+	commonController := &controller.CommonController{
 		Services: services,
 	}
 	controllers := &controller.Controllers{
 		Auth:       authController,
 		Management: managementController,
-		Teacher:    teacherController,
+		Common:     commonController,
 	}
 	engine := application.SetupApplication(controllers)
 	return engine, nil

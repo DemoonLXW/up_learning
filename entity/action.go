@@ -39,4 +39,6 @@ const (
 
 	ImportClassByMajorID = "import class by major id"
 	GetClassList         = "get class list"
+
+	UploadDocumentImage = "upload document image"
 )
