@@ -777,6 +777,29 @@ func HasFilesWith(preds ...predicate.File) predicate.User {
 	})
 }
 
+// HasProjects applies the HasEdge predicate on the "projects" edge.
+func HasProjects() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProjectsTable, ProjectsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectsWith applies the HasEdge predicate on the "projects" edge with a given conditions (other predicates).
+func HasProjectsWith(preds ...predicate.Project) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newProjectsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasUserRole applies the HasEdge predicate on the "user_role" edge.
 func HasUserRole() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

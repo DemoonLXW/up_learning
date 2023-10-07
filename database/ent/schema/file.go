@@ -27,6 +27,7 @@ func (File) Fields() []ent.Field {
 		field.Uint32("id").
 			Unique(),
 		field.Uint32("uid"),
+		field.Uint32("pid"),
 		field.String("name").
 			NotEmpty(),
 		field.String("path").
@@ -57,6 +58,11 @@ func (File) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("uid"),
+		edge.From("project", Project.Type).
+			Ref("attachments").
+			Unique().
+			Required().
+			Field("pid"),
 		edge.To("sample", SampleFile.Type).
 			Unique(),
 	}

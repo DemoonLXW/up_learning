@@ -42,6 +42,8 @@ const (
 	EdgeTeacher = "teacher"
 	// EdgeFiles holds the string denoting the files edge name in mutations.
 	EdgeFiles = "files"
+	// EdgeProjects holds the string denoting the projects edge name in mutations.
+	EdgeProjects = "projects"
 	// EdgeUserRole holds the string denoting the user_role edge name in mutations.
 	EdgeUserRole = "user_role"
 	// Table holds the table name of the user in the database.
@@ -72,6 +74,13 @@ const (
 	FilesInverseTable = "file"
 	// FilesColumn is the table column denoting the files relation/edge.
 	FilesColumn = "uid"
+	// ProjectsTable is the table that holds the projects relation/edge.
+	ProjectsTable = "project"
+	// ProjectsInverseTable is the table name for the Project entity.
+	// It exists in this package in order to avoid circular dependency with the "project" package.
+	ProjectsInverseTable = "project"
+	// ProjectsColumn is the table column denoting the projects relation/edge.
+	ProjectsColumn = "uid"
 	// UserRoleTable is the table that holds the user_role relation/edge.
 	UserRoleTable = "user_role"
 	// UserRoleInverseTable is the table name for the UserRole entity.
@@ -223,6 +232,20 @@ func ByFiles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByProjectsCount orders the results by projects count.
+func ByProjectsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProjectsStep(), opts...)
+	}
+}
+
+// ByProjects orders the results by projects terms.
+func ByProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByUserRoleCount orders the results by user_role count.
 func ByUserRoleCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -262,6 +285,13 @@ func newFilesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(FilesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, FilesTable, FilesColumn),
+	)
+}
+func newProjectsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProjectsTable, ProjectsColumn),
 	)
 }
 func newUserRoleStep() *sqlgraph.Step {

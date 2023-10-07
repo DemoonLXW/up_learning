@@ -60,6 +60,11 @@ func UID(v uint32) predicate.File {
 	return predicate.File(sql.FieldEQ(FieldUID, v))
 }
 
+// Pid applies equality check predicate on the "pid" field. It's identical to PidEQ.
+func Pid(v uint32) predicate.File {
+	return predicate.File(sql.FieldEQ(FieldPid, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.File {
 	return predicate.File(sql.FieldEQ(FieldName, v))
@@ -113,6 +118,26 @@ func UIDIn(vs ...uint32) predicate.File {
 // UIDNotIn applies the NotIn predicate on the "uid" field.
 func UIDNotIn(vs ...uint32) predicate.File {
 	return predicate.File(sql.FieldNotIn(FieldUID, vs...))
+}
+
+// PidEQ applies the EQ predicate on the "pid" field.
+func PidEQ(v uint32) predicate.File {
+	return predicate.File(sql.FieldEQ(FieldPid, v))
+}
+
+// PidNEQ applies the NEQ predicate on the "pid" field.
+func PidNEQ(v uint32) predicate.File {
+	return predicate.File(sql.FieldNEQ(FieldPid, v))
+}
+
+// PidIn applies the In predicate on the "pid" field.
+func PidIn(vs ...uint32) predicate.File {
+	return predicate.File(sql.FieldIn(FieldPid, vs...))
+}
+
+// PidNotIn applies the NotIn predicate on the "pid" field.
+func PidNotIn(vs ...uint32) predicate.File {
+	return predicate.File(sql.FieldNotIn(FieldPid, vs...))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -460,6 +485,29 @@ func HasCreator() predicate.File {
 func HasCreatorWith(preds ...predicate.User) predicate.File {
 	return predicate.File(func(s *sql.Selector) {
 		step := newCreatorStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProject applies the HasEdge predicate on the "project" edge.
+func HasProject() predicate.File {
+	return predicate.File(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ProjectTable, ProjectColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectWith applies the HasEdge predicate on the "project" edge with a given conditions (other predicates).
+func HasProjectWith(preds ...predicate.Project) predicate.File {
+	return predicate.File(func(s *sql.Selector) {
+		step := newProjectStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
+	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/teacher"
@@ -222,6 +223,21 @@ func (uc *UserCreate) AddFiles(f ...*File) *UserCreate {
 	return uc.AddFileIDs(ids...)
 }
 
+// AddProjectIDs adds the "projects" edge to the Project entity by IDs.
+func (uc *UserCreate) AddProjectIDs(ids ...uint32) *UserCreate {
+	uc.mutation.AddProjectIDs(ids...)
+	return uc
+}
+
+// AddProjects adds the "projects" edges to the Project entity.
+func (uc *UserCreate) AddProjects(p ...*Project) *UserCreate {
+	ids := make([]uint32, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uc.AddProjectIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uc *UserCreate) Mutation() *UserMutation {
 	return uc.mutation
@@ -424,6 +440,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ProjectsTable,
+			Columns: []string{user.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

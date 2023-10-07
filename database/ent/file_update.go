@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
+	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -33,6 +34,12 @@ func (fu *FileUpdate) Where(ps ...predicate.File) *FileUpdate {
 // SetUID sets the "uid" field.
 func (fu *FileUpdate) SetUID(u uint32) *FileUpdate {
 	fu.mutation.SetUID(u)
+	return fu
+}
+
+// SetPid sets the "pid" field.
+func (fu *FileUpdate) SetPid(u uint32) *FileUpdate {
+	fu.mutation.SetPid(u)
 	return fu
 }
 
@@ -154,6 +161,17 @@ func (fu *FileUpdate) SetCreator(u *User) *FileUpdate {
 	return fu.SetCreatorID(u.ID)
 }
 
+// SetProjectID sets the "project" edge to the Project entity by ID.
+func (fu *FileUpdate) SetProjectID(id uint32) *FileUpdate {
+	fu.mutation.SetProjectID(id)
+	return fu
+}
+
+// SetProject sets the "project" edge to the Project entity.
+func (fu *FileUpdate) SetProject(p *Project) *FileUpdate {
+	return fu.SetProjectID(p.ID)
+}
+
 // SetSampleID sets the "sample" edge to the SampleFile entity by ID.
 func (fu *FileUpdate) SetSampleID(id uint8) *FileUpdate {
 	fu.mutation.SetSampleID(id)
@@ -181,6 +199,12 @@ func (fu *FileUpdate) Mutation() *FileMutation {
 // ClearCreator clears the "creator" edge to the User entity.
 func (fu *FileUpdate) ClearCreator() *FileUpdate {
 	fu.mutation.ClearCreator()
+	return fu
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (fu *FileUpdate) ClearProject() *FileUpdate {
+	fu.mutation.ClearProject()
 	return fu
 }
 
@@ -231,6 +255,9 @@ func (fu *FileUpdate) check() error {
 	}
 	if _, ok := fu.mutation.CreatorID(); fu.mutation.CreatorCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "File.creator"`)
+	}
+	if _, ok := fu.mutation.ProjectID(); fu.mutation.ProjectCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "File.project"`)
 	}
 	return nil
 }
@@ -309,6 +336,35 @@ func (fu *FileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if fu.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   file.ProjectTable,
+			Columns: []string{file.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUint32),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fu.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   file.ProjectTable,
+			Columns: []string{file.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if fu.mutation.SampleCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -361,6 +417,12 @@ type FileUpdateOne struct {
 // SetUID sets the "uid" field.
 func (fuo *FileUpdateOne) SetUID(u uint32) *FileUpdateOne {
 	fuo.mutation.SetUID(u)
+	return fuo
+}
+
+// SetPid sets the "pid" field.
+func (fuo *FileUpdateOne) SetPid(u uint32) *FileUpdateOne {
+	fuo.mutation.SetPid(u)
 	return fuo
 }
 
@@ -482,6 +544,17 @@ func (fuo *FileUpdateOne) SetCreator(u *User) *FileUpdateOne {
 	return fuo.SetCreatorID(u.ID)
 }
 
+// SetProjectID sets the "project" edge to the Project entity by ID.
+func (fuo *FileUpdateOne) SetProjectID(id uint32) *FileUpdateOne {
+	fuo.mutation.SetProjectID(id)
+	return fuo
+}
+
+// SetProject sets the "project" edge to the Project entity.
+func (fuo *FileUpdateOne) SetProject(p *Project) *FileUpdateOne {
+	return fuo.SetProjectID(p.ID)
+}
+
 // SetSampleID sets the "sample" edge to the SampleFile entity by ID.
 func (fuo *FileUpdateOne) SetSampleID(id uint8) *FileUpdateOne {
 	fuo.mutation.SetSampleID(id)
@@ -509,6 +582,12 @@ func (fuo *FileUpdateOne) Mutation() *FileMutation {
 // ClearCreator clears the "creator" edge to the User entity.
 func (fuo *FileUpdateOne) ClearCreator() *FileUpdateOne {
 	fuo.mutation.ClearCreator()
+	return fuo
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (fuo *FileUpdateOne) ClearProject() *FileUpdateOne {
+	fuo.mutation.ClearProject()
 	return fuo
 }
 
@@ -572,6 +651,9 @@ func (fuo *FileUpdateOne) check() error {
 	}
 	if _, ok := fuo.mutation.CreatorID(); fuo.mutation.CreatorCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "File.creator"`)
+	}
+	if _, ok := fuo.mutation.ProjectID(); fuo.mutation.ProjectCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "File.project"`)
 	}
 	return nil
 }
@@ -660,6 +742,35 @@ func (fuo *FileUpdateOne) sqlSave(ctx context.Context) (_node *File, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if fuo.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   file.ProjectTable,
+			Columns: []string{file.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUint32),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := fuo.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   file.ProjectTable,
+			Columns: []string{file.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

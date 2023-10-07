@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
+	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -25,6 +26,7 @@ type FileQuery struct {
 	inters      []Interceptor
 	predicates  []predicate.File
 	withCreator *UserQuery
+	withProject *ProjectQuery
 	withSample  *SampleFileQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -77,6 +79,28 @@ func (fq *FileQuery) QueryCreator() *UserQuery {
 			sqlgraph.From(file.Table, file.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, file.CreatorTable, file.CreatorColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProject chains the current query on the "project" edge.
+func (fq *FileQuery) QueryProject() *ProjectQuery {
+	query := (&ProjectClient{config: fq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := fq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := fq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(file.Table, file.FieldID, selector),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, file.ProjectTable, file.ProjectColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -299,6 +323,7 @@ func (fq *FileQuery) Clone() *FileQuery {
 		inters:      append([]Interceptor{}, fq.inters...),
 		predicates:  append([]predicate.File{}, fq.predicates...),
 		withCreator: fq.withCreator.Clone(),
+		withProject: fq.withProject.Clone(),
 		withSample:  fq.withSample.Clone(),
 		// clone intermediate query.
 		sql:  fq.sql.Clone(),
@@ -314,6 +339,17 @@ func (fq *FileQuery) WithCreator(opts ...func(*UserQuery)) *FileQuery {
 		opt(query)
 	}
 	fq.withCreator = query
+	return fq
+}
+
+// WithProject tells the query-builder to eager-load the nodes that are connected to
+// the "project" edge. The optional arguments are used to configure the query builder of the edge.
+func (fq *FileQuery) WithProject(opts ...func(*ProjectQuery)) *FileQuery {
+	query := (&ProjectClient{config: fq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	fq.withProject = query
 	return fq
 }
 
@@ -406,8 +442,9 @@ func (fq *FileQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*File, e
 	var (
 		nodes       = []*File{}
 		_spec       = fq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			fq.withCreator != nil,
+			fq.withProject != nil,
 			fq.withSample != nil,
 		}
 	)
@@ -432,6 +469,12 @@ func (fq *FileQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*File, e
 	if query := fq.withCreator; query != nil {
 		if err := fq.loadCreator(ctx, query, nodes, nil,
 			func(n *File, e *User) { n.Edges.Creator = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := fq.withProject; query != nil {
+		if err := fq.loadProject(ctx, query, nodes, nil,
+			func(n *File, e *Project) { n.Edges.Project = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -466,6 +509,35 @@ func (fq *FileQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "uid" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (fq *FileQuery) loadProject(ctx context.Context, query *ProjectQuery, nodes []*File, init func(*File), assign func(*File, *Project)) error {
+	ids := make([]uint32, 0, len(nodes))
+	nodeids := make(map[uint32][]*File)
+	for i := range nodes {
+		fk := nodes[i].Pid
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(project.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "pid" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -528,6 +600,9 @@ func (fq *FileQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if fq.withCreator != nil {
 			_spec.Node.AddColumnOnce(file.FieldUID)
+		}
+		if fq.withProject != nil {
+			_spec.Node.AddColumnOnce(file.FieldPid)
 		}
 	}
 	if ps := fq.predicates; len(ps) > 0 {

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
+	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/teacher"
@@ -31,6 +32,7 @@ type UserQuery struct {
 	withStudent  *StudentQuery
 	withTeacher  *TeacherQuery
 	withFiles    *FileQuery
+	withProjects *ProjectQuery
 	withUserRole *UserRoleQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -149,6 +151,28 @@ func (uq *UserQuery) QueryFiles() *FileQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(file.Table, file.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.FilesTable, user.FilesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProjects chains the current query on the "projects" edge.
+func (uq *UserQuery) QueryProjects() *ProjectQuery {
+	query := (&ProjectClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ProjectsTable, user.ProjectsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -374,6 +398,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withStudent:  uq.withStudent.Clone(),
 		withTeacher:  uq.withTeacher.Clone(),
 		withFiles:    uq.withFiles.Clone(),
+		withProjects: uq.withProjects.Clone(),
 		withUserRole: uq.withUserRole.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
@@ -422,6 +447,17 @@ func (uq *UserQuery) WithFiles(opts ...func(*FileQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withFiles = query
+	return uq
+}
+
+// WithProjects tells the query-builder to eager-load the nodes that are connected to
+// the "projects" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithProjects(opts ...func(*ProjectQuery)) *UserQuery {
+	query := (&ProjectClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withProjects = query
 	return uq
 }
 
@@ -514,11 +550,12 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			uq.withRoles != nil,
 			uq.withStudent != nil,
 			uq.withTeacher != nil,
 			uq.withFiles != nil,
+			uq.withProjects != nil,
 			uq.withUserRole != nil,
 		}
 	)
@@ -563,6 +600,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadFiles(ctx, query, nodes,
 			func(n *User) { n.Edges.Files = []*File{} },
 			func(n *User, e *File) { n.Edges.Files = append(n.Edges.Files, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withProjects; query != nil {
+		if err := uq.loadProjects(ctx, query, nodes,
+			func(n *User) { n.Edges.Projects = []*Project{} },
+			func(n *User, e *Project) { n.Edges.Projects = append(n.Edges.Projects, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -707,6 +751,36 @@ func (uq *UserQuery) loadFiles(ctx context.Context, query *FileQuery, nodes []*U
 	}
 	query.Where(predicate.File(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.FilesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "uid" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadProjects(ctx context.Context, query *ProjectQuery, nodes []*User, init func(*User), assign func(*User, *Project)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint32]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(project.FieldUID)
+	}
+	query.Where(predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.ProjectsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

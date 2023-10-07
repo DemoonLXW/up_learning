@@ -16,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldUID holds the string denoting the uid field in the database.
 	FieldUID = "uid"
+	// FieldPid holds the string denoting the pid field in the database.
+	FieldPid = "pid"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldPath holds the string denoting the path field in the database.
@@ -32,6 +34,8 @@ const (
 	FieldModifiedTime = "modified_time"
 	// EdgeCreator holds the string denoting the creator edge name in mutations.
 	EdgeCreator = "creator"
+	// EdgeProject holds the string denoting the project edge name in mutations.
+	EdgeProject = "project"
 	// EdgeSample holds the string denoting the sample edge name in mutations.
 	EdgeSample = "sample"
 	// Table holds the table name of the file in the database.
@@ -43,6 +47,13 @@ const (
 	CreatorInverseTable = "user"
 	// CreatorColumn is the table column denoting the creator relation/edge.
 	CreatorColumn = "uid"
+	// ProjectTable is the table that holds the project relation/edge.
+	ProjectTable = "file"
+	// ProjectInverseTable is the table name for the Project entity.
+	// It exists in this package in order to avoid circular dependency with the "project" package.
+	ProjectInverseTable = "project"
+	// ProjectColumn is the table column denoting the project relation/edge.
+	ProjectColumn = "pid"
 	// SampleTable is the table that holds the sample relation/edge.
 	SampleTable = "sample_file"
 	// SampleInverseTable is the table name for the SampleFile entity.
@@ -56,6 +67,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUID,
+	FieldPid,
 	FieldName,
 	FieldPath,
 	FieldSize,
@@ -97,6 +109,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByUID orders the results by the uid field.
 func ByUID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUID, opts...).ToFunc()
+}
+
+// ByPid orders the results by the pid field.
+func ByPid(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPid, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.
@@ -141,6 +158,13 @@ func ByCreatorField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByProjectField orders the results by project field.
+func ByProjectField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // BySampleField orders the results by sample field.
 func BySampleField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -152,6 +176,13 @@ func newCreatorStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CreatorInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, CreatorTable, CreatorColumn),
+	)
+}
+func newProjectStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ProjectTable, ProjectColumn),
 	)
 }
 func newSampleStep() *sqlgraph.Step {

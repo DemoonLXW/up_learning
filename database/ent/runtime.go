@@ -11,6 +11,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/major"
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
+	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
@@ -49,19 +50,19 @@ func init() {
 	fileFields := schema.File{}.Fields()
 	_ = fileFields
 	// fileDescName is the schema descriptor for name field.
-	fileDescName := fileFields[2].Descriptor()
+	fileDescName := fileFields[3].Descriptor()
 	// file.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	file.NameValidator = fileDescName.Validators[0].(func(string) error)
 	// fileDescPath is the schema descriptor for path field.
-	fileDescPath := fileFields[3].Descriptor()
+	fileDescPath := fileFields[4].Descriptor()
 	// file.PathValidator is a validator for the "path" field. It is called by the builders before save.
 	file.PathValidator = fileDescPath.Validators[0].(func(string) error)
 	// fileDescIsDisabled is the schema descriptor for is_disabled field.
-	fileDescIsDisabled := fileFields[5].Descriptor()
+	fileDescIsDisabled := fileFields[6].Descriptor()
 	// file.DefaultIsDisabled holds the default value on creation for the is_disabled field.
 	file.DefaultIsDisabled = fileDescIsDisabled.Default.(bool)
 	// fileDescCreatedTime is the schema descriptor for created_time field.
-	fileDescCreatedTime := fileFields[6].Descriptor()
+	fileDescCreatedTime := fileFields[7].Descriptor()
 	// file.DefaultCreatedTime holds the default value on creation for the created_time field.
 	file.DefaultCreatedTime = fileDescCreatedTime.Default.(func() time.Time)
 	majorFields := schema.Major{}.Fields()
@@ -102,6 +103,16 @@ func init() {
 	permissionDescCreatedTime := permissionFields[4].Descriptor()
 	// permission.DefaultCreatedTime holds the default value on creation for the created_time field.
 	permission.DefaultCreatedTime = permissionDescCreatedTime.Default.(func() time.Time)
+	projectFields := schema.Project{}.Fields()
+	_ = projectFields
+	// projectDescIsDisabled is the schema descriptor for is_disabled field.
+	projectDescIsDisabled := projectFields[8].Descriptor()
+	// project.DefaultIsDisabled holds the default value on creation for the is_disabled field.
+	project.DefaultIsDisabled = projectDescIsDisabled.Default.(bool)
+	// projectDescCreatedTime is the schema descriptor for created_time field.
+	projectDescCreatedTime := projectFields[9].Descriptor()
+	// project.DefaultCreatedTime holds the default value on creation for the created_time field.
+	project.DefaultCreatedTime = projectDescCreatedTime.Default.(func() time.Time)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
 	// roleDescName is the schema descriptor for name field.

@@ -24,6 +24,8 @@ type Tx struct {
 	Menu *MenuClient
 	// Permission is the client for interacting with the Permission builders.
 	Permission *PermissionClient
+	// Project is the client for interacting with the Project builders.
+	Project *ProjectClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// RolePermission is the client for interacting with the RolePermission builders.
@@ -177,6 +179,7 @@ func (tx *Tx) init() {
 	tx.Major = NewMajorClient(tx.config)
 	tx.Menu = NewMenuClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)
+	tx.Project = NewProjectClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.RolePermission = NewRolePermissionClient(tx.config)
 	tx.SampleFile = NewSampleFileClient(tx.config)

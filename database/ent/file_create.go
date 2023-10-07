@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
+	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -25,6 +26,12 @@ type FileCreate struct {
 // SetUID sets the "uid" field.
 func (fc *FileCreate) SetUID(u uint32) *FileCreate {
 	fc.mutation.SetUID(u)
+	return fc
+}
+
+// SetPid sets the "pid" field.
+func (fc *FileCreate) SetPid(u uint32) *FileCreate {
+	fc.mutation.SetPid(u)
 	return fc
 }
 
@@ -127,6 +134,17 @@ func (fc *FileCreate) SetCreator(u *User) *FileCreate {
 	return fc.SetCreatorID(u.ID)
 }
 
+// SetProjectID sets the "project" edge to the Project entity by ID.
+func (fc *FileCreate) SetProjectID(id uint32) *FileCreate {
+	fc.mutation.SetProjectID(id)
+	return fc
+}
+
+// SetProject sets the "project" edge to the Project entity.
+func (fc *FileCreate) SetProject(p *Project) *FileCreate {
+	return fc.SetProjectID(p.ID)
+}
+
 // SetSampleID sets the "sample" edge to the SampleFile entity by ID.
 func (fc *FileCreate) SetSampleID(id uint8) *FileCreate {
 	fc.mutation.SetSampleID(id)
@@ -196,6 +214,9 @@ func (fc *FileCreate) check() error {
 	if _, ok := fc.mutation.UID(); !ok {
 		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "File.uid"`)}
 	}
+	if _, ok := fc.mutation.Pid(); !ok {
+		return &ValidationError{Name: "pid", err: errors.New(`ent: missing required field "File.pid"`)}
+	}
 	if _, ok := fc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "File.name"`)}
 	}
@@ -220,6 +241,9 @@ func (fc *FileCreate) check() error {
 	}
 	if _, ok := fc.mutation.CreatorID(); !ok {
 		return &ValidationError{Name: "creator", err: errors.New(`ent: missing required edge "File.creator"`)}
+	}
+	if _, ok := fc.mutation.ProjectID(); !ok {
+		return &ValidationError{Name: "project", err: errors.New(`ent: missing required edge "File.project"`)}
 	}
 	return nil
 }
@@ -296,6 +320,23 @@ func (fc *FileCreate) createSpec() (*File, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.UID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := fc.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   file.ProjectTable,
+			Columns: []string{file.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.Pid = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := fc.mutation.SampleIDs(); len(nodes) > 0 {

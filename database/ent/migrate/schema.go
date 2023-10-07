@@ -59,6 +59,7 @@ var (
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
 		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
+		{Name: "pid", Type: field.TypeUint32},
 		{Name: "uid", Type: field.TypeUint32},
 	}
 	// FileTable holds the schema information for the "file" table.
@@ -68,8 +69,14 @@ var (
 		PrimaryKey: []*schema.Column{FileColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "file_user_files",
+				Symbol:     "file_project_attachments",
 				Columns:    []*schema.Column{FileColumns[8]},
+				RefColumns: []*schema.Column{ProjectColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "file_user_files",
+				Columns:    []*schema.Column{FileColumns[9]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -139,6 +146,35 @@ var (
 		Name:       "permission",
 		Columns:    PermissionColumns,
 		PrimaryKey: []*schema.Column{PermissionColumns[0]},
+	}
+	// ProjectColumns holds the columns for the "project" table.
+	ProjectColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "goal", Type: field.TypeString},
+		{Name: "principle", Type: field.TypeString},
+		{Name: "process_and_method", Type: field.TypeString},
+		{Name: "step", Type: field.TypeString},
+		{Name: "result_and_conclusion", Type: field.TypeString},
+		{Name: "requirement", Type: field.TypeString},
+		{Name: "is_disabled", Type: field.TypeBool, Default: false},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
+		{Name: "uid", Type: field.TypeUint32, Nullable: true},
+	}
+	// ProjectTable holds the schema information for the "project" table.
+	ProjectTable = &schema.Table{
+		Name:       "project",
+		Columns:    ProjectColumns,
+		PrimaryKey: []*schema.Column{ProjectColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "project_user_projects",
+				Columns:    []*schema.Column{ProjectColumns[11]},
+				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// RoleColumns holds the columns for the "role" table.
 	RoleColumns = []*schema.Column{
@@ -353,6 +389,7 @@ var (
 		MajorTable,
 		MenuTable,
 		PermissionTable,
+		ProjectTable,
 		RoleTable,
 		RolePermissionTable,
 		SampleFileTable,
@@ -372,7 +409,8 @@ func init() {
 	CollegeTable.Annotation = &entsql.Annotation{
 		Table: "college",
 	}
-	FileTable.ForeignKeys[0].RefTable = UserTable
+	FileTable.ForeignKeys[0].RefTable = ProjectTable
+	FileTable.ForeignKeys[1].RefTable = UserTable
 	FileTable.Annotation = &entsql.Annotation{
 		Table: "file",
 	}
@@ -386,6 +424,10 @@ func init() {
 	}
 	PermissionTable.Annotation = &entsql.Annotation{
 		Table: "permission",
+	}
+	ProjectTable.ForeignKeys[0].RefTable = UserTable
+	ProjectTable.Annotation = &entsql.Annotation{
+		Table: "project",
 	}
 	RoleTable.Annotation = &entsql.Annotation{
 		Table: "role",
