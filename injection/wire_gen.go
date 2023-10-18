@@ -12,6 +12,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/service"
+	"github.com/DemoonLXW/up_learning/workflow"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
@@ -28,6 +29,14 @@ func ProvideDataBase() (*ent.Client, error) {
 		return nil, err
 	}
 	return client, nil
+}
+
+func ProvideWorkflowHelper() (*workflow.WorkflowHelper, error) {
+	workflowHelper, err := workflow.ProvideWorkflowHelper()
+	if err != nil {
+		return nil, err
+	}
+	return workflowHelper, nil
 }
 
 func ProvideRedis() (*redis.Client, error) {
@@ -172,6 +181,13 @@ func ProvideApplication() (*gin.Engine, error) {
 		Management: managementController,
 		Common:     commonController,
 	}
-	engine := application.SetupApplication(controllers)
+	workflowHelper, err := workflow.ProvideWorkflowHelper()
+	if err != nil {
+		return nil, err
+	}
+	engine, err := application.SetupApplication(controllers, workflowHelper)
+	if err != nil {
+		return nil, err
+	}
 	return engine, nil
 }
