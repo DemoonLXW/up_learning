@@ -44,7 +44,7 @@ func TestLogin(t *testing.T) {
 	// 	fmt.Println(u)
 	// 	time.Sleep(3 * time.Second)
 	// }
-	u, token, err := serv.Login("admin", "f8ec997eccf015b232ac2b97992ece6caf28060d95d0cbfa6da803064e941583")
+	u, token, err := serv.Login("admin", "cdf4a007e2b02a0c49fc9b7ccfbb8a10c644f635e1765dcf2a7ab794ddc7edac")
 	assert.Nil(t, err)
 	fmt.Println(token)
 	fmt.Println(u)
