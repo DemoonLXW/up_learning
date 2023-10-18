@@ -5,3 +5,4 @@ up_learning
 temp/
 *.xlsx
 files/
+workflow.config.yaml
