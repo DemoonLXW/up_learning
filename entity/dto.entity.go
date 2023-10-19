@@ -214,3 +214,11 @@ type RetrievedClass struct {
 	Name       string `json:"name"`
 	IsDisabled bool   `json:"isDisabled"`
 }
+
+type Reviewer struct {
+	IDs []uint32 `json:"ids"`
+}
+
+type Executor struct {
+	IDs []uint32 `json:"ids"`
+}

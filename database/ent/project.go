@@ -32,6 +32,8 @@ type Project struct {
 	ResultAndConclusion string `json:"result_and_conclusion,omitempty"`
 	// Requirement holds the value of the "requirement" field.
 	Requirement string `json:"requirement,omitempty"`
+	// ReviewStatus holds the value of the "review_status" field.
+	ReviewStatus uint8 `json:"review_status,omitempty"`
 	// IsDisabled holds the value of the "is_disabled" field.
 	IsDisabled bool `json:"is_disabled,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
@@ -52,9 +54,11 @@ type ProjectEdges struct {
 	User *User `json:"user,omitempty"`
 	// Attachments holds the value of the attachments edge.
 	Attachments []*File `json:"attachments,omitempty"`
+	// ReviewProject holds the value of the review_project edge.
+	ReviewProject []*ReviewProject `json:"review_project,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -79,6 +83,15 @@ func (e ProjectEdges) AttachmentsOrErr() ([]*File, error) {
 	return nil, &NotLoadedError{edge: "attachments"}
 }
 
+// ReviewProjectOrErr returns the ReviewProject value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) ReviewProjectOrErr() ([]*ReviewProject, error) {
+	if e.loadedTypes[2] {
+		return e.ReviewProject, nil
+	}
+	return nil, &NotLoadedError{edge: "review_project"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Project) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -86,7 +99,7 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case project.FieldIsDisabled:
 			values[i] = new(sql.NullBool)
-		case project.FieldID, project.FieldUID:
+		case project.FieldID, project.FieldUID, project.FieldReviewStatus:
 			values[i] = new(sql.NullInt64)
 		case project.FieldGoal, project.FieldPrinciple, project.FieldProcessAndMethod, project.FieldStep, project.FieldResultAndConclusion, project.FieldRequirement:
 			values[i] = new(sql.NullString)
@@ -155,6 +168,12 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.Requirement = value.String
 			}
+		case project.FieldReviewStatus:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field review_status", values[i])
+			} else if value.Valid {
+				pr.ReviewStatus = uint8(value.Int64)
+			}
 		case project.FieldIsDisabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_disabled", values[i])
@@ -205,6 +224,11 @@ func (pr *Project) QueryAttachments() *FileQuery {
 	return NewProjectClient(pr.config).QueryAttachments(pr)
 }
 
+// QueryReviewProject queries the "review_project" edge of the Project entity.
+func (pr *Project) QueryReviewProject() *ReviewProjectQuery {
+	return NewProjectClient(pr.config).QueryReviewProject(pr)
+}
+
 // Update returns a builder for updating this Project.
 // Note that you need to call Project.Unwrap() before calling this method if this Project
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -248,6 +272,9 @@ func (pr *Project) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("requirement=")
 	builder.WriteString(pr.Requirement)
+	builder.WriteString(", ")
+	builder.WriteString("review_status=")
+	builder.WriteString(fmt.Sprintf("%v", pr.ReviewStatus))
 	builder.WriteString(", ")
 	builder.WriteString("is_disabled=")
 	builder.WriteString(fmt.Sprintf("%v", pr.IsDisabled))

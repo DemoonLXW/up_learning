@@ -28,6 +28,8 @@ const (
 	FieldResultAndConclusion = "result_and_conclusion"
 	// FieldRequirement holds the string denoting the requirement field in the database.
 	FieldRequirement = "requirement"
+	// FieldReviewStatus holds the string denoting the review_status field in the database.
+	FieldReviewStatus = "review_status"
 	// FieldIsDisabled holds the string denoting the is_disabled field in the database.
 	FieldIsDisabled = "is_disabled"
 	// FieldCreatedTime holds the string denoting the created_time field in the database.
@@ -40,6 +42,8 @@ const (
 	EdgeUser = "user"
 	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
 	EdgeAttachments = "attachments"
+	// EdgeReviewProject holds the string denoting the review_project edge name in mutations.
+	EdgeReviewProject = "review_project"
 	// Table holds the table name of the project in the database.
 	Table = "project"
 	// UserTable is the table that holds the user relation/edge.
@@ -56,6 +60,13 @@ const (
 	AttachmentsInverseTable = "file"
 	// AttachmentsColumn is the table column denoting the attachments relation/edge.
 	AttachmentsColumn = "pid"
+	// ReviewProjectTable is the table that holds the review_project relation/edge.
+	ReviewProjectTable = "review_project"
+	// ReviewProjectInverseTable is the table name for the ReviewProject entity.
+	// It exists in this package in order to avoid circular dependency with the "reviewproject" package.
+	ReviewProjectInverseTable = "review_project"
+	// ReviewProjectColumn is the table column denoting the review_project relation/edge.
+	ReviewProjectColumn = "project_id"
 )
 
 // Columns holds all SQL columns for project fields.
@@ -68,6 +79,7 @@ var Columns = []string{
 	FieldStep,
 	FieldResultAndConclusion,
 	FieldRequirement,
+	FieldReviewStatus,
 	FieldIsDisabled,
 	FieldCreatedTime,
 	FieldDeletedTime,
@@ -85,6 +97,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultReviewStatus holds the default value on creation for the "review_status" field.
+	DefaultReviewStatus uint8
 	// DefaultIsDisabled holds the default value on creation for the "is_disabled" field.
 	DefaultIsDisabled bool
 	// DefaultCreatedTime holds the default value on creation for the "created_time" field.
@@ -134,6 +148,11 @@ func ByRequirement(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRequirement, opts...).ToFunc()
 }
 
+// ByReviewStatus orders the results by the review_status field.
+func ByReviewStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReviewStatus, opts...).ToFunc()
+}
+
 // ByIsDisabled orders the results by the is_disabled field.
 func ByIsDisabled(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsDisabled, opts...).ToFunc()
@@ -174,6 +193,20 @@ func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAttachmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByReviewProjectCount orders the results by review_project count.
+func ByReviewProjectCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newReviewProjectStep(), opts...)
+	}
+}
+
+// ByReviewProject orders the results by review_project terms.
+func ByReviewProject(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReviewProjectStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -186,5 +219,12 @@ func newAttachmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AttachmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
+	)
+}
+func newReviewProjectStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ReviewProjectInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ReviewProjectTable, ReviewProjectColumn),
 	)
 }

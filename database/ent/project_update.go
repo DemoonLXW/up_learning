@@ -14,6 +14,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
 
@@ -83,6 +84,27 @@ func (pu *ProjectUpdate) SetResultAndConclusion(s string) *ProjectUpdate {
 // SetRequirement sets the "requirement" field.
 func (pu *ProjectUpdate) SetRequirement(s string) *ProjectUpdate {
 	pu.mutation.SetRequirement(s)
+	return pu
+}
+
+// SetReviewStatus sets the "review_status" field.
+func (pu *ProjectUpdate) SetReviewStatus(u uint8) *ProjectUpdate {
+	pu.mutation.ResetReviewStatus()
+	pu.mutation.SetReviewStatus(u)
+	return pu
+}
+
+// SetNillableReviewStatus sets the "review_status" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableReviewStatus(u *uint8) *ProjectUpdate {
+	if u != nil {
+		pu.SetReviewStatus(*u)
+	}
+	return pu
+}
+
+// AddReviewStatus adds u to the "review_status" field.
+func (pu *ProjectUpdate) AddReviewStatus(u int8) *ProjectUpdate {
+	pu.mutation.AddReviewStatus(u)
 	return pu
 }
 
@@ -188,6 +210,21 @@ func (pu *ProjectUpdate) AddAttachments(f ...*File) *ProjectUpdate {
 	return pu.AddAttachmentIDs(ids...)
 }
 
+// AddReviewProjectIDs adds the "review_project" edge to the ReviewProject entity by IDs.
+func (pu *ProjectUpdate) AddReviewProjectIDs(ids ...uint32) *ProjectUpdate {
+	pu.mutation.AddReviewProjectIDs(ids...)
+	return pu
+}
+
+// AddReviewProject adds the "review_project" edges to the ReviewProject entity.
+func (pu *ProjectUpdate) AddReviewProject(r ...*ReviewProject) *ProjectUpdate {
+	ids := make([]uint32, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return pu.AddReviewProjectIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -218,6 +255,27 @@ func (pu *ProjectUpdate) RemoveAttachments(f ...*File) *ProjectUpdate {
 		ids[i] = f[i].ID
 	}
 	return pu.RemoveAttachmentIDs(ids...)
+}
+
+// ClearReviewProject clears all "review_project" edges to the ReviewProject entity.
+func (pu *ProjectUpdate) ClearReviewProject() *ProjectUpdate {
+	pu.mutation.ClearReviewProject()
+	return pu
+}
+
+// RemoveReviewProjectIDs removes the "review_project" edge to ReviewProject entities by IDs.
+func (pu *ProjectUpdate) RemoveReviewProjectIDs(ids ...uint32) *ProjectUpdate {
+	pu.mutation.RemoveReviewProjectIDs(ids...)
+	return pu
+}
+
+// RemoveReviewProject removes "review_project" edges to ReviewProject entities.
+func (pu *ProjectUpdate) RemoveReviewProject(r ...*ReviewProject) *ProjectUpdate {
+	ids := make([]uint32, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return pu.RemoveReviewProjectIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -273,6 +331,12 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.Requirement(); ok {
 		_spec.SetField(project.FieldRequirement, field.TypeString, value)
+	}
+	if value, ok := pu.mutation.ReviewStatus(); ok {
+		_spec.SetField(project.FieldReviewStatus, field.TypeUint8, value)
+	}
+	if value, ok := pu.mutation.AddedReviewStatus(); ok {
+		_spec.AddField(project.FieldReviewStatus, field.TypeUint8, value)
 	}
 	if value, ok := pu.mutation.IsDisabled(); ok {
 		_spec.SetField(project.FieldIsDisabled, field.TypeBool, value)
@@ -366,6 +430,51 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.ReviewProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ReviewProjectTable,
+			Columns: []string{project.ReviewProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedReviewProjectIDs(); len(nodes) > 0 && !pu.mutation.ReviewProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ReviewProjectTable,
+			Columns: []string{project.ReviewProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.ReviewProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ReviewProjectTable,
+			Columns: []string{project.ReviewProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{project.Label}
@@ -439,6 +548,27 @@ func (puo *ProjectUpdateOne) SetResultAndConclusion(s string) *ProjectUpdateOne 
 // SetRequirement sets the "requirement" field.
 func (puo *ProjectUpdateOne) SetRequirement(s string) *ProjectUpdateOne {
 	puo.mutation.SetRequirement(s)
+	return puo
+}
+
+// SetReviewStatus sets the "review_status" field.
+func (puo *ProjectUpdateOne) SetReviewStatus(u uint8) *ProjectUpdateOne {
+	puo.mutation.ResetReviewStatus()
+	puo.mutation.SetReviewStatus(u)
+	return puo
+}
+
+// SetNillableReviewStatus sets the "review_status" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableReviewStatus(u *uint8) *ProjectUpdateOne {
+	if u != nil {
+		puo.SetReviewStatus(*u)
+	}
+	return puo
+}
+
+// AddReviewStatus adds u to the "review_status" field.
+func (puo *ProjectUpdateOne) AddReviewStatus(u int8) *ProjectUpdateOne {
+	puo.mutation.AddReviewStatus(u)
 	return puo
 }
 
@@ -544,6 +674,21 @@ func (puo *ProjectUpdateOne) AddAttachments(f ...*File) *ProjectUpdateOne {
 	return puo.AddAttachmentIDs(ids...)
 }
 
+// AddReviewProjectIDs adds the "review_project" edge to the ReviewProject entity by IDs.
+func (puo *ProjectUpdateOne) AddReviewProjectIDs(ids ...uint32) *ProjectUpdateOne {
+	puo.mutation.AddReviewProjectIDs(ids...)
+	return puo
+}
+
+// AddReviewProject adds the "review_project" edges to the ReviewProject entity.
+func (puo *ProjectUpdateOne) AddReviewProject(r ...*ReviewProject) *ProjectUpdateOne {
+	ids := make([]uint32, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return puo.AddReviewProjectIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -574,6 +719,27 @@ func (puo *ProjectUpdateOne) RemoveAttachments(f ...*File) *ProjectUpdateOne {
 		ids[i] = f[i].ID
 	}
 	return puo.RemoveAttachmentIDs(ids...)
+}
+
+// ClearReviewProject clears all "review_project" edges to the ReviewProject entity.
+func (puo *ProjectUpdateOne) ClearReviewProject() *ProjectUpdateOne {
+	puo.mutation.ClearReviewProject()
+	return puo
+}
+
+// RemoveReviewProjectIDs removes the "review_project" edge to ReviewProject entities by IDs.
+func (puo *ProjectUpdateOne) RemoveReviewProjectIDs(ids ...uint32) *ProjectUpdateOne {
+	puo.mutation.RemoveReviewProjectIDs(ids...)
+	return puo
+}
+
+// RemoveReviewProject removes "review_project" edges to ReviewProject entities.
+func (puo *ProjectUpdateOne) RemoveReviewProject(r ...*ReviewProject) *ProjectUpdateOne {
+	ids := make([]uint32, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return puo.RemoveReviewProjectIDs(ids...)
 }
 
 // Where appends a list predicates to the ProjectUpdate builder.
@@ -660,6 +826,12 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	if value, ok := puo.mutation.Requirement(); ok {
 		_spec.SetField(project.FieldRequirement, field.TypeString, value)
 	}
+	if value, ok := puo.mutation.ReviewStatus(); ok {
+		_spec.SetField(project.FieldReviewStatus, field.TypeUint8, value)
+	}
+	if value, ok := puo.mutation.AddedReviewStatus(); ok {
+		_spec.AddField(project.FieldReviewStatus, field.TypeUint8, value)
+	}
 	if value, ok := puo.mutation.IsDisabled(); ok {
 		_spec.SetField(project.FieldIsDisabled, field.TypeBool, value)
 	}
@@ -745,6 +917,51 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.ReviewProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ReviewProjectTable,
+			Columns: []string{project.ReviewProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedReviewProjectIDs(); len(nodes) > 0 && !puo.mutation.ReviewProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ReviewProjectTable,
+			Columns: []string{project.ReviewProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.ReviewProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ReviewProjectTable,
+			Columns: []string{project.ReviewProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

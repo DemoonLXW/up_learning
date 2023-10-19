@@ -90,6 +90,11 @@ func Requirement(v string) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldRequirement, v))
 }
 
+// ReviewStatus applies equality check predicate on the "review_status" field. It's identical to ReviewStatusEQ.
+func ReviewStatus(v uint8) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldReviewStatus, v))
+}
+
 // IsDisabled applies equality check predicate on the "is_disabled" field. It's identical to IsDisabledEQ.
 func IsDisabled(v bool) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldIsDisabled, v))
@@ -530,6 +535,46 @@ func RequirementContainsFold(v string) predicate.Project {
 	return predicate.Project(sql.FieldContainsFold(FieldRequirement, v))
 }
 
+// ReviewStatusEQ applies the EQ predicate on the "review_status" field.
+func ReviewStatusEQ(v uint8) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldReviewStatus, v))
+}
+
+// ReviewStatusNEQ applies the NEQ predicate on the "review_status" field.
+func ReviewStatusNEQ(v uint8) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldReviewStatus, v))
+}
+
+// ReviewStatusIn applies the In predicate on the "review_status" field.
+func ReviewStatusIn(vs ...uint8) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldReviewStatus, vs...))
+}
+
+// ReviewStatusNotIn applies the NotIn predicate on the "review_status" field.
+func ReviewStatusNotIn(vs ...uint8) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldReviewStatus, vs...))
+}
+
+// ReviewStatusGT applies the GT predicate on the "review_status" field.
+func ReviewStatusGT(v uint8) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldReviewStatus, v))
+}
+
+// ReviewStatusGTE applies the GTE predicate on the "review_status" field.
+func ReviewStatusGTE(v uint8) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldReviewStatus, v))
+}
+
+// ReviewStatusLT applies the LT predicate on the "review_status" field.
+func ReviewStatusLT(v uint8) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldReviewStatus, v))
+}
+
+// ReviewStatusLTE applies the LTE predicate on the "review_status" field.
+func ReviewStatusLTE(v uint8) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldReviewStatus, v))
+}
+
 // IsDisabledEQ applies the EQ predicate on the "is_disabled" field.
 func IsDisabledEQ(v bool) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldIsDisabled, v))
@@ -718,6 +763,29 @@ func HasAttachments() predicate.Project {
 func HasAttachmentsWith(preds ...predicate.File) predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {
 		step := newAttachmentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasReviewProject applies the HasEdge predicate on the "review_project" edge.
+func HasReviewProject() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ReviewProjectTable, ReviewProjectColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasReviewProjectWith applies the HasEdge predicate on the "review_project" edge with a given conditions (other predicates).
+func HasReviewProjectWith(preds ...predicate.ReviewProject) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := newReviewProjectStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

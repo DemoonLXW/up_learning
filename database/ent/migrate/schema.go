@@ -156,6 +156,7 @@ var (
 		{Name: "step", Type: field.TypeString},
 		{Name: "result_and_conclusion", Type: field.TypeString},
 		{Name: "requirement", Type: field.TypeString},
+		{Name: "review_status", Type: field.TypeUint8, Default: 0},
 		{Name: "is_disabled", Type: field.TypeBool, Default: false},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
@@ -170,9 +171,68 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "project_user_projects",
-				Columns:    []*schema.Column{ProjectColumns[11]},
+				Columns:    []*schema.Column{ProjectColumns[12]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// ReviewProjectColumns holds the columns for the "review_project" table.
+	ReviewProjectColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "workflow_id", Type: field.TypeString},
+		{Name: "run_id", Type: field.TypeString},
+		{Name: "status", Type: field.TypeUint8},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
+		{Name: "project_id", Type: field.TypeUint32},
+		{Name: "applicant_id", Type: field.TypeUint32},
+	}
+	// ReviewProjectTable holds the schema information for the "review_project" table.
+	ReviewProjectTable = &schema.Table{
+		Name:       "review_project",
+		Columns:    ReviewProjectColumns,
+		PrimaryKey: []*schema.Column{ReviewProjectColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "review_project_project_review_project",
+				Columns:    []*schema.Column{ReviewProjectColumns[7]},
+				RefColumns: []*schema.Column{ProjectColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "review_project_user_review_project",
+				Columns:    []*schema.Column{ReviewProjectColumns[8]},
+				RefColumns: []*schema.Column{UserColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// ReviewProjectDetailColumns holds the columns for the "review_project_detail" table.
+	ReviewProjectDetailColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "order", Type: field.TypeUint8},
+		{Name: "reviewer", Type: field.TypeJSON},
+		{Name: "executor", Type: field.TypeJSON},
+		{Name: "typee", Type: field.TypeUint8},
+		{Name: "status", Type: field.TypeUint8},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
+		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
+		{Name: "review_project_id", Type: field.TypeUint32},
+	}
+	// ReviewProjectDetailTable holds the schema information for the "review_project_detail" table.
+	ReviewProjectDetailTable = &schema.Table{
+		Name:       "review_project_detail",
+		Columns:    ReviewProjectDetailColumns,
+		PrimaryKey: []*schema.Column{ReviewProjectDetailColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "review_project_detail_review_project_review_project_detail",
+				Columns:    []*schema.Column{ReviewProjectDetailColumns[9]},
+				RefColumns: []*schema.Column{ReviewProjectColumns[0]},
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -390,6 +450,8 @@ var (
 		MenuTable,
 		PermissionTable,
 		ProjectTable,
+		ReviewProjectTable,
+		ReviewProjectDetailTable,
 		RoleTable,
 		RolePermissionTable,
 		SampleFileTable,
@@ -428,6 +490,15 @@ func init() {
 	ProjectTable.ForeignKeys[0].RefTable = UserTable
 	ProjectTable.Annotation = &entsql.Annotation{
 		Table: "project",
+	}
+	ReviewProjectTable.ForeignKeys[0].RefTable = ProjectTable
+	ReviewProjectTable.ForeignKeys[1].RefTable = UserTable
+	ReviewProjectTable.Annotation = &entsql.Annotation{
+		Table: "review_project",
+	}
+	ReviewProjectDetailTable.ForeignKeys[0].RefTable = ReviewProjectTable
+	ReviewProjectDetailTable.Annotation = &entsql.Annotation{
+		Table: "review_project_detail",
 	}
 	RoleTable.Annotation = &entsql.Annotation{
 		Table: "role",

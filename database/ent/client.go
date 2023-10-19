@@ -21,6 +21,8 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
+	"github.com/DemoonLXW/up_learning/database/ent/reviewprojectdetail"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
@@ -50,6 +52,10 @@ type Client struct {
 	Permission *PermissionClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
+	// ReviewProject is the client for interacting with the ReviewProject builders.
+	ReviewProject *ReviewProjectClient
+	// ReviewProjectDetail is the client for interacting with the ReviewProjectDetail builders.
+	ReviewProjectDetail *ReviewProjectDetailClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// RolePermission is the client for interacting with the RolePermission builders.
@@ -86,6 +92,8 @@ func (c *Client) init() {
 	c.Menu = NewMenuClient(c.config)
 	c.Permission = NewPermissionClient(c.config)
 	c.Project = NewProjectClient(c.config)
+	c.ReviewProject = NewReviewProjectClient(c.config)
+	c.ReviewProjectDetail = NewReviewProjectDetailClient(c.config)
 	c.Role = NewRoleClient(c.config)
 	c.RolePermission = NewRolePermissionClient(c.config)
 	c.SampleFile = NewSampleFileClient(c.config)
@@ -174,23 +182,25 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:            ctx,
-		config:         cfg,
-		Class:          NewClassClient(cfg),
-		College:        NewCollegeClient(cfg),
-		File:           NewFileClient(cfg),
-		Major:          NewMajorClient(cfg),
-		Menu:           NewMenuClient(cfg),
-		Permission:     NewPermissionClient(cfg),
-		Project:        NewProjectClient(cfg),
-		Role:           NewRoleClient(cfg),
-		RolePermission: NewRolePermissionClient(cfg),
-		SampleFile:     NewSampleFileClient(cfg),
-		School:         NewSchoolClient(cfg),
-		Student:        NewStudentClient(cfg),
-		Teacher:        NewTeacherClient(cfg),
-		User:           NewUserClient(cfg),
-		UserRole:       NewUserRoleClient(cfg),
+		ctx:                 ctx,
+		config:              cfg,
+		Class:               NewClassClient(cfg),
+		College:             NewCollegeClient(cfg),
+		File:                NewFileClient(cfg),
+		Major:               NewMajorClient(cfg),
+		Menu:                NewMenuClient(cfg),
+		Permission:          NewPermissionClient(cfg),
+		Project:             NewProjectClient(cfg),
+		ReviewProject:       NewReviewProjectClient(cfg),
+		ReviewProjectDetail: NewReviewProjectDetailClient(cfg),
+		Role:                NewRoleClient(cfg),
+		RolePermission:      NewRolePermissionClient(cfg),
+		SampleFile:          NewSampleFileClient(cfg),
+		School:              NewSchoolClient(cfg),
+		Student:             NewStudentClient(cfg),
+		Teacher:             NewTeacherClient(cfg),
+		User:                NewUserClient(cfg),
+		UserRole:            NewUserRoleClient(cfg),
 	}, nil
 }
 
@@ -208,23 +218,25 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:            ctx,
-		config:         cfg,
-		Class:          NewClassClient(cfg),
-		College:        NewCollegeClient(cfg),
-		File:           NewFileClient(cfg),
-		Major:          NewMajorClient(cfg),
-		Menu:           NewMenuClient(cfg),
-		Permission:     NewPermissionClient(cfg),
-		Project:        NewProjectClient(cfg),
-		Role:           NewRoleClient(cfg),
-		RolePermission: NewRolePermissionClient(cfg),
-		SampleFile:     NewSampleFileClient(cfg),
-		School:         NewSchoolClient(cfg),
-		Student:        NewStudentClient(cfg),
-		Teacher:        NewTeacherClient(cfg),
-		User:           NewUserClient(cfg),
-		UserRole:       NewUserRoleClient(cfg),
+		ctx:                 ctx,
+		config:              cfg,
+		Class:               NewClassClient(cfg),
+		College:             NewCollegeClient(cfg),
+		File:                NewFileClient(cfg),
+		Major:               NewMajorClient(cfg),
+		Menu:                NewMenuClient(cfg),
+		Permission:          NewPermissionClient(cfg),
+		Project:             NewProjectClient(cfg),
+		ReviewProject:       NewReviewProjectClient(cfg),
+		ReviewProjectDetail: NewReviewProjectDetailClient(cfg),
+		Role:                NewRoleClient(cfg),
+		RolePermission:      NewRolePermissionClient(cfg),
+		SampleFile:          NewSampleFileClient(cfg),
+		School:              NewSchoolClient(cfg),
+		Student:             NewStudentClient(cfg),
+		Teacher:             NewTeacherClient(cfg),
+		User:                NewUserClient(cfg),
+		UserRole:            NewUserRoleClient(cfg),
 	}, nil
 }
 
@@ -254,9 +266,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Class, c.College, c.File, c.Major, c.Menu, c.Permission, c.Project, c.Role,
-		c.RolePermission, c.SampleFile, c.School, c.Student, c.Teacher, c.User,
-		c.UserRole,
+		c.Class, c.College, c.File, c.Major, c.Menu, c.Permission, c.Project,
+		c.ReviewProject, c.ReviewProjectDetail, c.Role, c.RolePermission, c.SampleFile,
+		c.School, c.Student, c.Teacher, c.User, c.UserRole,
 	} {
 		n.Use(hooks...)
 	}
@@ -266,9 +278,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Class, c.College, c.File, c.Major, c.Menu, c.Permission, c.Project, c.Role,
-		c.RolePermission, c.SampleFile, c.School, c.Student, c.Teacher, c.User,
-		c.UserRole,
+		c.Class, c.College, c.File, c.Major, c.Menu, c.Permission, c.Project,
+		c.ReviewProject, c.ReviewProjectDetail, c.Role, c.RolePermission, c.SampleFile,
+		c.School, c.Student, c.Teacher, c.User, c.UserRole,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -291,6 +303,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Permission.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
+	case *ReviewProjectMutation:
+		return c.ReviewProject.mutate(ctx, m)
+	case *ReviewProjectDetailMutation:
+		return c.ReviewProjectDetail.mutate(ctx, m)
 	case *RoleMutation:
 		return c.Role.mutate(ctx, m)
 	case *RolePermissionMutation:
@@ -1337,6 +1353,22 @@ func (c *ProjectClient) QueryAttachments(pr *Project) *FileQuery {
 	return query
 }
 
+// QueryReviewProject queries the review_project edge of a Project.
+func (c *ProjectClient) QueryReviewProject(pr *Project) *ReviewProjectQuery {
+	query := (&ReviewProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(reviewproject.Table, reviewproject.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.ReviewProjectTable, project.ReviewProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProjectClient) Hooks() []Hook {
 	return c.hooks.Project
@@ -1359,6 +1391,306 @@ func (c *ProjectClient) mutate(ctx context.Context, m *ProjectMutation) (Value, 
 		return (&ProjectDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Project mutation op: %q", m.Op())
+	}
+}
+
+// ReviewProjectClient is a client for the ReviewProject schema.
+type ReviewProjectClient struct {
+	config
+}
+
+// NewReviewProjectClient returns a client for the ReviewProject from the given config.
+func NewReviewProjectClient(c config) *ReviewProjectClient {
+	return &ReviewProjectClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `reviewproject.Hooks(f(g(h())))`.
+func (c *ReviewProjectClient) Use(hooks ...Hook) {
+	c.hooks.ReviewProject = append(c.hooks.ReviewProject, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `reviewproject.Intercept(f(g(h())))`.
+func (c *ReviewProjectClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ReviewProject = append(c.inters.ReviewProject, interceptors...)
+}
+
+// Create returns a builder for creating a ReviewProject entity.
+func (c *ReviewProjectClient) Create() *ReviewProjectCreate {
+	mutation := newReviewProjectMutation(c.config, OpCreate)
+	return &ReviewProjectCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ReviewProject entities.
+func (c *ReviewProjectClient) CreateBulk(builders ...*ReviewProjectCreate) *ReviewProjectCreateBulk {
+	return &ReviewProjectCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ReviewProject.
+func (c *ReviewProjectClient) Update() *ReviewProjectUpdate {
+	mutation := newReviewProjectMutation(c.config, OpUpdate)
+	return &ReviewProjectUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ReviewProjectClient) UpdateOne(rp *ReviewProject) *ReviewProjectUpdateOne {
+	mutation := newReviewProjectMutation(c.config, OpUpdateOne, withReviewProject(rp))
+	return &ReviewProjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ReviewProjectClient) UpdateOneID(id uint32) *ReviewProjectUpdateOne {
+	mutation := newReviewProjectMutation(c.config, OpUpdateOne, withReviewProjectID(id))
+	return &ReviewProjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ReviewProject.
+func (c *ReviewProjectClient) Delete() *ReviewProjectDelete {
+	mutation := newReviewProjectMutation(c.config, OpDelete)
+	return &ReviewProjectDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ReviewProjectClient) DeleteOne(rp *ReviewProject) *ReviewProjectDeleteOne {
+	return c.DeleteOneID(rp.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ReviewProjectClient) DeleteOneID(id uint32) *ReviewProjectDeleteOne {
+	builder := c.Delete().Where(reviewproject.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ReviewProjectDeleteOne{builder}
+}
+
+// Query returns a query builder for ReviewProject.
+func (c *ReviewProjectClient) Query() *ReviewProjectQuery {
+	return &ReviewProjectQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeReviewProject},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ReviewProject entity by its id.
+func (c *ReviewProjectClient) Get(ctx context.Context, id uint32) (*ReviewProject, error) {
+	return c.Query().Where(reviewproject.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ReviewProjectClient) GetX(ctx context.Context, id uint32) *ReviewProject {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryApplicant queries the applicant edge of a ReviewProject.
+func (c *ReviewProjectClient) QueryApplicant(rp *ReviewProject) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(reviewproject.Table, reviewproject.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, reviewproject.ApplicantTable, reviewproject.ApplicantColumn),
+		)
+		fromV = sqlgraph.Neighbors(rp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProject queries the project edge of a ReviewProject.
+func (c *ReviewProjectClient) QueryProject(rp *ReviewProject) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(reviewproject.Table, reviewproject.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, reviewproject.ProjectTable, reviewproject.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(rp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReviewProjectDetail queries the review_project_detail edge of a ReviewProject.
+func (c *ReviewProjectClient) QueryReviewProjectDetail(rp *ReviewProject) *ReviewProjectDetailQuery {
+	query := (&ReviewProjectDetailClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(reviewproject.Table, reviewproject.FieldID, id),
+			sqlgraph.To(reviewprojectdetail.Table, reviewprojectdetail.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, reviewproject.ReviewProjectDetailTable, reviewproject.ReviewProjectDetailColumn),
+		)
+		fromV = sqlgraph.Neighbors(rp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ReviewProjectClient) Hooks() []Hook {
+	return c.hooks.ReviewProject
+}
+
+// Interceptors returns the client interceptors.
+func (c *ReviewProjectClient) Interceptors() []Interceptor {
+	return c.inters.ReviewProject
+}
+
+func (c *ReviewProjectClient) mutate(ctx context.Context, m *ReviewProjectMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ReviewProjectCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ReviewProjectUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ReviewProjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ReviewProjectDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ReviewProject mutation op: %q", m.Op())
+	}
+}
+
+// ReviewProjectDetailClient is a client for the ReviewProjectDetail schema.
+type ReviewProjectDetailClient struct {
+	config
+}
+
+// NewReviewProjectDetailClient returns a client for the ReviewProjectDetail from the given config.
+func NewReviewProjectDetailClient(c config) *ReviewProjectDetailClient {
+	return &ReviewProjectDetailClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `reviewprojectdetail.Hooks(f(g(h())))`.
+func (c *ReviewProjectDetailClient) Use(hooks ...Hook) {
+	c.hooks.ReviewProjectDetail = append(c.hooks.ReviewProjectDetail, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `reviewprojectdetail.Intercept(f(g(h())))`.
+func (c *ReviewProjectDetailClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ReviewProjectDetail = append(c.inters.ReviewProjectDetail, interceptors...)
+}
+
+// Create returns a builder for creating a ReviewProjectDetail entity.
+func (c *ReviewProjectDetailClient) Create() *ReviewProjectDetailCreate {
+	mutation := newReviewProjectDetailMutation(c.config, OpCreate)
+	return &ReviewProjectDetailCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ReviewProjectDetail entities.
+func (c *ReviewProjectDetailClient) CreateBulk(builders ...*ReviewProjectDetailCreate) *ReviewProjectDetailCreateBulk {
+	return &ReviewProjectDetailCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ReviewProjectDetail.
+func (c *ReviewProjectDetailClient) Update() *ReviewProjectDetailUpdate {
+	mutation := newReviewProjectDetailMutation(c.config, OpUpdate)
+	return &ReviewProjectDetailUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ReviewProjectDetailClient) UpdateOne(rpd *ReviewProjectDetail) *ReviewProjectDetailUpdateOne {
+	mutation := newReviewProjectDetailMutation(c.config, OpUpdateOne, withReviewProjectDetail(rpd))
+	return &ReviewProjectDetailUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ReviewProjectDetailClient) UpdateOneID(id int) *ReviewProjectDetailUpdateOne {
+	mutation := newReviewProjectDetailMutation(c.config, OpUpdateOne, withReviewProjectDetailID(id))
+	return &ReviewProjectDetailUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ReviewProjectDetail.
+func (c *ReviewProjectDetailClient) Delete() *ReviewProjectDetailDelete {
+	mutation := newReviewProjectDetailMutation(c.config, OpDelete)
+	return &ReviewProjectDetailDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ReviewProjectDetailClient) DeleteOne(rpd *ReviewProjectDetail) *ReviewProjectDetailDeleteOne {
+	return c.DeleteOneID(rpd.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ReviewProjectDetailClient) DeleteOneID(id int) *ReviewProjectDetailDeleteOne {
+	builder := c.Delete().Where(reviewprojectdetail.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ReviewProjectDetailDeleteOne{builder}
+}
+
+// Query returns a query builder for ReviewProjectDetail.
+func (c *ReviewProjectDetailClient) Query() *ReviewProjectDetailQuery {
+	return &ReviewProjectDetailQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeReviewProjectDetail},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ReviewProjectDetail entity by its id.
+func (c *ReviewProjectDetailClient) Get(ctx context.Context, id int) (*ReviewProjectDetail, error) {
+	return c.Query().Where(reviewprojectdetail.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ReviewProjectDetailClient) GetX(ctx context.Context, id int) *ReviewProjectDetail {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryReviewProject queries the review_project edge of a ReviewProjectDetail.
+func (c *ReviewProjectDetailClient) QueryReviewProject(rpd *ReviewProjectDetail) *ReviewProjectQuery {
+	query := (&ReviewProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rpd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(reviewprojectdetail.Table, reviewprojectdetail.FieldID, id),
+			sqlgraph.To(reviewproject.Table, reviewproject.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, reviewprojectdetail.ReviewProjectTable, reviewprojectdetail.ReviewProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(rpd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ReviewProjectDetailClient) Hooks() []Hook {
+	return c.hooks.ReviewProjectDetail
+}
+
+// Interceptors returns the client interceptors.
+func (c *ReviewProjectDetailClient) Interceptors() []Interceptor {
+	return c.inters.ReviewProjectDetail
+}
+
+func (c *ReviewProjectDetailClient) mutate(ctx context.Context, m *ReviewProjectDetailMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ReviewProjectDetailCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ReviewProjectDetailUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ReviewProjectDetailUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ReviewProjectDetailDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ReviewProjectDetail mutation op: %q", m.Op())
 	}
 }
 
@@ -2402,6 +2734,22 @@ func (c *UserClient) QueryProjects(u *User) *ProjectQuery {
 	return query
 }
 
+// QueryReviewProject queries the review_project edge of a User.
+func (c *UserClient) QueryReviewProject(u *User) *ReviewProjectQuery {
+	query := (&ReviewProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(reviewproject.Table, reviewproject.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ReviewProjectTable, user.ReviewProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryUserRole queries the user_role edge of a User.
 func (c *UserClient) QueryUserRole(u *User) *UserRoleQuery {
 	query := (&UserRoleClient{config: c.config}).Query()
@@ -2547,11 +2895,13 @@ func (c *UserRoleClient) mutate(ctx context.Context, m *UserRoleMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Class, College, File, Major, Menu, Permission, Project, Role, RolePermission,
-		SampleFile, School, Student, Teacher, User, UserRole []ent.Hook
+		Class, College, File, Major, Menu, Permission, Project, ReviewProject,
+		ReviewProjectDetail, Role, RolePermission, SampleFile, School, Student,
+		Teacher, User, UserRole []ent.Hook
 	}
 	inters struct {
-		Class, College, File, Major, Menu, Permission, Project, Role, RolePermission,
-		SampleFile, School, Student, Teacher, User, UserRole []ent.Interceptor
+		Class, College, File, Major, Menu, Permission, Project, ReviewProject,
+		ReviewProjectDetail, Role, RolePermission, SampleFile, School, Student,
+		Teacher, User, UserRole []ent.Interceptor
 	}
 )

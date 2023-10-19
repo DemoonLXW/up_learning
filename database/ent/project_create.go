@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
 
@@ -69,6 +70,20 @@ func (pc *ProjectCreate) SetResultAndConclusion(s string) *ProjectCreate {
 // SetRequirement sets the "requirement" field.
 func (pc *ProjectCreate) SetRequirement(s string) *ProjectCreate {
 	pc.mutation.SetRequirement(s)
+	return pc
+}
+
+// SetReviewStatus sets the "review_status" field.
+func (pc *ProjectCreate) SetReviewStatus(u uint8) *ProjectCreate {
+	pc.mutation.SetReviewStatus(u)
+	return pc
+}
+
+// SetNillableReviewStatus sets the "review_status" field if the given value is not nil.
+func (pc *ProjectCreate) SetNillableReviewStatus(u *uint8) *ProjectCreate {
+	if u != nil {
+		pc.SetReviewStatus(*u)
+	}
 	return pc
 }
 
@@ -168,6 +183,21 @@ func (pc *ProjectCreate) AddAttachments(f ...*File) *ProjectCreate {
 	return pc.AddAttachmentIDs(ids...)
 }
 
+// AddReviewProjectIDs adds the "review_project" edge to the ReviewProject entity by IDs.
+func (pc *ProjectCreate) AddReviewProjectIDs(ids ...uint32) *ProjectCreate {
+	pc.mutation.AddReviewProjectIDs(ids...)
+	return pc
+}
+
+// AddReviewProject adds the "review_project" edges to the ReviewProject entity.
+func (pc *ProjectCreate) AddReviewProject(r ...*ReviewProject) *ProjectCreate {
+	ids := make([]uint32, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return pc.AddReviewProjectIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pc *ProjectCreate) Mutation() *ProjectMutation {
 	return pc.mutation
@@ -203,6 +233,10 @@ func (pc *ProjectCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *ProjectCreate) defaults() {
+	if _, ok := pc.mutation.ReviewStatus(); !ok {
+		v := project.DefaultReviewStatus
+		pc.mutation.SetReviewStatus(v)
+	}
 	if _, ok := pc.mutation.IsDisabled(); !ok {
 		v := project.DefaultIsDisabled
 		pc.mutation.SetIsDisabled(v)
@@ -232,6 +266,9 @@ func (pc *ProjectCreate) check() error {
 	}
 	if _, ok := pc.mutation.Requirement(); !ok {
 		return &ValidationError{Name: "requirement", err: errors.New(`ent: missing required field "Project.requirement"`)}
+	}
+	if _, ok := pc.mutation.ReviewStatus(); !ok {
+		return &ValidationError{Name: "review_status", err: errors.New(`ent: missing required field "Project.review_status"`)}
 	}
 	if _, ok := pc.mutation.IsDisabled(); !ok {
 		return &ValidationError{Name: "is_disabled", err: errors.New(`ent: missing required field "Project.is_disabled"`)}
@@ -295,6 +332,10 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_spec.SetField(project.FieldRequirement, field.TypeString, value)
 		_node.Requirement = value
 	}
+	if value, ok := pc.mutation.ReviewStatus(); ok {
+		_spec.SetField(project.FieldReviewStatus, field.TypeUint8, value)
+		_node.ReviewStatus = value
+	}
 	if value, ok := pc.mutation.IsDisabled(); ok {
 		_spec.SetField(project.FieldIsDisabled, field.TypeBool, value)
 		_node.IsDisabled = value
@@ -337,6 +378,22 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.ReviewProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.ReviewProjectTable,
+			Columns: []string{project.ReviewProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
 			},
 		}
 		for _, k := range nodes {

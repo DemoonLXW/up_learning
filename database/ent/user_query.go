@@ -14,6 +14,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/teacher"
@@ -24,16 +25,17 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx          *QueryContext
-	order        []user.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.User
-	withRoles    *RoleQuery
-	withStudent  *StudentQuery
-	withTeacher  *TeacherQuery
-	withFiles    *FileQuery
-	withProjects *ProjectQuery
-	withUserRole *UserRoleQuery
+	ctx               *QueryContext
+	order             []user.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.User
+	withRoles         *RoleQuery
+	withStudent       *StudentQuery
+	withTeacher       *TeacherQuery
+	withFiles         *FileQuery
+	withProjects      *ProjectQuery
+	withReviewProject *ReviewProjectQuery
+	withUserRole      *UserRoleQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -173,6 +175,28 @@ func (uq *UserQuery) QueryProjects() *ProjectQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.ProjectsTable, user.ProjectsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryReviewProject chains the current query on the "review_project" edge.
+func (uq *UserQuery) QueryReviewProject() *ReviewProjectQuery {
+	query := (&ReviewProjectClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(reviewproject.Table, reviewproject.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ReviewProjectTable, user.ReviewProjectColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -389,17 +413,18 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:       uq.config,
-		ctx:          uq.ctx.Clone(),
-		order:        append([]user.OrderOption{}, uq.order...),
-		inters:       append([]Interceptor{}, uq.inters...),
-		predicates:   append([]predicate.User{}, uq.predicates...),
-		withRoles:    uq.withRoles.Clone(),
-		withStudent:  uq.withStudent.Clone(),
-		withTeacher:  uq.withTeacher.Clone(),
-		withFiles:    uq.withFiles.Clone(),
-		withProjects: uq.withProjects.Clone(),
-		withUserRole: uq.withUserRole.Clone(),
+		config:            uq.config,
+		ctx:               uq.ctx.Clone(),
+		order:             append([]user.OrderOption{}, uq.order...),
+		inters:            append([]Interceptor{}, uq.inters...),
+		predicates:        append([]predicate.User{}, uq.predicates...),
+		withRoles:         uq.withRoles.Clone(),
+		withStudent:       uq.withStudent.Clone(),
+		withTeacher:       uq.withTeacher.Clone(),
+		withFiles:         uq.withFiles.Clone(),
+		withProjects:      uq.withProjects.Clone(),
+		withReviewProject: uq.withReviewProject.Clone(),
+		withUserRole:      uq.withUserRole.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -458,6 +483,17 @@ func (uq *UserQuery) WithProjects(opts ...func(*ProjectQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withProjects = query
+	return uq
+}
+
+// WithReviewProject tells the query-builder to eager-load the nodes that are connected to
+// the "review_project" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithReviewProject(opts ...func(*ReviewProjectQuery)) *UserQuery {
+	query := (&ReviewProjectClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withReviewProject = query
 	return uq
 }
 
@@ -550,12 +586,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
 			uq.withRoles != nil,
 			uq.withStudent != nil,
 			uq.withTeacher != nil,
 			uq.withFiles != nil,
 			uq.withProjects != nil,
+			uq.withReviewProject != nil,
 			uq.withUserRole != nil,
 		}
 	)
@@ -607,6 +644,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadProjects(ctx, query, nodes,
 			func(n *User) { n.Edges.Projects = []*Project{} },
 			func(n *User, e *Project) { n.Edges.Projects = append(n.Edges.Projects, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withReviewProject; query != nil {
+		if err := uq.loadReviewProject(ctx, query, nodes,
+			func(n *User) { n.Edges.ReviewProject = []*ReviewProject{} },
+			func(n *User, e *ReviewProject) { n.Edges.ReviewProject = append(n.Edges.ReviewProject, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -791,6 +835,36 @@ func (uq *UserQuery) loadProjects(ctx context.Context, query *ProjectQuery, node
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "uid" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadReviewProject(ctx context.Context, query *ReviewProjectQuery, nodes []*User, init func(*User), assign func(*User, *ReviewProject)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint32]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(reviewproject.FieldApplicantID)
+	}
+	query.Where(predicate.ReviewProject(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.ReviewProjectColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ApplicantID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "applicant_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

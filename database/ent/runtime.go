@@ -12,6 +12,8 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
+	"github.com/DemoonLXW/up_learning/database/ent/reviewprojectdetail"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
@@ -105,14 +107,30 @@ func init() {
 	permission.DefaultCreatedTime = permissionDescCreatedTime.Default.(func() time.Time)
 	projectFields := schema.Project{}.Fields()
 	_ = projectFields
+	// projectDescReviewStatus is the schema descriptor for review_status field.
+	projectDescReviewStatus := projectFields[8].Descriptor()
+	// project.DefaultReviewStatus holds the default value on creation for the review_status field.
+	project.DefaultReviewStatus = projectDescReviewStatus.Default.(uint8)
 	// projectDescIsDisabled is the schema descriptor for is_disabled field.
-	projectDescIsDisabled := projectFields[8].Descriptor()
+	projectDescIsDisabled := projectFields[9].Descriptor()
 	// project.DefaultIsDisabled holds the default value on creation for the is_disabled field.
 	project.DefaultIsDisabled = projectDescIsDisabled.Default.(bool)
 	// projectDescCreatedTime is the schema descriptor for created_time field.
-	projectDescCreatedTime := projectFields[9].Descriptor()
+	projectDescCreatedTime := projectFields[10].Descriptor()
 	// project.DefaultCreatedTime holds the default value on creation for the created_time field.
 	project.DefaultCreatedTime = projectDescCreatedTime.Default.(func() time.Time)
+	reviewprojectFields := schema.ReviewProject{}.Fields()
+	_ = reviewprojectFields
+	// reviewprojectDescCreatedTime is the schema descriptor for created_time field.
+	reviewprojectDescCreatedTime := reviewprojectFields[6].Descriptor()
+	// reviewproject.DefaultCreatedTime holds the default value on creation for the created_time field.
+	reviewproject.DefaultCreatedTime = reviewprojectDescCreatedTime.Default.(func() time.Time)
+	reviewprojectdetailFields := schema.ReviewProjectDetail{}.Fields()
+	_ = reviewprojectdetailFields
+	// reviewprojectdetailDescCreatedTime is the schema descriptor for created_time field.
+	reviewprojectdetailDescCreatedTime := reviewprojectdetailFields[6].Descriptor()
+	// reviewprojectdetail.DefaultCreatedTime holds the default value on creation for the created_time field.
+	reviewprojectdetail.DefaultCreatedTime = reviewprojectdetailDescCreatedTime.Default.(func() time.Time)
 	roleFields := schema.Role{}.Fields()
 	_ = roleFields
 	// roleDescName is the schema descriptor for name field.

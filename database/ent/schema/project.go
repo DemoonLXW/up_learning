@@ -34,6 +34,8 @@ func (Project) Fields() []ent.Field {
 		field.String("step"),
 		field.String("result_and_conclusion"),
 		field.String("requirement"),
+		field.Uint8("review_status").
+			Default(0),
 		field.Bool("is_disabled").
 			Default(false),
 		field.Time("created_time").
@@ -56,5 +58,6 @@ func (Project) Edges() []ent.Edge {
 			Unique().
 			Field("uid"),
 		edge.To("attachments", File.Type),
+		edge.To("review_project", ReviewProject.Type),
 	}
 }

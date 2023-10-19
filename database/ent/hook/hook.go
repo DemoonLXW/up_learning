@@ -93,6 +93,30 @@ func (f ProjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectMutation", m)
 }
 
+// The ReviewProjectFunc type is an adapter to allow the use of ordinary
+// function as ReviewProject mutator.
+type ReviewProjectFunc func(context.Context, *ent.ReviewProjectMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ReviewProjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ReviewProjectMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ReviewProjectMutation", m)
+}
+
+// The ReviewProjectDetailFunc type is an adapter to allow the use of ordinary
+// function as ReviewProjectDetail mutator.
+type ReviewProjectDetailFunc func(context.Context, *ent.ReviewProjectDetailMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ReviewProjectDetailFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ReviewProjectDetailMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ReviewProjectDetailMutation", m)
+}
+
 // The RoleFunc type is an adapter to allow the use of ordinary
 // function as Role mutator.
 type RoleFunc func(context.Context, *ent.RoleMutation) (ent.Value, error)

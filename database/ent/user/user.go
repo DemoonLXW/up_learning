@@ -44,6 +44,8 @@ const (
 	EdgeFiles = "files"
 	// EdgeProjects holds the string denoting the projects edge name in mutations.
 	EdgeProjects = "projects"
+	// EdgeReviewProject holds the string denoting the review_project edge name in mutations.
+	EdgeReviewProject = "review_project"
 	// EdgeUserRole holds the string denoting the user_role edge name in mutations.
 	EdgeUserRole = "user_role"
 	// Table holds the table name of the user in the database.
@@ -81,6 +83,13 @@ const (
 	ProjectsInverseTable = "project"
 	// ProjectsColumn is the table column denoting the projects relation/edge.
 	ProjectsColumn = "uid"
+	// ReviewProjectTable is the table that holds the review_project relation/edge.
+	ReviewProjectTable = "review_project"
+	// ReviewProjectInverseTable is the table name for the ReviewProject entity.
+	// It exists in this package in order to avoid circular dependency with the "reviewproject" package.
+	ReviewProjectInverseTable = "review_project"
+	// ReviewProjectColumn is the table column denoting the review_project relation/edge.
+	ReviewProjectColumn = "applicant_id"
 	// UserRoleTable is the table that holds the user_role relation/edge.
 	UserRoleTable = "user_role"
 	// UserRoleInverseTable is the table name for the UserRole entity.
@@ -246,6 +255,20 @@ func ByProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByReviewProjectCount orders the results by review_project count.
+func ByReviewProjectCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newReviewProjectStep(), opts...)
+	}
+}
+
+// ByReviewProject orders the results by review_project terms.
+func ByReviewProject(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReviewProjectStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByUserRoleCount orders the results by user_role count.
 func ByUserRoleCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -292,6 +315,13 @@ func newProjectsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProjectsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ProjectsTable, ProjectsColumn),
+	)
+}
+func newReviewProjectStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ReviewProjectInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ReviewProjectTable, ReviewProjectColumn),
 	)
 }
 func newUserRoleStep() *sqlgraph.Step {
