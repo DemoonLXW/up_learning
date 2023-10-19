@@ -13,6 +13,7 @@ var ServiceProvider = wire.NewSet(
 	wire.Struct(new(AuthService), "*"),
 	wire.Struct(new(CommonService), "*"),
 	wire.Struct(new(TeacherService), "*"),
+	wire.Struct(new(WorkflowService), "*"),
 )
 
 type Services struct {
@@ -20,6 +21,7 @@ type Services struct {
 	Auth       *AuthService
 	Common     *CommonService
 	Teacher    *TeacherService
+	Workflow   *WorkflowService
 }
 
 func rollback(tx *ent.Tx, description string, err error) error {

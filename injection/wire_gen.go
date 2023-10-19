@@ -77,11 +77,20 @@ func ProvideService() (*service.Services, error) {
 	teacherService := &service.TeacherService{
 		DB: client,
 	}
+	workflowHelper, err := workflow.ProvideWorkflowHelper()
+	if err != nil {
+		return nil, err
+	}
+	workflowService := &service.WorkflowService{
+		DB: client,
+		WH: workflowHelper,
+	}
 	services := &service.Services{
 		Management: managementService,
 		Auth:       authService,
 		Common:     commonService,
 		Teacher:    teacherService,
+		Workflow:   workflowService,
 	}
 	return services, nil
 }
@@ -112,11 +121,20 @@ func ProvideController() (*controller.Controllers, error) {
 	teacherService := &service.TeacherService{
 		DB: client,
 	}
+	workflowHelper, err := workflow.ProvideWorkflowHelper()
+	if err != nil {
+		return nil, err
+	}
+	workflowService := &service.WorkflowService{
+		DB: client,
+		WH: workflowHelper,
+	}
 	services := &service.Services{
 		Management: managementService,
 		Auth:       authService,
 		Common:     commonService,
 		Teacher:    teacherService,
+		Workflow:   workflowService,
 	}
 	authController := &controller.AuthController{
 		Services: services,
@@ -161,11 +179,20 @@ func ProvideApplication() (*gin.Engine, error) {
 	teacherService := &service.TeacherService{
 		DB: client,
 	}
+	workflowHelper, err := workflow.ProvideWorkflowHelper()
+	if err != nil {
+		return nil, err
+	}
+	workflowService := &service.WorkflowService{
+		DB: client,
+		WH: workflowHelper,
+	}
 	services := &service.Services{
 		Management: managementService,
 		Auth:       authService,
 		Common:     commonService,
 		Teacher:    teacherService,
+		Workflow:   workflowService,
 	}
 	authController := &controller.AuthController{
 		Services: services,
@@ -180,10 +207,6 @@ func ProvideApplication() (*gin.Engine, error) {
 		Auth:       authController,
 		Management: managementController,
 		Common:     commonController,
-	}
-	workflowHelper, err := workflow.ProvideWorkflowHelper()
-	if err != nil {
-		return nil, err
 	}
 	engine, err := application.SetupApplication(controllers, workflowHelper)
 	if err != nil {

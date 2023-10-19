@@ -30,12 +30,12 @@ func ProvideRedis() (*redis.Client, error) {
 }
 
 func ProvideService() (*service.Services, error) {
-	wire.Build(database.DataBaseProvider, service.ServiceProvider)
+	wire.Build(database.DataBaseProvider, service.ServiceProvider, workflow.WorkflowHelperProvider)
 	return &service.Services{}, nil
 }
 
 func ProvideController() (*controller.Controllers, error) {
-	wire.Build(database.DataBaseProvider, service.ServiceProvider, controller.ControllerProvider)
+	wire.Build(database.DataBaseProvider, service.ServiceProvider, controller.ControllerProvider, workflow.WorkflowHelperProvider)
 	return &controller.Controllers{}, nil
 }
 
