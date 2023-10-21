@@ -222,3 +222,14 @@ type Reviewer struct {
 type Executor struct {
 	IDs []uint32 `json:"ids"`
 }
+
+type ToAddProject struct {
+	UID                 uint32 `json:"uid"`
+	Title               string `json:"title" binding:"required"`
+	Goal                string `json:"goal"`
+	Principle           string `json:"principle"`
+	ProcessAndMethod    string `json:"process_and_method"`
+	Step                string `json:"step"`
+	ResultAndConclusion string `json:"result_and_conclusion"`
+	Requirement         string `json:"requirement"`
+}
