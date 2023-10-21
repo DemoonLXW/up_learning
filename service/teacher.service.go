@@ -219,3 +219,53 @@ func (serv *TeacherService) GetTotalRetrievedProjects(ctx context.Context, clien
 
 	return total, nil
 }
+
+func (serv *TeacherService) DeleteProject(ctx context.Context, client *ent.Client, toDeletes []*ent.Project) error {
+	if ctx == nil || client == nil {
+		return fmt.Errorf("context or client is nil")
+	}
+
+	for i := range toDeletes {
+		num, err := client.Project.Update().
+			Where(project.And(
+				project.IDEQ(toDeletes[i].ID),
+				func(s *sql.Selector) {
+					s.Where(sql.IsNull(project.FieldDeletedTime))
+				},
+			)).
+			ClearModifiedTime().
+			SetDeletedTime(time.Now()).
+			SetTitle("*" + toDeletes[i].Title).
+			Save(ctx)
+
+		if err != nil {
+			return fmt.Errorf("delete project failed: %w", err)
+		}
+		if num == 0 {
+			return fmt.Errorf("delete project affect 0 row: id[%d]", toDeletes[i].ID)
+		}
+	}
+
+	return nil
+}
+
+func (serv *TeacherService) FindProjectByIDs(ctx context.Context, client *ent.Client, IDs []uint32) ([]*ent.Project, error) {
+	if ctx == nil || client == nil {
+		return nil, fmt.Errorf("context or client is nil")
+	}
+
+	res, err := client.Project.Query().Where(project.And(
+		project.IDIn(IDs...),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(project.FieldDeletedTime))
+		},
+	)).All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("find project by ids failed: %w", err)
+	}
+	if len(res) != len(IDs) {
+		return nil, fmt.Errorf("find project by ids failed: number of result is not enough")
+	}
+
+	return res, nil
+}

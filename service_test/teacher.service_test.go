@@ -29,29 +29,29 @@ func TestCreateProject(t *testing.T) {
 	serv, err := CreateTestTeacherService()
 	assert.Nil(t, err)
 
-	project1 := entity.ToAddProject{
-		UID:                 2,
-		Title:               "title1",
-		Goal:                "goal1",
-		Principle:           "principle1",
-		ProcessAndMethod:    "process and method 1",
-		Step:                "step1",
-		ResultAndConclusion: "result and conclusion 1",
-		Requirement:         "requirement1",
+	project4 := entity.ToAddProject{
+		UID:                 3,
+		Title:               "title4",
+		Goal:                "goal4",
+		Principle:           "principle4",
+		ProcessAndMethod:    "process and method 4",
+		Step:                "step4",
+		ResultAndConclusion: "result and conclusion 4",
+		Requirement:         "requirement4",
 	}
 
-	project2 := entity.ToAddProject{
-		UID:                 2,
-		Title:               "title2",
-		Goal:                "goal2",
-		Principle:           "principle2",
-		ProcessAndMethod:    "process and method 2",
-		Step:                "step2",
-		ResultAndConclusion: "result and conclusion 2",
-		Requirement:         "requirement2",
+	project3 := entity.ToAddProject{
+		UID:                 4,
+		Title:               "title3",
+		Goal:                "goal3",
+		Principle:           "principle3",
+		ProcessAndMethod:    "process and method 3",
+		Step:                "step3",
+		ResultAndConclusion: "result and conclusion 3",
+		Requirement:         "requirement3",
 	}
 
-	adds := []*entity.ToAddProject{&project2, &project1}
+	adds := []*entity.ToAddProject{&project4, &project3}
 
 	ctx := context.Background()
 	client := serv.DB
@@ -151,4 +151,47 @@ func TestGetTotalRetrievedProjects(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.Equal(t, 2, total)
+}
+
+func TestDeleteProject(t *testing.T) {
+	serv, err := CreateTestTeacherService()
+	assert.Nil(t, err)
+
+	ctx := context.Background()
+	client := serv.DB
+
+	projects := []*ent.Project{
+		{
+			ID:    1,
+			Title: "title2",
+		},
+		// {
+		// 	ID:    12,
+		// 	Title: "title2",
+		// },
+	}
+
+	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
+		return serv.DeleteProject(ctx, tx.Client(), projects)
+	})
+
+	assert.Nil(t, err)
+
+}
+
+func TestFindProjectByIDs(t *testing.T) {
+	serv, err := CreateTestTeacherService()
+	assert.Nil(t, err)
+
+	ctx := context.Background()
+	client := serv.DB
+
+	ids := []uint32{2, 3}
+
+	projects, err := serv.FindProjectByIDs(ctx, client, ids)
+	assert.Nil(t, err)
+	for i := range projects {
+		fmt.Println(projects[i])
+	}
+
 }
