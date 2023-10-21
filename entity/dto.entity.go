@@ -243,6 +243,16 @@ type ToModifyProject struct {
 	Step                *string `json:"step"`
 	ResultAndConclusion *string `json:"result_and_conclusion"`
 	Requirement         *string `json:"requirement"`
-	ReviewStatus        *string `json:"review_status"`
+	ReviewStatus        *uint8  `json:"review_status"`
 	IsDisabled          *bool   `json:"isDisabled"`
+}
+
+type SearchProject struct {
+	Current      *int   `form:"current"`
+	PageSize     *int   `form:"pagesize"`
+	Like         string `form:"like"`
+	Sort         string `form:"sort"`
+	Order        *bool  `form:"order"`
+	IsDisabled   *bool  `form:"isdisabled"`
+	ReviewStatus *uint8 `form:"reviewstatus"`
 }

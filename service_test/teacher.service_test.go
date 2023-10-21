@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
@@ -95,4 +96,33 @@ func TestUpdateProject(t *testing.T) {
 	})
 	// err = serv.CreateProject(nil, nil, adds)
 	assert.Nil(t, err)
+}
+
+func TestRetrieveProject(t *testing.T) {
+	serv, err := CreateTestTeacherService()
+	assert.Nil(t, err)
+
+	ctx := context.Background()
+	client := serv.DB
+
+	current := 1
+	pageSize := 3
+	var status uint8 = 0
+	// order := true
+	disabled := true
+	projects, err := serv.RetrieveProject(ctx, client, &entity.SearchProject{
+		// Order: &order,
+		// Sort:  sort,
+		Current:      &current,
+		PageSize:     &pageSize,
+		ReviewStatus: &status,
+		Like:         "e2",
+		IsDisabled:   &disabled,
+	})
+	assert.Nil(t, err)
+	for _, v := range projects {
+
+		fmt.Println(v)
+	}
+	assert.Len(t, projects, 1)
 }

@@ -121,6 +121,9 @@ func (serv *TeacherService) UpdateProject(ctx context.Context, client *ent.Clien
 	if toUpdate.Requirement != nil {
 		updater.SetRequirement(*toUpdate.Requirement)
 	}
+	if toUpdate.ReviewStatus != nil {
+		updater.SetReviewStatus(*toUpdate.ReviewStatus)
+	}
 	if toUpdate.IsDisabled != nil {
 		updater.SetIsDisabled(*toUpdate.IsDisabled)
 	}
@@ -135,4 +138,53 @@ func (serv *TeacherService) UpdateProject(ctx context.Context, client *ent.Clien
 	}
 
 	return nil
+}
+
+func (serv *TeacherService) RetrieveProject(ctx context.Context, client *ent.Client, search *entity.SearchProject) ([]*ent.Project, error) {
+	if ctx == nil || client == nil {
+		return nil, fmt.Errorf("context or client is nil")
+	}
+
+	if search == nil {
+		return nil, fmt.Errorf("retrieve project failed: search is nil")
+	}
+
+	query := client.Project.Query().
+		Where(
+			project.And(
+				project.Or(
+					project.TitleContains(search.Like),
+				),
+				func(s *sql.Selector) {
+					s.Where(sql.IsNull(project.FieldDeletedTime))
+					if search.IsDisabled != nil {
+						s.Where(sql.EQ(project.FieldIsDisabled, *search.IsDisabled))
+					}
+					if search.ReviewStatus != nil {
+						s.Where(sql.EQ(project.FieldReviewStatus, *search.ReviewStatus))
+					}
+				},
+			),
+		).
+		Order(func(s *sql.Selector) {
+			isSorted := search.Sort != "" && (search.Sort == project.FieldID || search.Sort == project.FieldUID || search.Sort == project.FieldTitle || search.Sort == project.FieldIsDisabled)
+			if isSorted && search.Order != nil {
+				if *search.Order {
+					s.OrderBy(sql.Desc(search.Sort))
+				} else {
+					s.OrderBy(sql.Asc(search.Sort))
+				}
+			}
+		})
+
+	if search.PageSize != nil && search.Current != nil {
+		offset := (*search.Current - 1) * (*search.PageSize)
+		query.Limit(*search.PageSize).Offset(offset)
+	}
+	projects, err := query.All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve project query failed: %w", err)
+	}
+
+	return projects, nil
 }
