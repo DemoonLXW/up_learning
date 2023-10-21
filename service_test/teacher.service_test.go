@@ -105,19 +105,19 @@ func TestRetrieveProject(t *testing.T) {
 	ctx := context.Background()
 	client := serv.DB
 
-	current := 1
-	pageSize := 3
-	var status uint8 = 0
+	current := 2
+	pageSize := 1
+	// var status uint8 = 0
 	// order := true
-	disabled := true
+	// disabled := true
 	projects, err := serv.RetrieveProject(ctx, client, &entity.SearchProject{
 		// Order: &order,
 		// Sort:  sort,
-		Current:      &current,
-		PageSize:     &pageSize,
-		ReviewStatus: &status,
-		Like:         "e2",
-		IsDisabled:   &disabled,
+		Current:  &current,
+		PageSize: &pageSize,
+		// ReviewStatus: &status,
+		// Like:         "e2",
+		// IsDisabled:   &disabled,
 	})
 	assert.Nil(t, err)
 	for _, v := range projects {
@@ -125,4 +125,30 @@ func TestRetrieveProject(t *testing.T) {
 		fmt.Println(v)
 	}
 	assert.Len(t, projects, 1)
+}
+
+func TestGetTotalRetrievedProjects(t *testing.T) {
+	serv, err := CreateTestTeacherService()
+	assert.Nil(t, err)
+
+	ctx := context.Background()
+	client := serv.DB
+
+	// current := 1
+	// pageSize := 3
+	var status uint8 = 0
+	// order := true
+	// disabled := false
+	total, err := serv.GetTotalRetrievedProjects(ctx, client, &entity.SearchProject{
+		// Order: &order,
+		// Sort:  sort,
+		// Current:      &current,
+		// PageSize:     &pageSize,
+		ReviewStatus: &status,
+		Like:         "title",
+		// IsDisabled:   &disabled,
+	})
+	assert.Nil(t, err)
+
+	assert.Equal(t, 2, total)
 }

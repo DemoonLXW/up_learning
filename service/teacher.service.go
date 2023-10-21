@@ -16,11 +16,8 @@ type TeacherService struct {
 }
 
 func (serv *TeacherService) CreateProject(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddProject) error {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	if client == nil {
-		client = serv.DB
+	if ctx == nil || client == nil {
+		return fmt.Errorf("context or client is nil")
 	}
 
 	current := 0
@@ -94,6 +91,10 @@ func (serv *TeacherService) CreateProject(ctx context.Context, client *ent.Clien
 }
 
 func (serv *TeacherService) UpdateProject(ctx context.Context, client *ent.Client, toUpdate *entity.ToModifyProject) error {
+	if ctx == nil || client == nil {
+		return fmt.Errorf("context or client is nil")
+	}
+
 	updater := client.Project.Update().Where(
 		project.IDEQ(toUpdate.ID),
 		func(s *sql.Selector) {
@@ -187,4 +188,34 @@ func (serv *TeacherService) RetrieveProject(ctx context.Context, client *ent.Cli
 	}
 
 	return projects, nil
+}
+
+func (serv *TeacherService) GetTotalRetrievedProjects(ctx context.Context, client *ent.Client, search *entity.SearchProject) (int, error) {
+	if ctx == nil || client == nil {
+		return -1, fmt.Errorf("context or client is nil")
+	}
+
+	total, err := client.Project.Query().
+		Where(
+			project.And(
+				project.Or(
+					project.TitleContains(search.Like),
+				),
+				func(s *sql.Selector) {
+					s.Where(sql.IsNull(project.FieldDeletedTime))
+					if search.IsDisabled != nil {
+						s.Where(sql.EQ(project.FieldIsDisabled, *search.IsDisabled))
+					}
+					if search.ReviewStatus != nil {
+						s.Where(sql.EQ(project.FieldReviewStatus, *search.ReviewStatus))
+					}
+				},
+			),
+		).Count(ctx)
+
+	if err != nil {
+		return -1, fmt.Errorf("get retrieved total projects query failed: %w", err)
+	}
+
+	return total, nil
 }
