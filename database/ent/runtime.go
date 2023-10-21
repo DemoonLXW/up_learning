@@ -108,15 +108,15 @@ func init() {
 	projectFields := schema.Project{}.Fields()
 	_ = projectFields
 	// projectDescReviewStatus is the schema descriptor for review_status field.
-	projectDescReviewStatus := projectFields[8].Descriptor()
+	projectDescReviewStatus := projectFields[9].Descriptor()
 	// project.DefaultReviewStatus holds the default value on creation for the review_status field.
 	project.DefaultReviewStatus = projectDescReviewStatus.Default.(uint8)
 	// projectDescIsDisabled is the schema descriptor for is_disabled field.
-	projectDescIsDisabled := projectFields[9].Descriptor()
+	projectDescIsDisabled := projectFields[10].Descriptor()
 	// project.DefaultIsDisabled holds the default value on creation for the is_disabled field.
 	project.DefaultIsDisabled = projectDescIsDisabled.Default.(bool)
 	// projectDescCreatedTime is the schema descriptor for created_time field.
-	projectDescCreatedTime := projectFields[10].Descriptor()
+	projectDescCreatedTime := projectFields[11].Descriptor()
 	// project.DefaultCreatedTime holds the default value on creation for the created_time field.
 	project.DefaultCreatedTime = projectDescCreatedTime.Default.(func() time.Time)
 	reviewprojectFields := schema.ReviewProject{}.Fields()

@@ -5080,6 +5080,7 @@ type ProjectMutation struct {
 	op                    Op
 	typ                   string
 	id                    *uint32
+	title                 *string
 	goal                  *string
 	principle             *string
 	process_and_method    *string
@@ -5257,6 +5258,42 @@ func (m *ProjectMutation) UIDCleared() bool {
 func (m *ProjectMutation) ResetUID() {
 	m.user = nil
 	delete(m.clearedFields, project.FieldUID)
+}
+
+// SetTitle sets the "title" field.
+func (m *ProjectMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *ProjectMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *ProjectMutation) ResetTitle() {
+	m.title = nil
 }
 
 // SetGoal sets the "goal" field.
@@ -5882,9 +5919,12 @@ func (m *ProjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProjectMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.user != nil {
 		fields = append(fields, project.FieldUID)
+	}
+	if m.title != nil {
+		fields = append(fields, project.FieldTitle)
 	}
 	if m.goal != nil {
 		fields = append(fields, project.FieldGoal)
@@ -5929,6 +5969,8 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case project.FieldUID:
 		return m.UID()
+	case project.FieldTitle:
+		return m.Title()
 	case project.FieldGoal:
 		return m.Goal()
 	case project.FieldPrinciple:
@@ -5962,6 +6004,8 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 	switch name {
 	case project.FieldUID:
 		return m.OldUID(ctx)
+	case project.FieldTitle:
+		return m.OldTitle(ctx)
 	case project.FieldGoal:
 		return m.OldGoal(ctx)
 	case project.FieldPrinciple:
@@ -5999,6 +6043,13 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUID(v)
+		return nil
+	case project.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
 		return nil
 	case project.FieldGoal:
 		v, ok := value.(string)
@@ -6164,6 +6215,9 @@ func (m *ProjectMutation) ResetField(name string) error {
 	switch name {
 	case project.FieldUID:
 		m.ResetUID()
+		return nil
+	case project.FieldTitle:
+		m.ResetTitle()
 		return nil
 	case project.FieldGoal:
 		m.ResetGoal()

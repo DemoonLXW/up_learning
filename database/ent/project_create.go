@@ -37,6 +37,12 @@ func (pc *ProjectCreate) SetNillableUID(u *uint32) *ProjectCreate {
 	return pc
 }
 
+// SetTitle sets the "title" field.
+func (pc *ProjectCreate) SetTitle(s string) *ProjectCreate {
+	pc.mutation.SetTitle(s)
+	return pc
+}
+
 // SetGoal sets the "goal" field.
 func (pc *ProjectCreate) SetGoal(s string) *ProjectCreate {
 	pc.mutation.SetGoal(s)
@@ -249,6 +255,9 @@ func (pc *ProjectCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *ProjectCreate) check() error {
+	if _, ok := pc.mutation.Title(); !ok {
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Project.title"`)}
+	}
 	if _, ok := pc.mutation.Goal(); !ok {
 		return &ValidationError{Name: "goal", err: errors.New(`ent: missing required field "Project.goal"`)}
 	}
@@ -307,6 +316,10 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	if id, ok := pc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := pc.mutation.Title(); ok {
+		_spec.SetField(project.FieldTitle, field.TypeString, value)
+		_node.Title = value
 	}
 	if value, ok := pc.mutation.Goal(); ok {
 		_spec.SetField(project.FieldGoal, field.TypeString, value)

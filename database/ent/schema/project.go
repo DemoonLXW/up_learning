@@ -28,6 +28,7 @@ func (Project) Fields() []ent.Field {
 			Unique(),
 		field.Uint32("uid").
 			Optional(),
+		field.String("title"),
 		field.String("goal"),
 		field.String("principle"),
 		field.String("process_and_method"),

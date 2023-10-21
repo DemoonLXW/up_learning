@@ -20,6 +20,8 @@ type Project struct {
 	ID uint32 `json:"id,omitempty"`
 	// UID holds the value of the "uid" field.
 	UID uint32 `json:"uid,omitempty"`
+	// Title holds the value of the "title" field.
+	Title string `json:"title,omitempty"`
 	// Goal holds the value of the "goal" field.
 	Goal string `json:"goal,omitempty"`
 	// Principle holds the value of the "principle" field.
@@ -101,7 +103,7 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case project.FieldID, project.FieldUID, project.FieldReviewStatus:
 			values[i] = new(sql.NullInt64)
-		case project.FieldGoal, project.FieldPrinciple, project.FieldProcessAndMethod, project.FieldStep, project.FieldResultAndConclusion, project.FieldRequirement:
+		case project.FieldTitle, project.FieldGoal, project.FieldPrinciple, project.FieldProcessAndMethod, project.FieldStep, project.FieldResultAndConclusion, project.FieldRequirement:
 			values[i] = new(sql.NullString)
 		case project.FieldCreatedTime, project.FieldDeletedTime, project.FieldModifiedTime:
 			values[i] = new(sql.NullTime)
@@ -131,6 +133,12 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field uid", values[i])
 			} else if value.Valid {
 				pr.UID = uint32(value.Int64)
+			}
+		case project.FieldTitle:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field title", values[i])
+			} else if value.Valid {
+				pr.Title = value.String
 			}
 		case project.FieldGoal:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -254,6 +262,9 @@ func (pr *Project) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", pr.ID))
 	builder.WriteString("uid=")
 	builder.WriteString(fmt.Sprintf("%v", pr.UID))
+	builder.WriteString(", ")
+	builder.WriteString("title=")
+	builder.WriteString(pr.Title)
 	builder.WriteString(", ")
 	builder.WriteString("goal=")
 	builder.WriteString(pr.Goal)

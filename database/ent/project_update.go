@@ -51,6 +51,12 @@ func (pu *ProjectUpdate) ClearUID() *ProjectUpdate {
 	return pu
 }
 
+// SetTitle sets the "title" field.
+func (pu *ProjectUpdate) SetTitle(s string) *ProjectUpdate {
+	pu.mutation.SetTitle(s)
+	return pu
+}
+
 // SetGoal sets the "goal" field.
 func (pu *ProjectUpdate) SetGoal(s string) *ProjectUpdate {
 	pu.mutation.SetGoal(s)
@@ -314,6 +320,9 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := pu.mutation.Title(); ok {
+		_spec.SetField(project.FieldTitle, field.TypeString, value)
+	}
 	if value, ok := pu.mutation.Goal(); ok {
 		_spec.SetField(project.FieldGoal, field.TypeString, value)
 	}
@@ -512,6 +521,12 @@ func (puo *ProjectUpdateOne) SetNillableUID(u *uint32) *ProjectUpdateOne {
 // ClearUID clears the value of the "uid" field.
 func (puo *ProjectUpdateOne) ClearUID() *ProjectUpdateOne {
 	puo.mutation.ClearUID()
+	return puo
+}
+
+// SetTitle sets the "title" field.
+func (puo *ProjectUpdateOne) SetTitle(s string) *ProjectUpdateOne {
+	puo.mutation.SetTitle(s)
 	return puo
 }
 
@@ -807,6 +822,9 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := puo.mutation.Title(); ok {
+		_spec.SetField(project.FieldTitle, field.TypeString, value)
 	}
 	if value, ok := puo.mutation.Goal(); ok {
 		_spec.SetField(project.FieldGoal, field.TypeString, value)

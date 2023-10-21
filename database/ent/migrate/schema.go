@@ -150,6 +150,7 @@ var (
 	// ProjectColumns holds the columns for the "project" table.
 	ProjectColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint32, Increment: true},
+		{Name: "title", Type: field.TypeString},
 		{Name: "goal", Type: field.TypeString},
 		{Name: "principle", Type: field.TypeString},
 		{Name: "process_and_method", Type: field.TypeString},
@@ -171,7 +172,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "project_user_projects",
-				Columns:    []*schema.Column{ProjectColumns[12]},
+				Columns:    []*schema.Column{ProjectColumns[13]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

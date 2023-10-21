@@ -16,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldUID holds the string denoting the uid field in the database.
 	FieldUID = "uid"
+	// FieldTitle holds the string denoting the title field in the database.
+	FieldTitle = "title"
 	// FieldGoal holds the string denoting the goal field in the database.
 	FieldGoal = "goal"
 	// FieldPrinciple holds the string denoting the principle field in the database.
@@ -73,6 +75,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUID,
+	FieldTitle,
 	FieldGoal,
 	FieldPrinciple,
 	FieldProcessAndMethod,
@@ -116,6 +119,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByUID orders the results by the uid field.
 func ByUID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUID, opts...).ToFunc()
+}
+
+// ByTitle orders the results by the title field.
+func ByTitle(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTitle, opts...).ToFunc()
 }
 
 // ByGoal orders the results by the goal field.
