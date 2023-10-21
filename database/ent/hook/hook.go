@@ -93,6 +93,18 @@ func (f ProjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectMutation", m)
 }
 
+// The ProjectFileFunc type is an adapter to allow the use of ordinary
+// function as ProjectFile mutator.
+type ProjectFileFunc func(context.Context, *ent.ProjectFileMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectFileFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProjectFileMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectFileMutation", m)
+}
+
 // The ReviewProjectFunc type is an adapter to allow the use of ordinary
 // function as ReviewProject mutator.
 type ReviewProjectFunc func(context.Context, *ent.ReviewProjectMutation) (ent.Value, error)

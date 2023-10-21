@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -204,6 +205,21 @@ func (pc *ProjectCreate) AddReviewProject(r ...*ReviewProject) *ProjectCreate {
 	return pc.AddReviewProjectIDs(ids...)
 }
 
+// AddProjectFileIDs adds the "project_file" edge to the ProjectFile entity by IDs.
+func (pc *ProjectCreate) AddProjectFileIDs(ids ...int) *ProjectCreate {
+	pc.mutation.AddProjectFileIDs(ids...)
+	return pc
+}
+
+// AddProjectFile adds the "project_file" edges to the ProjectFile entity.
+func (pc *ProjectCreate) AddProjectFile(p ...*ProjectFile) *ProjectCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pc.AddProjectFileIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pc *ProjectCreate) Mutation() *ProjectMutation {
 	return pc.mutation
@@ -384,10 +400,10 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	}
 	if nodes := pc.mutation.AttachmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   project.AttachmentsTable,
-			Columns: []string{project.AttachmentsColumn},
+			Columns: project.AttachmentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUint32),
@@ -396,6 +412,10 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		createE := &ProjectFileCreate{config: pc.config, mutation: newProjectFileMutation(pc.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := pc.mutation.ReviewProjectIDs(); len(nodes) > 0 {
@@ -407,6 +427,22 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.ProjectFileIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   project.ProjectFileTable,
+			Columns: []string{project.ProjectFileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

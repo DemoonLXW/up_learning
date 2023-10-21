@@ -19,6 +19,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/reviewprojectdetail"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
@@ -48,6 +49,7 @@ const (
 	TypeMenu                = "Menu"
 	TypePermission          = "Permission"
 	TypeProject             = "Project"
+	TypeProjectFile         = "ProjectFile"
 	TypeReviewProject       = "ReviewProject"
 	TypeReviewProjectDetail = "ReviewProjectDetail"
 	TypeRole                = "Role"
@@ -1679,27 +1681,31 @@ func (m *CollegeMutation) ResetEdge(name string) error {
 // FileMutation represents an operation that mutates the File nodes in the graph.
 type FileMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *uint32
-	name           *string
-	_path          *string
-	size           *int64
-	addsize        *int64
-	is_disabled    *bool
-	created_time   *time.Time
-	deleted_time   *time.Time
-	modified_time  *time.Time
-	clearedFields  map[string]struct{}
-	creator        *uint32
-	clearedcreator bool
-	project        *uint32
-	clearedproject bool
-	sample         *uint8
-	clearedsample  bool
-	done           bool
-	oldValue       func(context.Context) (*File, error)
-	predicates     []predicate.File
+	op                  Op
+	typ                 string
+	id                  *uint32
+	name                *string
+	_path               *string
+	size                *int64
+	addsize             *int64
+	is_disabled         *bool
+	created_time        *time.Time
+	deleted_time        *time.Time
+	modified_time       *time.Time
+	clearedFields       map[string]struct{}
+	creator             *uint32
+	clearedcreator      bool
+	project             map[uint32]struct{}
+	removedproject      map[uint32]struct{}
+	clearedproject      bool
+	sample              *uint8
+	clearedsample       bool
+	project_file        map[int]struct{}
+	removedproject_file map[int]struct{}
+	clearedproject_file bool
+	done                bool
+	oldValue            func(context.Context) (*File, error)
+	predicates          []predicate.File
 }
 
 var _ ent.Mutation = (*FileMutation)(nil)
@@ -1840,42 +1846,6 @@ func (m *FileMutation) OldUID(ctx context.Context) (v uint32, err error) {
 // ResetUID resets all changes to the "uid" field.
 func (m *FileMutation) ResetUID() {
 	m.creator = nil
-}
-
-// SetPid sets the "pid" field.
-func (m *FileMutation) SetPid(u uint32) {
-	m.project = &u
-}
-
-// Pid returns the value of the "pid" field in the mutation.
-func (m *FileMutation) Pid() (r uint32, exists bool) {
-	v := m.project
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPid returns the old "pid" field's value of the File entity.
-// If the File object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *FileMutation) OldPid(ctx context.Context) (v uint32, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPid is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPid requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPid: %w", err)
-	}
-	return oldValue.Pid, nil
-}
-
-// ResetPid resets all changes to the "pid" field.
-func (m *FileMutation) ResetPid() {
-	m.project = nil
 }
 
 // SetName sets the "name" field.
@@ -2229,9 +2199,14 @@ func (m *FileMutation) ResetCreator() {
 	m.clearedcreator = false
 }
 
-// SetProjectID sets the "project" edge to the Project entity by id.
-func (m *FileMutation) SetProjectID(id uint32) {
-	m.project = &id
+// AddProjectIDs adds the "project" edge to the Project entity by ids.
+func (m *FileMutation) AddProjectIDs(ids ...uint32) {
+	if m.project == nil {
+		m.project = make(map[uint32]struct{})
+	}
+	for i := range ids {
+		m.project[ids[i]] = struct{}{}
+	}
 }
 
 // ClearProject clears the "project" edge to the Project entity.
@@ -2244,20 +2219,29 @@ func (m *FileMutation) ProjectCleared() bool {
 	return m.clearedproject
 }
 
-// ProjectID returns the "project" edge ID in the mutation.
-func (m *FileMutation) ProjectID() (id uint32, exists bool) {
-	if m.project != nil {
-		return *m.project, true
+// RemoveProjectIDs removes the "project" edge to the Project entity by IDs.
+func (m *FileMutation) RemoveProjectIDs(ids ...uint32) {
+	if m.removedproject == nil {
+		m.removedproject = make(map[uint32]struct{})
+	}
+	for i := range ids {
+		delete(m.project, ids[i])
+		m.removedproject[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProject returns the removed IDs of the "project" edge to the Project entity.
+func (m *FileMutation) RemovedProjectIDs() (ids []uint32) {
+	for id := range m.removedproject {
+		ids = append(ids, id)
 	}
 	return
 }
 
 // ProjectIDs returns the "project" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ProjectID instead. It exists only for internal usage by the builders.
 func (m *FileMutation) ProjectIDs() (ids []uint32) {
-	if id := m.project; id != nil {
-		ids = append(ids, *id)
+	for id := range m.project {
+		ids = append(ids, id)
 	}
 	return
 }
@@ -2266,6 +2250,7 @@ func (m *FileMutation) ProjectIDs() (ids []uint32) {
 func (m *FileMutation) ResetProject() {
 	m.project = nil
 	m.clearedproject = false
+	m.removedproject = nil
 }
 
 // SetSampleID sets the "sample" edge to the SampleFile entity by id.
@@ -2307,6 +2292,60 @@ func (m *FileMutation) ResetSample() {
 	m.clearedsample = false
 }
 
+// AddProjectFileIDs adds the "project_file" edge to the ProjectFile entity by ids.
+func (m *FileMutation) AddProjectFileIDs(ids ...int) {
+	if m.project_file == nil {
+		m.project_file = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.project_file[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProjectFile clears the "project_file" edge to the ProjectFile entity.
+func (m *FileMutation) ClearProjectFile() {
+	m.clearedproject_file = true
+}
+
+// ProjectFileCleared reports if the "project_file" edge to the ProjectFile entity was cleared.
+func (m *FileMutation) ProjectFileCleared() bool {
+	return m.clearedproject_file
+}
+
+// RemoveProjectFileIDs removes the "project_file" edge to the ProjectFile entity by IDs.
+func (m *FileMutation) RemoveProjectFileIDs(ids ...int) {
+	if m.removedproject_file == nil {
+		m.removedproject_file = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.project_file, ids[i])
+		m.removedproject_file[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProjectFile returns the removed IDs of the "project_file" edge to the ProjectFile entity.
+func (m *FileMutation) RemovedProjectFileIDs() (ids []int) {
+	for id := range m.removedproject_file {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProjectFileIDs returns the "project_file" edge IDs in the mutation.
+func (m *FileMutation) ProjectFileIDs() (ids []int) {
+	for id := range m.project_file {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProjectFile resets all changes to the "project_file" edge.
+func (m *FileMutation) ResetProjectFile() {
+	m.project_file = nil
+	m.clearedproject_file = false
+	m.removedproject_file = nil
+}
+
 // Where appends a list predicates to the FileMutation builder.
 func (m *FileMutation) Where(ps ...predicate.File) {
 	m.predicates = append(m.predicates, ps...)
@@ -2341,12 +2380,9 @@ func (m *FileMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *FileMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 8)
 	if m.creator != nil {
 		fields = append(fields, file.FieldUID)
-	}
-	if m.project != nil {
-		fields = append(fields, file.FieldPid)
 	}
 	if m.name != nil {
 		fields = append(fields, file.FieldName)
@@ -2379,8 +2415,6 @@ func (m *FileMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case file.FieldUID:
 		return m.UID()
-	case file.FieldPid:
-		return m.Pid()
 	case file.FieldName:
 		return m.Name()
 	case file.FieldPath:
@@ -2406,8 +2440,6 @@ func (m *FileMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case file.FieldUID:
 		return m.OldUID(ctx)
-	case file.FieldPid:
-		return m.OldPid(ctx)
 	case file.FieldName:
 		return m.OldName(ctx)
 	case file.FieldPath:
@@ -2437,13 +2469,6 @@ func (m *FileMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUID(v)
-		return nil
-	case file.FieldPid:
-		v, ok := value.(uint32)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPid(v)
 		return nil
 	case file.FieldName:
 		v, ok := value.(string)
@@ -2582,9 +2607,6 @@ func (m *FileMutation) ResetField(name string) error {
 	case file.FieldUID:
 		m.ResetUID()
 		return nil
-	case file.FieldPid:
-		m.ResetPid()
-		return nil
 	case file.FieldName:
 		m.ResetName()
 		return nil
@@ -2612,7 +2634,7 @@ func (m *FileMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FileMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.creator != nil {
 		edges = append(edges, file.EdgeCreator)
 	}
@@ -2621,6 +2643,9 @@ func (m *FileMutation) AddedEdges() []string {
 	}
 	if m.sample != nil {
 		edges = append(edges, file.EdgeSample)
+	}
+	if m.project_file != nil {
+		edges = append(edges, file.EdgeProjectFile)
 	}
 	return edges
 }
@@ -2634,32 +2659,60 @@ func (m *FileMutation) AddedIDs(name string) []ent.Value {
 			return []ent.Value{*id}
 		}
 	case file.EdgeProject:
-		if id := m.project; id != nil {
-			return []ent.Value{*id}
+		ids := make([]ent.Value, 0, len(m.project))
+		for id := range m.project {
+			ids = append(ids, id)
 		}
+		return ids
 	case file.EdgeSample:
 		if id := m.sample; id != nil {
 			return []ent.Value{*id}
 		}
+	case file.EdgeProjectFile:
+		ids := make([]ent.Value, 0, len(m.project_file))
+		for id := range m.project_file {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FileMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.removedproject != nil {
+		edges = append(edges, file.EdgeProject)
+	}
+	if m.removedproject_file != nil {
+		edges = append(edges, file.EdgeProjectFile)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *FileMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case file.EdgeProject:
+		ids := make([]ent.Value, 0, len(m.removedproject))
+		for id := range m.removedproject {
+			ids = append(ids, id)
+		}
+		return ids
+	case file.EdgeProjectFile:
+		ids := make([]ent.Value, 0, len(m.removedproject_file))
+		for id := range m.removedproject_file {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FileMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedcreator {
 		edges = append(edges, file.EdgeCreator)
 	}
@@ -2668,6 +2721,9 @@ func (m *FileMutation) ClearedEdges() []string {
 	}
 	if m.clearedsample {
 		edges = append(edges, file.EdgeSample)
+	}
+	if m.clearedproject_file {
+		edges = append(edges, file.EdgeProjectFile)
 	}
 	return edges
 }
@@ -2682,6 +2738,8 @@ func (m *FileMutation) EdgeCleared(name string) bool {
 		return m.clearedproject
 	case file.EdgeSample:
 		return m.clearedsample
+	case file.EdgeProjectFile:
+		return m.clearedproject_file
 	}
 	return false
 }
@@ -2692,9 +2750,6 @@ func (m *FileMutation) ClearEdge(name string) error {
 	switch name {
 	case file.EdgeCreator:
 		m.ClearCreator()
-		return nil
-	case file.EdgeProject:
-		m.ClearProject()
 		return nil
 	case file.EdgeSample:
 		m.ClearSample()
@@ -2715,6 +2770,9 @@ func (m *FileMutation) ResetEdge(name string) error {
 		return nil
 	case file.EdgeSample:
 		m.ResetSample()
+		return nil
+	case file.EdgeProjectFile:
+		m.ResetProjectFile()
 		return nil
 	}
 	return fmt.Errorf("unknown File edge %s", name)
@@ -5102,6 +5160,9 @@ type ProjectMutation struct {
 	review_project        map[uint32]struct{}
 	removedreview_project map[uint32]struct{}
 	clearedreview_project bool
+	project_file          map[int]struct{}
+	removedproject_file   map[int]struct{}
+	clearedproject_file   bool
 	done                  bool
 	oldValue              func(context.Context) (*Project, error)
 	predicates            []predicate.Project
@@ -5885,6 +5946,60 @@ func (m *ProjectMutation) ResetReviewProject() {
 	m.removedreview_project = nil
 }
 
+// AddProjectFileIDs adds the "project_file" edge to the ProjectFile entity by ids.
+func (m *ProjectMutation) AddProjectFileIDs(ids ...int) {
+	if m.project_file == nil {
+		m.project_file = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.project_file[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProjectFile clears the "project_file" edge to the ProjectFile entity.
+func (m *ProjectMutation) ClearProjectFile() {
+	m.clearedproject_file = true
+}
+
+// ProjectFileCleared reports if the "project_file" edge to the ProjectFile entity was cleared.
+func (m *ProjectMutation) ProjectFileCleared() bool {
+	return m.clearedproject_file
+}
+
+// RemoveProjectFileIDs removes the "project_file" edge to the ProjectFile entity by IDs.
+func (m *ProjectMutation) RemoveProjectFileIDs(ids ...int) {
+	if m.removedproject_file == nil {
+		m.removedproject_file = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.project_file, ids[i])
+		m.removedproject_file[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProjectFile returns the removed IDs of the "project_file" edge to the ProjectFile entity.
+func (m *ProjectMutation) RemovedProjectFileIDs() (ids []int) {
+	for id := range m.removedproject_file {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProjectFileIDs returns the "project_file" edge IDs in the mutation.
+func (m *ProjectMutation) ProjectFileIDs() (ids []int) {
+	for id := range m.project_file {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProjectFile resets all changes to the "project_file" edge.
+func (m *ProjectMutation) ResetProjectFile() {
+	m.project_file = nil
+	m.clearedproject_file = false
+	m.removedproject_file = nil
+}
+
 // Where appends a list predicates to the ProjectMutation builder.
 func (m *ProjectMutation) Where(ps ...predicate.Project) {
 	m.predicates = append(m.predicates, ps...)
@@ -6258,7 +6373,7 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.user != nil {
 		edges = append(edges, project.EdgeUser)
 	}
@@ -6267,6 +6382,9 @@ func (m *ProjectMutation) AddedEdges() []string {
 	}
 	if m.review_project != nil {
 		edges = append(edges, project.EdgeReviewProject)
+	}
+	if m.project_file != nil {
+		edges = append(edges, project.EdgeProjectFile)
 	}
 	return edges
 }
@@ -6291,18 +6409,27 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeProjectFile:
+		ids := make([]ent.Value, 0, len(m.project_file))
+		for id := range m.project_file {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedattachments != nil {
 		edges = append(edges, project.EdgeAttachments)
 	}
 	if m.removedreview_project != nil {
 		edges = append(edges, project.EdgeReviewProject)
+	}
+	if m.removedproject_file != nil {
+		edges = append(edges, project.EdgeProjectFile)
 	}
 	return edges
 }
@@ -6323,13 +6450,19 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeProjectFile:
+		ids := make([]ent.Value, 0, len(m.removedproject_file))
+		for id := range m.removedproject_file {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.cleareduser {
 		edges = append(edges, project.EdgeUser)
 	}
@@ -6338,6 +6471,9 @@ func (m *ProjectMutation) ClearedEdges() []string {
 	}
 	if m.clearedreview_project {
 		edges = append(edges, project.EdgeReviewProject)
+	}
+	if m.clearedproject_file {
+		edges = append(edges, project.EdgeProjectFile)
 	}
 	return edges
 }
@@ -6352,6 +6488,8 @@ func (m *ProjectMutation) EdgeCleared(name string) bool {
 		return m.clearedattachments
 	case project.EdgeReviewProject:
 		return m.clearedreview_project
+	case project.EdgeProjectFile:
+		return m.clearedproject_file
 	}
 	return false
 }
@@ -6380,8 +6518,572 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 	case project.EdgeReviewProject:
 		m.ResetReviewProject()
 		return nil
+	case project.EdgeProjectFile:
+		m.ResetProjectFile()
+		return nil
 	}
 	return fmt.Errorf("unknown Project edge %s", name)
+}
+
+// ProjectFileMutation represents an operation that mutates the ProjectFile nodes in the graph.
+type ProjectFileMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	created_time   *time.Time
+	clearedFields  map[string]struct{}
+	project        *uint32
+	clearedproject bool
+	files          *uint32
+	clearedfiles   bool
+	done           bool
+	oldValue       func(context.Context) (*ProjectFile, error)
+	predicates     []predicate.ProjectFile
+}
+
+var _ ent.Mutation = (*ProjectFileMutation)(nil)
+
+// projectfileOption allows management of the mutation configuration using functional options.
+type projectfileOption func(*ProjectFileMutation)
+
+// newProjectFileMutation creates new mutation for the ProjectFile entity.
+func newProjectFileMutation(c config, op Op, opts ...projectfileOption) *ProjectFileMutation {
+	m := &ProjectFileMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeProjectFile,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withProjectFileID sets the ID field of the mutation.
+func withProjectFileID(id int) projectfileOption {
+	return func(m *ProjectFileMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ProjectFile
+		)
+		m.oldValue = func(ctx context.Context) (*ProjectFile, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ProjectFile.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withProjectFile sets the old ProjectFile of the mutation.
+func withProjectFile(node *ProjectFile) projectfileOption {
+	return func(m *ProjectFileMutation) {
+		m.oldValue = func(context.Context) (*ProjectFile, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ProjectFileMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ProjectFileMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ProjectFileMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ProjectFileMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ProjectFile.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetPid sets the "pid" field.
+func (m *ProjectFileMutation) SetPid(u uint32) {
+	m.project = &u
+}
+
+// Pid returns the value of the "pid" field in the mutation.
+func (m *ProjectFileMutation) Pid() (r uint32, exists bool) {
+	v := m.project
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPid returns the old "pid" field's value of the ProjectFile entity.
+// If the ProjectFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectFileMutation) OldPid(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPid is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPid requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPid: %w", err)
+	}
+	return oldValue.Pid, nil
+}
+
+// ResetPid resets all changes to the "pid" field.
+func (m *ProjectFileMutation) ResetPid() {
+	m.project = nil
+}
+
+// SetFid sets the "fid" field.
+func (m *ProjectFileMutation) SetFid(u uint32) {
+	m.files = &u
+}
+
+// Fid returns the value of the "fid" field in the mutation.
+func (m *ProjectFileMutation) Fid() (r uint32, exists bool) {
+	v := m.files
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFid returns the old "fid" field's value of the ProjectFile entity.
+// If the ProjectFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectFileMutation) OldFid(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFid is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFid requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFid: %w", err)
+	}
+	return oldValue.Fid, nil
+}
+
+// ResetFid resets all changes to the "fid" field.
+func (m *ProjectFileMutation) ResetFid() {
+	m.files = nil
+}
+
+// SetCreatedTime sets the "created_time" field.
+func (m *ProjectFileMutation) SetCreatedTime(t time.Time) {
+	m.created_time = &t
+}
+
+// CreatedTime returns the value of the "created_time" field in the mutation.
+func (m *ProjectFileMutation) CreatedTime() (r time.Time, exists bool) {
+	v := m.created_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedTime returns the old "created_time" field's value of the ProjectFile entity.
+// If the ProjectFile object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectFileMutation) OldCreatedTime(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedTime: %w", err)
+	}
+	return oldValue.CreatedTime, nil
+}
+
+// ResetCreatedTime resets all changes to the "created_time" field.
+func (m *ProjectFileMutation) ResetCreatedTime() {
+	m.created_time = nil
+}
+
+// SetProjectID sets the "project" edge to the Project entity by id.
+func (m *ProjectFileMutation) SetProjectID(id uint32) {
+	m.project = &id
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (m *ProjectFileMutation) ClearProject() {
+	m.clearedproject = true
+}
+
+// ProjectCleared reports if the "project" edge to the Project entity was cleared.
+func (m *ProjectFileMutation) ProjectCleared() bool {
+	return m.clearedproject
+}
+
+// ProjectID returns the "project" edge ID in the mutation.
+func (m *ProjectFileMutation) ProjectID() (id uint32, exists bool) {
+	if m.project != nil {
+		return *m.project, true
+	}
+	return
+}
+
+// ProjectIDs returns the "project" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProjectID instead. It exists only for internal usage by the builders.
+func (m *ProjectFileMutation) ProjectIDs() (ids []uint32) {
+	if id := m.project; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProject resets all changes to the "project" edge.
+func (m *ProjectFileMutation) ResetProject() {
+	m.project = nil
+	m.clearedproject = false
+}
+
+// SetFilesID sets the "files" edge to the File entity by id.
+func (m *ProjectFileMutation) SetFilesID(id uint32) {
+	m.files = &id
+}
+
+// ClearFiles clears the "files" edge to the File entity.
+func (m *ProjectFileMutation) ClearFiles() {
+	m.clearedfiles = true
+}
+
+// FilesCleared reports if the "files" edge to the File entity was cleared.
+func (m *ProjectFileMutation) FilesCleared() bool {
+	return m.clearedfiles
+}
+
+// FilesID returns the "files" edge ID in the mutation.
+func (m *ProjectFileMutation) FilesID() (id uint32, exists bool) {
+	if m.files != nil {
+		return *m.files, true
+	}
+	return
+}
+
+// FilesIDs returns the "files" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// FilesID instead. It exists only for internal usage by the builders.
+func (m *ProjectFileMutation) FilesIDs() (ids []uint32) {
+	if id := m.files; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetFiles resets all changes to the "files" edge.
+func (m *ProjectFileMutation) ResetFiles() {
+	m.files = nil
+	m.clearedfiles = false
+}
+
+// Where appends a list predicates to the ProjectFileMutation builder.
+func (m *ProjectFileMutation) Where(ps ...predicate.ProjectFile) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ProjectFileMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ProjectFileMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ProjectFile, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ProjectFileMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ProjectFileMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ProjectFile).
+func (m *ProjectFileMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ProjectFileMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.project != nil {
+		fields = append(fields, projectfile.FieldPid)
+	}
+	if m.files != nil {
+		fields = append(fields, projectfile.FieldFid)
+	}
+	if m.created_time != nil {
+		fields = append(fields, projectfile.FieldCreatedTime)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ProjectFileMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case projectfile.FieldPid:
+		return m.Pid()
+	case projectfile.FieldFid:
+		return m.Fid()
+	case projectfile.FieldCreatedTime:
+		return m.CreatedTime()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ProjectFileMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case projectfile.FieldPid:
+		return m.OldPid(ctx)
+	case projectfile.FieldFid:
+		return m.OldFid(ctx)
+	case projectfile.FieldCreatedTime:
+		return m.OldCreatedTime(ctx)
+	}
+	return nil, fmt.Errorf("unknown ProjectFile field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProjectFileMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case projectfile.FieldPid:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPid(v)
+		return nil
+	case projectfile.FieldFid:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFid(v)
+		return nil
+	case projectfile.FieldCreatedTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedTime(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectFile field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ProjectFileMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ProjectFileMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ProjectFileMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ProjectFile numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ProjectFileMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ProjectFileMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ProjectFileMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ProjectFile nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ProjectFileMutation) ResetField(name string) error {
+	switch name {
+	case projectfile.FieldPid:
+		m.ResetPid()
+		return nil
+	case projectfile.FieldFid:
+		m.ResetFid()
+		return nil
+	case projectfile.FieldCreatedTime:
+		m.ResetCreatedTime()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectFile field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ProjectFileMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.project != nil {
+		edges = append(edges, projectfile.EdgeProject)
+	}
+	if m.files != nil {
+		edges = append(edges, projectfile.EdgeFiles)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ProjectFileMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case projectfile.EdgeProject:
+		if id := m.project; id != nil {
+			return []ent.Value{*id}
+		}
+	case projectfile.EdgeFiles:
+		if id := m.files; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ProjectFileMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ProjectFileMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ProjectFileMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedproject {
+		edges = append(edges, projectfile.EdgeProject)
+	}
+	if m.clearedfiles {
+		edges = append(edges, projectfile.EdgeFiles)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ProjectFileMutation) EdgeCleared(name string) bool {
+	switch name {
+	case projectfile.EdgeProject:
+		return m.clearedproject
+	case projectfile.EdgeFiles:
+		return m.clearedfiles
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ProjectFileMutation) ClearEdge(name string) error {
+	switch name {
+	case projectfile.EdgeProject:
+		m.ClearProject()
+		return nil
+	case projectfile.EdgeFiles:
+		m.ClearFiles()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectFile unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ProjectFileMutation) ResetEdge(name string) error {
+	switch name {
+	case projectfile.EdgeProject:
+		m.ResetProject()
+		return nil
+	case projectfile.EdgeFiles:
+		m.ResetFiles()
+		return nil
+	}
+	return fmt.Errorf("unknown ProjectFile edge %s", name)
 }
 
 // ReviewProjectMutation represents an operation that mutates the ReviewProject nodes in the graph.

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -26,12 +27,6 @@ type FileCreate struct {
 // SetUID sets the "uid" field.
 func (fc *FileCreate) SetUID(u uint32) *FileCreate {
 	fc.mutation.SetUID(u)
-	return fc
-}
-
-// SetPid sets the "pid" field.
-func (fc *FileCreate) SetPid(u uint32) *FileCreate {
-	fc.mutation.SetPid(u)
 	return fc
 }
 
@@ -134,15 +129,19 @@ func (fc *FileCreate) SetCreator(u *User) *FileCreate {
 	return fc.SetCreatorID(u.ID)
 }
 
-// SetProjectID sets the "project" edge to the Project entity by ID.
-func (fc *FileCreate) SetProjectID(id uint32) *FileCreate {
-	fc.mutation.SetProjectID(id)
+// AddProjectIDs adds the "project" edge to the Project entity by IDs.
+func (fc *FileCreate) AddProjectIDs(ids ...uint32) *FileCreate {
+	fc.mutation.AddProjectIDs(ids...)
 	return fc
 }
 
-// SetProject sets the "project" edge to the Project entity.
-func (fc *FileCreate) SetProject(p *Project) *FileCreate {
-	return fc.SetProjectID(p.ID)
+// AddProject adds the "project" edges to the Project entity.
+func (fc *FileCreate) AddProject(p ...*Project) *FileCreate {
+	ids := make([]uint32, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return fc.AddProjectIDs(ids...)
 }
 
 // SetSampleID sets the "sample" edge to the SampleFile entity by ID.
@@ -162,6 +161,21 @@ func (fc *FileCreate) SetNillableSampleID(id *uint8) *FileCreate {
 // SetSample sets the "sample" edge to the SampleFile entity.
 func (fc *FileCreate) SetSample(s *SampleFile) *FileCreate {
 	return fc.SetSampleID(s.ID)
+}
+
+// AddProjectFileIDs adds the "project_file" edge to the ProjectFile entity by IDs.
+func (fc *FileCreate) AddProjectFileIDs(ids ...int) *FileCreate {
+	fc.mutation.AddProjectFileIDs(ids...)
+	return fc
+}
+
+// AddProjectFile adds the "project_file" edges to the ProjectFile entity.
+func (fc *FileCreate) AddProjectFile(p ...*ProjectFile) *FileCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return fc.AddProjectFileIDs(ids...)
 }
 
 // Mutation returns the FileMutation object of the builder.
@@ -214,9 +228,6 @@ func (fc *FileCreate) check() error {
 	if _, ok := fc.mutation.UID(); !ok {
 		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "File.uid"`)}
 	}
-	if _, ok := fc.mutation.Pid(); !ok {
-		return &ValidationError{Name: "pid", err: errors.New(`ent: missing required field "File.pid"`)}
-	}
 	if _, ok := fc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "File.name"`)}
 	}
@@ -241,9 +252,6 @@ func (fc *FileCreate) check() error {
 	}
 	if _, ok := fc.mutation.CreatorID(); !ok {
 		return &ValidationError{Name: "creator", err: errors.New(`ent: missing required edge "File.creator"`)}
-	}
-	if _, ok := fc.mutation.ProjectID(); !ok {
-		return &ValidationError{Name: "project", err: errors.New(`ent: missing required edge "File.project"`)}
 	}
 	return nil
 }
@@ -324,10 +332,10 @@ func (fc *FileCreate) createSpec() (*File, *sqlgraph.CreateSpec) {
 	}
 	if nodes := fc.mutation.ProjectIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
 			Table:   file.ProjectTable,
-			Columns: []string{file.ProjectColumn},
+			Columns: file.ProjectPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUint32),
@@ -336,7 +344,10 @@ func (fc *FileCreate) createSpec() (*File, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.Pid = nodes[0]
+		createE := &ProjectFileCreate{config: fc.config, mutation: newProjectFileMutation(fc.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := fc.mutation.SampleIDs(); len(nodes) > 0 {
@@ -348,6 +359,22 @@ func (fc *FileCreate) createSpec() (*File, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(samplefile.FieldID, field.TypeUint8),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := fc.mutation.ProjectFileIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   file.ProjectFileTable,
+			Columns: []string{file.ProjectFileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

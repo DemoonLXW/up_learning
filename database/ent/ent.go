@@ -19,6 +19,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/reviewprojectdetail"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
@@ -96,6 +97,7 @@ func checkColumn(table, column string) error {
 			menu.Table:                menu.ValidColumn,
 			permission.Table:          permission.ValidColumn,
 			project.Table:             project.ValidColumn,
+			projectfile.Table:         projectfile.ValidColumn,
 			reviewproject.Table:       reviewproject.ValidColumn,
 			reviewprojectdetail.Table: reviewprojectdetail.ValidColumn,
 			role.Table:                role.ValidColumn,

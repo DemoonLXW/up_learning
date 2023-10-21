@@ -16,8 +16,6 @@ const (
 	FieldID = "id"
 	// FieldUID holds the string denoting the uid field in the database.
 	FieldUID = "uid"
-	// FieldPid holds the string denoting the pid field in the database.
-	FieldPid = "pid"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldPath holds the string denoting the path field in the database.
@@ -38,6 +36,8 @@ const (
 	EdgeProject = "project"
 	// EdgeSample holds the string denoting the sample edge name in mutations.
 	EdgeSample = "sample"
+	// EdgeProjectFile holds the string denoting the project_file edge name in mutations.
+	EdgeProjectFile = "project_file"
 	// Table holds the table name of the file in the database.
 	Table = "file"
 	// CreatorTable is the table that holds the creator relation/edge.
@@ -47,13 +47,11 @@ const (
 	CreatorInverseTable = "user"
 	// CreatorColumn is the table column denoting the creator relation/edge.
 	CreatorColumn = "uid"
-	// ProjectTable is the table that holds the project relation/edge.
-	ProjectTable = "file"
+	// ProjectTable is the table that holds the project relation/edge. The primary key declared below.
+	ProjectTable = "project_file"
 	// ProjectInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ProjectInverseTable = "project"
-	// ProjectColumn is the table column denoting the project relation/edge.
-	ProjectColumn = "pid"
 	// SampleTable is the table that holds the sample relation/edge.
 	SampleTable = "sample_file"
 	// SampleInverseTable is the table name for the SampleFile entity.
@@ -61,13 +59,19 @@ const (
 	SampleInverseTable = "sample_file"
 	// SampleColumn is the table column denoting the sample relation/edge.
 	SampleColumn = "fid"
+	// ProjectFileTable is the table that holds the project_file relation/edge.
+	ProjectFileTable = "project_file"
+	// ProjectFileInverseTable is the table name for the ProjectFile entity.
+	// It exists in this package in order to avoid circular dependency with the "projectfile" package.
+	ProjectFileInverseTable = "project_file"
+	// ProjectFileColumn is the table column denoting the project_file relation/edge.
+	ProjectFileColumn = "fid"
 )
 
 // Columns holds all SQL columns for file fields.
 var Columns = []string{
 	FieldID,
 	FieldUID,
-	FieldPid,
 	FieldName,
 	FieldPath,
 	FieldSize,
@@ -76,6 +80,12 @@ var Columns = []string{
 	FieldDeletedTime,
 	FieldModifiedTime,
 }
+
+var (
+	// ProjectPrimaryKey and ProjectColumn2 are the table columns denoting the
+	// primary key for the project relation (M2M).
+	ProjectPrimaryKey = []string{"pid", "fid"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -109,11 +119,6 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByUID orders the results by the uid field.
 func ByUID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUID, opts...).ToFunc()
-}
-
-// ByPid orders the results by the pid field.
-func ByPid(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPid, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.
@@ -158,10 +163,17 @@ func ByCreatorField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByProjectField orders the results by project field.
-func ByProjectField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByProjectCount orders the results by project count.
+func ByProjectCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newProjectStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newProjectStep(), opts...)
+	}
+}
+
+// ByProject orders the results by project terms.
+func ByProject(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -169,6 +181,20 @@ func ByProjectField(field string, opts ...sql.OrderTermOption) OrderOption {
 func BySampleField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newSampleStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByProjectFileCount orders the results by project_file count.
+func ByProjectFileCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProjectFileStep(), opts...)
+	}
+}
+
+// ByProjectFile orders the results by project_file terms.
+func ByProjectFile(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectFileStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newCreatorStep() *sqlgraph.Step {
@@ -182,7 +208,7 @@ func newProjectStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProjectInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, ProjectTable, ProjectColumn),
+		sqlgraph.Edge(sqlgraph.M2M, true, ProjectTable, ProjectPrimaryKey...),
 	)
 }
 func newSampleStep() *sqlgraph.Step {
@@ -190,5 +216,12 @@ func newSampleStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SampleInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, SampleTable, SampleColumn),
+	)
+}
+func newProjectFileStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectFileInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ProjectFileTable, ProjectFileColumn),
 	)
 }

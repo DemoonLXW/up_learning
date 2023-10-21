@@ -14,6 +14,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -231,6 +232,21 @@ func (pu *ProjectUpdate) AddReviewProject(r ...*ReviewProject) *ProjectUpdate {
 	return pu.AddReviewProjectIDs(ids...)
 }
 
+// AddProjectFileIDs adds the "project_file" edge to the ProjectFile entity by IDs.
+func (pu *ProjectUpdate) AddProjectFileIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.AddProjectFileIDs(ids...)
+	return pu
+}
+
+// AddProjectFile adds the "project_file" edges to the ProjectFile entity.
+func (pu *ProjectUpdate) AddProjectFile(p ...*ProjectFile) *ProjectUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.AddProjectFileIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -282,6 +298,27 @@ func (pu *ProjectUpdate) RemoveReviewProject(r ...*ReviewProject) *ProjectUpdate
 		ids[i] = r[i].ID
 	}
 	return pu.RemoveReviewProjectIDs(ids...)
+}
+
+// ClearProjectFile clears all "project_file" edges to the ProjectFile entity.
+func (pu *ProjectUpdate) ClearProjectFile() *ProjectUpdate {
+	pu.mutation.ClearProjectFile()
+	return pu
+}
+
+// RemoveProjectFileIDs removes the "project_file" edge to ProjectFile entities by IDs.
+func (pu *ProjectUpdate) RemoveProjectFileIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.RemoveProjectFileIDs(ids...)
+	return pu
+}
+
+// RemoveProjectFile removes "project_file" edges to ProjectFile entities.
+func (pu *ProjectUpdate) RemoveProjectFile(p ...*ProjectFile) *ProjectUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.RemoveProjectFileIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -396,23 +433,27 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.AttachmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   project.AttachmentsTable,
-			Columns: []string{project.AttachmentsColumn},
+			Columns: project.AttachmentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUint32),
 			},
 		}
+		createE := &ProjectFileCreate{config: pu.config, mutation: newProjectFileMutation(pu.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := pu.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !pu.mutation.AttachmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   project.AttachmentsTable,
-			Columns: []string{project.AttachmentsColumn},
+			Columns: project.AttachmentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUint32),
@@ -421,14 +462,18 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		createE := &ProjectFileCreate{config: pu.config, mutation: newProjectFileMutation(pu.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := pu.mutation.AttachmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   project.AttachmentsTable,
-			Columns: []string{project.AttachmentsColumn},
+			Columns: project.AttachmentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUint32),
@@ -437,6 +482,10 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		createE := &ProjectFileCreate{config: pu.config, mutation: newProjectFileMutation(pu.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if pu.mutation.ReviewProjectCleared() {
@@ -477,6 +526,51 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.ProjectFileCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   project.ProjectFileTable,
+			Columns: []string{project.ProjectFileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedProjectFileIDs(); len(nodes) > 0 && !pu.mutation.ProjectFileCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   project.ProjectFileTable,
+			Columns: []string{project.ProjectFileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.ProjectFileIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   project.ProjectFileTable,
+			Columns: []string{project.ProjectFileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -704,6 +798,21 @@ func (puo *ProjectUpdateOne) AddReviewProject(r ...*ReviewProject) *ProjectUpdat
 	return puo.AddReviewProjectIDs(ids...)
 }
 
+// AddProjectFileIDs adds the "project_file" edge to the ProjectFile entity by IDs.
+func (puo *ProjectUpdateOne) AddProjectFileIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.AddProjectFileIDs(ids...)
+	return puo
+}
+
+// AddProjectFile adds the "project_file" edges to the ProjectFile entity.
+func (puo *ProjectUpdateOne) AddProjectFile(p ...*ProjectFile) *ProjectUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.AddProjectFileIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -755,6 +864,27 @@ func (puo *ProjectUpdateOne) RemoveReviewProject(r ...*ReviewProject) *ProjectUp
 		ids[i] = r[i].ID
 	}
 	return puo.RemoveReviewProjectIDs(ids...)
+}
+
+// ClearProjectFile clears all "project_file" edges to the ProjectFile entity.
+func (puo *ProjectUpdateOne) ClearProjectFile() *ProjectUpdateOne {
+	puo.mutation.ClearProjectFile()
+	return puo
+}
+
+// RemoveProjectFileIDs removes the "project_file" edge to ProjectFile entities by IDs.
+func (puo *ProjectUpdateOne) RemoveProjectFileIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.RemoveProjectFileIDs(ids...)
+	return puo
+}
+
+// RemoveProjectFile removes "project_file" edges to ProjectFile entities.
+func (puo *ProjectUpdateOne) RemoveProjectFile(p ...*ProjectFile) *ProjectUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.RemoveProjectFileIDs(ids...)
 }
 
 // Where appends a list predicates to the ProjectUpdate builder.
@@ -899,23 +1029,27 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	}
 	if puo.mutation.AttachmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   project.AttachmentsTable,
-			Columns: []string{project.AttachmentsColumn},
+			Columns: project.AttachmentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUint32),
 			},
 		}
+		createE := &ProjectFileCreate{config: puo.config, mutation: newProjectFileMutation(puo.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := puo.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !puo.mutation.AttachmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   project.AttachmentsTable,
-			Columns: []string{project.AttachmentsColumn},
+			Columns: project.AttachmentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUint32),
@@ -924,14 +1058,18 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		createE := &ProjectFileCreate{config: puo.config, mutation: newProjectFileMutation(puo.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := puo.mutation.AttachmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   project.AttachmentsTable,
-			Columns: []string{project.AttachmentsColumn},
+			Columns: project.AttachmentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(file.FieldID, field.TypeUint32),
@@ -940,6 +1078,10 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		createE := &ProjectFileCreate{config: puo.config, mutation: newProjectFileMutation(puo.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if puo.mutation.ReviewProjectCleared() {
@@ -980,6 +1122,51 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.ProjectFileCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   project.ProjectFileTable,
+			Columns: []string{project.ProjectFileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedProjectFileIDs(); len(nodes) > 0 && !puo.mutation.ProjectFileCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   project.ProjectFileTable,
+			Columns: []string{project.ProjectFileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.ProjectFileIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   project.ProjectFileTable,
+			Columns: []string{project.ProjectFileColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -59,7 +59,6 @@ var (
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
 		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
-		{Name: "pid", Type: field.TypeUint32},
 		{Name: "uid", Type: field.TypeUint32},
 	}
 	// FileTable holds the schema information for the "file" table.
@@ -69,14 +68,8 @@ var (
 		PrimaryKey: []*schema.Column{FileColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "file_project_attachments",
-				Columns:    []*schema.Column{FileColumns[8]},
-				RefColumns: []*schema.Column{ProjectColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
 				Symbol:     "file_user_files",
-				Columns:    []*schema.Column{FileColumns[9]},
+				Columns:    []*schema.Column{FileColumns[8]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -175,6 +168,40 @@ var (
 				Columns:    []*schema.Column{ProjectColumns[13]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// ProjectFileColumns holds the columns for the "project_file" table.
+	ProjectFileColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "created_time", Type: field.TypeTime},
+		{Name: "pid", Type: field.TypeUint32},
+		{Name: "fid", Type: field.TypeUint32},
+	}
+	// ProjectFileTable holds the schema information for the "project_file" table.
+	ProjectFileTable = &schema.Table{
+		Name:       "project_file",
+		Columns:    ProjectFileColumns,
+		PrimaryKey: []*schema.Column{ProjectFileColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "project_file_project_project",
+				Columns:    []*schema.Column{ProjectFileColumns[2]},
+				RefColumns: []*schema.Column{ProjectColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "project_file_file_files",
+				Columns:    []*schema.Column{ProjectFileColumns[3]},
+				RefColumns: []*schema.Column{FileColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "projectfile_pid_fid",
+				Unique:  true,
+				Columns: []*schema.Column{ProjectFileColumns[2], ProjectFileColumns[3]},
 			},
 		},
 	}
@@ -451,6 +478,7 @@ var (
 		MenuTable,
 		PermissionTable,
 		ProjectTable,
+		ProjectFileTable,
 		ReviewProjectTable,
 		ReviewProjectDetailTable,
 		RoleTable,
@@ -472,8 +500,7 @@ func init() {
 	CollegeTable.Annotation = &entsql.Annotation{
 		Table: "college",
 	}
-	FileTable.ForeignKeys[0].RefTable = ProjectTable
-	FileTable.ForeignKeys[1].RefTable = UserTable
+	FileTable.ForeignKeys[0].RefTable = UserTable
 	FileTable.Annotation = &entsql.Annotation{
 		Table: "file",
 	}
@@ -491,6 +518,11 @@ func init() {
 	ProjectTable.ForeignKeys[0].RefTable = UserTable
 	ProjectTable.Annotation = &entsql.Annotation{
 		Table: "project",
+	}
+	ProjectFileTable.ForeignKeys[0].RefTable = ProjectTable
+	ProjectFileTable.ForeignKeys[1].RefTable = FileTable
+	ProjectFileTable.Annotation = &entsql.Annotation{
+		Table: "project_file",
 	}
 	ReviewProjectTable.ForeignKeys[0].RefTable = ProjectTable
 	ReviewProjectTable.ForeignKeys[1].RefTable = UserTable

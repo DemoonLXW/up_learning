@@ -21,6 +21,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/menu"
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/reviewprojectdetail"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
@@ -52,6 +53,8 @@ type Client struct {
 	Permission *PermissionClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
+	// ProjectFile is the client for interacting with the ProjectFile builders.
+	ProjectFile *ProjectFileClient
 	// ReviewProject is the client for interacting with the ReviewProject builders.
 	ReviewProject *ReviewProjectClient
 	// ReviewProjectDetail is the client for interacting with the ReviewProjectDetail builders.
@@ -92,6 +95,7 @@ func (c *Client) init() {
 	c.Menu = NewMenuClient(c.config)
 	c.Permission = NewPermissionClient(c.config)
 	c.Project = NewProjectClient(c.config)
+	c.ProjectFile = NewProjectFileClient(c.config)
 	c.ReviewProject = NewReviewProjectClient(c.config)
 	c.ReviewProjectDetail = NewReviewProjectDetailClient(c.config)
 	c.Role = NewRoleClient(c.config)
@@ -191,6 +195,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Menu:                NewMenuClient(cfg),
 		Permission:          NewPermissionClient(cfg),
 		Project:             NewProjectClient(cfg),
+		ProjectFile:         NewProjectFileClient(cfg),
 		ReviewProject:       NewReviewProjectClient(cfg),
 		ReviewProjectDetail: NewReviewProjectDetailClient(cfg),
 		Role:                NewRoleClient(cfg),
@@ -227,6 +232,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Menu:                NewMenuClient(cfg),
 		Permission:          NewPermissionClient(cfg),
 		Project:             NewProjectClient(cfg),
+		ProjectFile:         NewProjectFileClient(cfg),
 		ReviewProject:       NewReviewProjectClient(cfg),
 		ReviewProjectDetail: NewReviewProjectDetailClient(cfg),
 		Role:                NewRoleClient(cfg),
@@ -267,8 +273,9 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Class, c.College, c.File, c.Major, c.Menu, c.Permission, c.Project,
-		c.ReviewProject, c.ReviewProjectDetail, c.Role, c.RolePermission, c.SampleFile,
-		c.School, c.Student, c.Teacher, c.User, c.UserRole,
+		c.ProjectFile, c.ReviewProject, c.ReviewProjectDetail, c.Role,
+		c.RolePermission, c.SampleFile, c.School, c.Student, c.Teacher, c.User,
+		c.UserRole,
 	} {
 		n.Use(hooks...)
 	}
@@ -279,8 +286,9 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Class, c.College, c.File, c.Major, c.Menu, c.Permission, c.Project,
-		c.ReviewProject, c.ReviewProjectDetail, c.Role, c.RolePermission, c.SampleFile,
-		c.School, c.Student, c.Teacher, c.User, c.UserRole,
+		c.ProjectFile, c.ReviewProject, c.ReviewProjectDetail, c.Role,
+		c.RolePermission, c.SampleFile, c.School, c.Student, c.Teacher, c.User,
+		c.UserRole,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -303,6 +311,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Permission.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
+	case *ProjectFileMutation:
+		return c.ProjectFile.mutate(ctx, m)
 	case *ReviewProjectMutation:
 		return c.ReviewProject.mutate(ctx, m)
 	case *ReviewProjectDetailMutation:
@@ -745,7 +755,7 @@ func (c *FileClient) QueryProject(f *File) *ProjectQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(file.Table, file.FieldID, id),
 			sqlgraph.To(project.Table, project.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, file.ProjectTable, file.ProjectColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, file.ProjectTable, file.ProjectPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
 		return fromV, nil
@@ -762,6 +772,22 @@ func (c *FileClient) QuerySample(f *File) *SampleFileQuery {
 			sqlgraph.From(file.Table, file.FieldID, id),
 			sqlgraph.To(samplefile.Table, samplefile.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, file.SampleTable, file.SampleColumn),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectFile queries the project_file edge of a File.
+func (c *FileClient) QueryProjectFile(f *File) *ProjectFileQuery {
+	query := (&ProjectFileClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(file.Table, file.FieldID, id),
+			sqlgraph.To(projectfile.Table, projectfile.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, file.ProjectFileTable, file.ProjectFileColumn),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
 		return fromV, nil
@@ -1345,7 +1371,7 @@ func (c *ProjectClient) QueryAttachments(pr *Project) *FileQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(project.Table, project.FieldID, id),
 			sqlgraph.To(file.Table, file.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, project.AttachmentsTable, project.AttachmentsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, project.AttachmentsTable, project.AttachmentsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
 		return fromV, nil
@@ -1362,6 +1388,22 @@ func (c *ProjectClient) QueryReviewProject(pr *Project) *ReviewProjectQuery {
 			sqlgraph.From(project.Table, project.FieldID, id),
 			sqlgraph.To(reviewproject.Table, reviewproject.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.ReviewProjectTable, project.ReviewProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectFile queries the project_file edge of a Project.
+func (c *ProjectClient) QueryProjectFile(pr *Project) *ProjectFileQuery {
+	query := (&ProjectFileClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(projectfile.Table, projectfile.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, project.ProjectFileTable, project.ProjectFileColumn),
 		)
 		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
 		return fromV, nil
@@ -1391,6 +1433,156 @@ func (c *ProjectClient) mutate(ctx context.Context, m *ProjectMutation) (Value, 
 		return (&ProjectDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Project mutation op: %q", m.Op())
+	}
+}
+
+// ProjectFileClient is a client for the ProjectFile schema.
+type ProjectFileClient struct {
+	config
+}
+
+// NewProjectFileClient returns a client for the ProjectFile from the given config.
+func NewProjectFileClient(c config) *ProjectFileClient {
+	return &ProjectFileClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `projectfile.Hooks(f(g(h())))`.
+func (c *ProjectFileClient) Use(hooks ...Hook) {
+	c.hooks.ProjectFile = append(c.hooks.ProjectFile, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `projectfile.Intercept(f(g(h())))`.
+func (c *ProjectFileClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ProjectFile = append(c.inters.ProjectFile, interceptors...)
+}
+
+// Create returns a builder for creating a ProjectFile entity.
+func (c *ProjectFileClient) Create() *ProjectFileCreate {
+	mutation := newProjectFileMutation(c.config, OpCreate)
+	return &ProjectFileCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProjectFile entities.
+func (c *ProjectFileClient) CreateBulk(builders ...*ProjectFileCreate) *ProjectFileCreateBulk {
+	return &ProjectFileCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProjectFile.
+func (c *ProjectFileClient) Update() *ProjectFileUpdate {
+	mutation := newProjectFileMutation(c.config, OpUpdate)
+	return &ProjectFileUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectFileClient) UpdateOne(pf *ProjectFile) *ProjectFileUpdateOne {
+	mutation := newProjectFileMutation(c.config, OpUpdateOne, withProjectFile(pf))
+	return &ProjectFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectFileClient) UpdateOneID(id int) *ProjectFileUpdateOne {
+	mutation := newProjectFileMutation(c.config, OpUpdateOne, withProjectFileID(id))
+	return &ProjectFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProjectFile.
+func (c *ProjectFileClient) Delete() *ProjectFileDelete {
+	mutation := newProjectFileMutation(c.config, OpDelete)
+	return &ProjectFileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProjectFileClient) DeleteOne(pf *ProjectFile) *ProjectFileDeleteOne {
+	return c.DeleteOneID(pf.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProjectFileClient) DeleteOneID(id int) *ProjectFileDeleteOne {
+	builder := c.Delete().Where(projectfile.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectFileDeleteOne{builder}
+}
+
+// Query returns a query builder for ProjectFile.
+func (c *ProjectFileClient) Query() *ProjectFileQuery {
+	return &ProjectFileQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProjectFile},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ProjectFile entity by its id.
+func (c *ProjectFileClient) Get(ctx context.Context, id int) (*ProjectFile, error) {
+	return c.Query().Where(projectfile.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectFileClient) GetX(ctx context.Context, id int) *ProjectFile {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProject queries the project edge of a ProjectFile.
+func (c *ProjectFileClient) QueryProject(pf *ProjectFile) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectfile.Table, projectfile.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, projectfile.ProjectTable, projectfile.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(pf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFiles queries the files edge of a ProjectFile.
+func (c *ProjectFileClient) QueryFiles(pf *ProjectFile) *FileQuery {
+	query := (&FileClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectfile.Table, projectfile.FieldID, id),
+			sqlgraph.To(file.Table, file.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, projectfile.FilesTable, projectfile.FilesColumn),
+		)
+		fromV = sqlgraph.Neighbors(pf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectFileClient) Hooks() []Hook {
+	return c.hooks.ProjectFile
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProjectFileClient) Interceptors() []Interceptor {
+	return c.inters.ProjectFile
+}
+
+func (c *ProjectFileClient) mutate(ctx context.Context, m *ProjectFileMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProjectFileCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProjectFileUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProjectFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProjectFileDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ProjectFile mutation op: %q", m.Op())
 	}
 }
 
@@ -2895,13 +3087,13 @@ func (c *UserRoleClient) mutate(ctx context.Context, m *UserRoleMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Class, College, File, Major, Menu, Permission, Project, ReviewProject,
-		ReviewProjectDetail, Role, RolePermission, SampleFile, School, Student,
-		Teacher, User, UserRole []ent.Hook
+		Class, College, File, Major, Menu, Permission, Project, ProjectFile,
+		ReviewProject, ReviewProjectDetail, Role, RolePermission, SampleFile, School,
+		Student, Teacher, User, UserRole []ent.Hook
 	}
 	inters struct {
-		Class, College, File, Major, Menu, Permission, Project, ReviewProject,
-		ReviewProjectDetail, Role, RolePermission, SampleFile, School, Student,
-		Teacher, User, UserRole []ent.Interceptor
+		Class, College, File, Major, Menu, Permission, Project, ProjectFile,
+		ReviewProject, ReviewProjectDetail, Role, RolePermission, SampleFile, School,
+		Student, Teacher, User, UserRole []ent.Interceptor
 	}
 )

@@ -14,6 +14,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -21,13 +22,14 @@ import (
 // FileQuery is the builder for querying File entities.
 type FileQuery struct {
 	config
-	ctx         *QueryContext
-	order       []file.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.File
-	withCreator *UserQuery
-	withProject *ProjectQuery
-	withSample  *SampleFileQuery
+	ctx             *QueryContext
+	order           []file.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.File
+	withCreator     *UserQuery
+	withProject     *ProjectQuery
+	withSample      *SampleFileQuery
+	withProjectFile *ProjectFileQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -100,7 +102,7 @@ func (fq *FileQuery) QueryProject() *ProjectQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(file.Table, file.FieldID, selector),
 			sqlgraph.To(project.Table, project.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, file.ProjectTable, file.ProjectColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, file.ProjectTable, file.ProjectPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -123,6 +125,28 @@ func (fq *FileQuery) QuerySample() *SampleFileQuery {
 			sqlgraph.From(file.Table, file.FieldID, selector),
 			sqlgraph.To(samplefile.Table, samplefile.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, file.SampleTable, file.SampleColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProjectFile chains the current query on the "project_file" edge.
+func (fq *FileQuery) QueryProjectFile() *ProjectFileQuery {
+	query := (&ProjectFileClient{config: fq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := fq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := fq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(file.Table, file.FieldID, selector),
+			sqlgraph.To(projectfile.Table, projectfile.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, file.ProjectFileTable, file.ProjectFileColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -317,14 +341,15 @@ func (fq *FileQuery) Clone() *FileQuery {
 		return nil
 	}
 	return &FileQuery{
-		config:      fq.config,
-		ctx:         fq.ctx.Clone(),
-		order:       append([]file.OrderOption{}, fq.order...),
-		inters:      append([]Interceptor{}, fq.inters...),
-		predicates:  append([]predicate.File{}, fq.predicates...),
-		withCreator: fq.withCreator.Clone(),
-		withProject: fq.withProject.Clone(),
-		withSample:  fq.withSample.Clone(),
+		config:          fq.config,
+		ctx:             fq.ctx.Clone(),
+		order:           append([]file.OrderOption{}, fq.order...),
+		inters:          append([]Interceptor{}, fq.inters...),
+		predicates:      append([]predicate.File{}, fq.predicates...),
+		withCreator:     fq.withCreator.Clone(),
+		withProject:     fq.withProject.Clone(),
+		withSample:      fq.withSample.Clone(),
+		withProjectFile: fq.withProjectFile.Clone(),
 		// clone intermediate query.
 		sql:  fq.sql.Clone(),
 		path: fq.path,
@@ -361,6 +386,17 @@ func (fq *FileQuery) WithSample(opts ...func(*SampleFileQuery)) *FileQuery {
 		opt(query)
 	}
 	fq.withSample = query
+	return fq
+}
+
+// WithProjectFile tells the query-builder to eager-load the nodes that are connected to
+// the "project_file" edge. The optional arguments are used to configure the query builder of the edge.
+func (fq *FileQuery) WithProjectFile(opts ...func(*ProjectFileQuery)) *FileQuery {
+	query := (&ProjectFileClient{config: fq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	fq.withProjectFile = query
 	return fq
 }
 
@@ -442,10 +478,11 @@ func (fq *FileQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*File, e
 	var (
 		nodes       = []*File{}
 		_spec       = fq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			fq.withCreator != nil,
 			fq.withProject != nil,
 			fq.withSample != nil,
+			fq.withProjectFile != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -473,14 +510,22 @@ func (fq *FileQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*File, e
 		}
 	}
 	if query := fq.withProject; query != nil {
-		if err := fq.loadProject(ctx, query, nodes, nil,
-			func(n *File, e *Project) { n.Edges.Project = e }); err != nil {
+		if err := fq.loadProject(ctx, query, nodes,
+			func(n *File) { n.Edges.Project = []*Project{} },
+			func(n *File, e *Project) { n.Edges.Project = append(n.Edges.Project, e) }); err != nil {
 			return nil, err
 		}
 	}
 	if query := fq.withSample; query != nil {
 		if err := fq.loadSample(ctx, query, nodes, nil,
 			func(n *File, e *SampleFile) { n.Edges.Sample = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := fq.withProjectFile; query != nil {
+		if err := fq.loadProjectFile(ctx, query, nodes,
+			func(n *File) { n.Edges.ProjectFile = []*ProjectFile{} },
+			func(n *File, e *ProjectFile) { n.Edges.ProjectFile = append(n.Edges.ProjectFile, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -517,30 +562,62 @@ func (fq *FileQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []
 	return nil
 }
 func (fq *FileQuery) loadProject(ctx context.Context, query *ProjectQuery, nodes []*File, init func(*File), assign func(*File, *Project)) error {
-	ids := make([]uint32, 0, len(nodes))
-	nodeids := make(map[uint32][]*File)
-	for i := range nodes {
-		fk := nodes[i].Pid
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uint32]*File)
+	nids := make(map[uint32]map[*File]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
 		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(ids) == 0 {
-		return nil
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(file.ProjectTable)
+		s.Join(joinT).On(s.C(project.FieldID), joinT.C(file.ProjectPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(file.ProjectPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(file.ProjectPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
 	}
-	query.Where(project.IDIn(ids...))
-	neighbors, err := query.All(ctx)
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := uint32(values[0].(*sql.NullInt64).Int64)
+				inValue := uint32(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*File]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Project](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "pid" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "project" node returned %v`, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil
@@ -557,6 +634,36 @@ func (fq *FileQuery) loadSample(ctx context.Context, query *SampleFileQuery, nod
 	}
 	query.Where(predicate.SampleFile(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(file.SampleColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.Fid
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "fid" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (fq *FileQuery) loadProjectFile(ctx context.Context, query *ProjectFileQuery, nodes []*File, init func(*File), assign func(*File, *ProjectFile)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uint32]*File)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(projectfile.FieldFid)
+	}
+	query.Where(predicate.ProjectFile(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(file.ProjectFileColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -600,9 +707,6 @@ func (fq *FileQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if fq.withCreator != nil {
 			_spec.Node.AddColumnOnce(file.FieldUID)
-		}
-		if fq.withProject != nil {
-			_spec.Node.AddColumnOnce(file.FieldPid)
 		}
 	}
 	if ps := fq.predicates; len(ps) > 0 {

@@ -27,6 +27,9 @@ type Permission func(*sql.Selector)
 // Project is the predicate function for project builders.
 type Project func(*sql.Selector)
 
+// ProjectFile is the predicate function for projectfile builders.
+type ProjectFile func(*sql.Selector)
+
 // ReviewProject is the predicate function for reviewproject builders.
 type ReviewProject func(*sql.Selector)
 

@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
-	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -22,8 +21,6 @@ type File struct {
 	ID uint32 `json:"id,omitempty"`
 	// UID holds the value of the "uid" field.
 	UID uint32 `json:"uid,omitempty"`
-	// Pid holds the value of the "pid" field.
-	Pid uint32 `json:"pid,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Path holds the value of the "path" field.
@@ -49,12 +46,14 @@ type FileEdges struct {
 	// Creator holds the value of the creator edge.
 	Creator *User `json:"creator,omitempty"`
 	// Project holds the value of the project edge.
-	Project *Project `json:"project,omitempty"`
+	Project []*Project `json:"project,omitempty"`
 	// Sample holds the value of the sample edge.
 	Sample *SampleFile `json:"sample,omitempty"`
+	// ProjectFile holds the value of the project_file edge.
+	ProjectFile []*ProjectFile `json:"project_file,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // CreatorOrErr returns the Creator value or an error if the edge
@@ -71,13 +70,9 @@ func (e FileEdges) CreatorOrErr() (*User, error) {
 }
 
 // ProjectOrErr returns the Project value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e FileEdges) ProjectOrErr() (*Project, error) {
+// was not loaded in eager-loading.
+func (e FileEdges) ProjectOrErr() ([]*Project, error) {
 	if e.loadedTypes[1] {
-		if e.Project == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: project.Label}
-		}
 		return e.Project, nil
 	}
 	return nil, &NotLoadedError{edge: "project"}
@@ -96,6 +91,15 @@ func (e FileEdges) SampleOrErr() (*SampleFile, error) {
 	return nil, &NotLoadedError{edge: "sample"}
 }
 
+// ProjectFileOrErr returns the ProjectFile value or an error if the edge
+// was not loaded in eager-loading.
+func (e FileEdges) ProjectFileOrErr() ([]*ProjectFile, error) {
+	if e.loadedTypes[3] {
+		return e.ProjectFile, nil
+	}
+	return nil, &NotLoadedError{edge: "project_file"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*File) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -103,7 +107,7 @@ func (*File) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case file.FieldIsDisabled:
 			values[i] = new(sql.NullBool)
-		case file.FieldID, file.FieldUID, file.FieldPid, file.FieldSize:
+		case file.FieldID, file.FieldUID, file.FieldSize:
 			values[i] = new(sql.NullInt64)
 		case file.FieldName, file.FieldPath:
 			values[i] = new(sql.NullString)
@@ -135,12 +139,6 @@ func (f *File) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field uid", values[i])
 			} else if value.Valid {
 				f.UID = uint32(value.Int64)
-			}
-		case file.FieldPid:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field pid", values[i])
-			} else if value.Valid {
-				f.Pid = uint32(value.Int64)
 			}
 		case file.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -215,6 +213,11 @@ func (f *File) QuerySample() *SampleFileQuery {
 	return NewFileClient(f.config).QuerySample(f)
 }
 
+// QueryProjectFile queries the "project_file" edge of the File entity.
+func (f *File) QueryProjectFile() *ProjectFileQuery {
+	return NewFileClient(f.config).QueryProjectFile(f)
+}
+
 // Update returns a builder for updating this File.
 // Note that you need to call File.Unwrap() before calling this method if this File
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -240,9 +243,6 @@ func (f *File) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", f.ID))
 	builder.WriteString("uid=")
 	builder.WriteString(fmt.Sprintf("%v", f.UID))
-	builder.WriteString(", ")
-	builder.WriteString("pid=")
-	builder.WriteString(fmt.Sprintf("%v", f.Pid))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(f.Name)
