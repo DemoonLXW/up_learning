@@ -233,3 +233,16 @@ type ToAddProject struct {
 	ResultAndConclusion string `json:"result_and_conclusion"`
 	Requirement         string `json:"requirement"`
 }
+
+type ToModifyProject struct {
+	ID                  uint32  `json:"id" binding:"required"`
+	Title               *string `json:"title"`
+	Goal                *string `json:"goal"`
+	Principle           *string `json:"principle"`
+	ProcessAndMethod    *string `json:"process_and_method"`
+	Step                *string `json:"step"`
+	ResultAndConclusion *string `json:"result_and_conclusion"`
+	Requirement         *string `json:"requirement"`
+	ReviewStatus        *string `json:"review_status"`
+	IsDisabled          *bool   `json:"isDisabled"`
+}

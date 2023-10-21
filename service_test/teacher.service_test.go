@@ -61,3 +61,38 @@ func TestCreateProject(t *testing.T) {
 	// err = serv.CreateProject(nil, nil, adds)
 	assert.Nil(t, err)
 }
+
+func TestUpdateProject(t *testing.T) {
+	serv, err := CreateTestTeacherService()
+	assert.Nil(t, err)
+
+	id := uint32(2)
+	// title := "update title2"
+	goal := "update goal1"
+	step := "update step1"
+	requirement := "update requirement1"
+
+	// project := entity.ToModifyProject{
+	// 	Title:               "title1",
+	// 	Goal:                "goal1",
+	// 	Principle:           "principle1",
+	// 	ProcessAndMethod:    "process and method 1",
+	// 	Step:                "step1",
+	// 	ResultAndConclusion: "result and conclusion 1",
+	// 	Requirement:         "requirement1",
+	// }
+
+	ctx := context.Background()
+	client := serv.DB
+
+	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
+		return serv.UpdateProject(ctx, tx.Client(), &entity.ToModifyProject{
+			ID:          id,
+			Goal:        &goal,
+			Step:        &step,
+			Requirement: &requirement,
+		})
+	})
+	// err = serv.CreateProject(nil, nil, adds)
+	assert.Nil(t, err)
+}

@@ -92,3 +92,47 @@ func (serv *TeacherService) CreateProject(ctx context.Context, client *ent.Clien
 
 	return nil
 }
+
+func (serv *TeacherService) UpdateProject(ctx context.Context, client *ent.Client, toUpdate *entity.ToModifyProject) error {
+	updater := client.Project.Update().Where(
+		project.IDEQ(toUpdate.ID),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(project.FieldDeletedTime))
+		},
+	)
+	if toUpdate.Title != nil {
+		updater.SetTitle(*toUpdate.Title)
+	}
+	if toUpdate.Goal != nil {
+		updater.SetGoal(*toUpdate.Goal)
+	}
+	if toUpdate.Principle != nil {
+		updater.SetPrinciple(*toUpdate.Principle)
+	}
+	if toUpdate.ProcessAndMethod != nil {
+		updater.SetProcessAndMethod(*toUpdate.ProcessAndMethod)
+	}
+	if toUpdate.Step != nil {
+		updater.SetStep(*toUpdate.Step)
+	}
+	if toUpdate.ResultAndConclusion != nil {
+		updater.SetResultAndConclusion(*toUpdate.ResultAndConclusion)
+	}
+	if toUpdate.Requirement != nil {
+		updater.SetRequirement(*toUpdate.Requirement)
+	}
+	if toUpdate.IsDisabled != nil {
+		updater.SetIsDisabled(*toUpdate.IsDisabled)
+	}
+	updater.SetModifiedTime(time.Now())
+
+	num, err := updater.Save(ctx)
+	if err != nil {
+		return fmt.Errorf("update project failed: %w", err)
+	}
+	if num == 0 {
+		return fmt.Errorf("update project affect 0 row")
+	}
+
+	return nil
+}
