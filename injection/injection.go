@@ -7,6 +7,7 @@ import (
 	"github.com/DemoonLXW/up_learning/controller"
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/facade"
 	"github.com/DemoonLXW/up_learning/service"
 	"github.com/DemoonLXW/up_learning/workflow"
 	"github.com/gin-gonic/gin"
@@ -32,6 +33,11 @@ func ProvideRedis() (*redis.Client, error) {
 func ProvideService() (*service.Services, error) {
 	wire.Build(database.DataBaseProvider, service.ServiceProvider, workflow.WorkflowHelperProvider)
 	return &service.Services{}, nil
+}
+
+func ProvideFacade() (*facade.Facades, error) {
+	wire.Build(facade.FacadeProvider, database.DataBaseProvider, service.ServiceProvider)
+	return &facade.Facades{}, nil
 }
 
 func ProvideController() (*controller.Controllers, error) {

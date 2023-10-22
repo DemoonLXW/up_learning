@@ -11,6 +11,7 @@ import (
 	"github.com/DemoonLXW/up_learning/controller"
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/facade"
 	"github.com/DemoonLXW/up_learning/service"
 	"github.com/DemoonLXW/up_learning/workflow"
 	"github.com/gin-gonic/gin"
@@ -93,6 +94,27 @@ func ProvideService() (*service.Services, error) {
 		Workflow:   workflowService,
 	}
 	return services, nil
+}
+
+func ProvideFacade() (*facade.Facades, error) {
+	dataBaseConfig, err := database.ProvideDatabaseConfig()
+	if err != nil {
+		return nil, err
+	}
+	client, err := database.ProvideDB(dataBaseConfig)
+	if err != nil {
+		return nil, err
+	}
+	commonService := &service.CommonService{
+		DB: client,
+	}
+	teacherFacade := &facade.TeacherFacade{
+		Common: commonService,
+	}
+	facades := &facade.Facades{
+		Teacher: teacherFacade,
+	}
+	return facades, nil
 }
 
 func ProvideController() (*controller.Controllers, error) {
