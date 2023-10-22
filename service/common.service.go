@@ -86,7 +86,7 @@ func (serv *CommonService) SaveUploadFile(file *multipart.FileHeader, dir string
 	return out, nil
 }
 
-func (serv *CommonService) CreateFile(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddFile) error {
+func (serv *CommonService) CreateFileByProjectID(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddFile, projectID uint32) error {
 	if ctx == nil || client == nil {
 		return fmt.Errorf("context or client is nil")
 	}
@@ -118,6 +118,7 @@ func (serv *CommonService) CreateFile(ctx context.Context, client *ent.Client, t
 			SetPath(toCreates[current].Path).
 			SetSize(toCreates[current].Size).
 			SetIsDisabled(false).
+			AddProjectIDs(projectID).
 			Save(ctx)
 
 		if err != nil {
@@ -141,7 +142,8 @@ func (serv *CommonService) CreateFile(ctx context.Context, client *ent.Client, t
 				SetUID(toCreates[current+i].UID).
 				SetName(toCreates[current+i].Name).
 				SetPath(toCreates[current+i].Path).
-				SetSize(toCreates[current+i].Size)
+				SetSize(toCreates[current+i].Size).
+				AddProjectIDs(projectID)
 		}
 		err = client.File.CreateBulk(bulk...).Exec(ctx)
 		if err != nil {
