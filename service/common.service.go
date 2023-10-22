@@ -1,14 +1,19 @@
 package service
 
 import (
+	"context"
 	"crypto/md5"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
 	"regexp"
+	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/file"
+	"github.com/DemoonLXW/up_learning/entity"
 )
 
 type CommonService struct {
@@ -79,4 +84,70 @@ func (serv *CommonService) SaveUploadFile(file *multipart.FileHeader, dir string
 	defer out.Close()
 
 	return out, nil
+}
+
+func (serv *CommonService) CreateFile(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddFile) error {
+	if ctx == nil || client == nil {
+		return fmt.Errorf("context or client is nil")
+	}
+
+	current := 0
+	length := len(toCreates)
+	for ; current < length; current++ {
+		id, err := client.File.Query().Where(func(s *sql.Selector) {
+			s.Where(sql.NotNull(file.FieldDeletedTime))
+		}).FirstID(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
+				return fmt.Errorf("create file find a deleted file id query failed: %w", err)
+			}
+			break
+		}
+
+		num, err := client.File.Update().Where(file.And(
+			file.IDEQ(id),
+			func(s *sql.Selector) {
+				s.Where(sql.NotNull(file.FieldDeletedTime))
+			},
+		)).
+			SetCreatedTime(time.Now()).
+			ClearModifiedTime().
+			ClearDeletedTime().
+			SetUID(toCreates[current].UID).
+			SetName(toCreates[current].Name).
+			SetPath(toCreates[current].Path).
+			SetSize(toCreates[current].Size).
+			SetIsDisabled(false).
+			Save(ctx)
+
+		if err != nil {
+			return fmt.Errorf("create file: %w", err)
+		}
+		if num == 0 {
+			return fmt.Errorf("create file update deleted file affect 0 row")
+		}
+	}
+	if current < length {
+		num, err := client.File.Query().Aggregate(ent.Count()).Int(ctx)
+		if err != nil {
+			return fmt.Errorf("create file count failed: %w", err)
+		}
+
+		bulkLength := length - current
+		bulk := make([]*ent.FileCreate, bulkLength)
+		for i := 0; i < bulkLength; i++ {
+			bulk[i] = client.File.Create().
+				SetID(uint32(num + i + 1)).
+				SetUID(toCreates[current+i].UID).
+				SetName(toCreates[current+i].Name).
+				SetPath(toCreates[current+i].Path).
+				SetSize(toCreates[current+i].Size)
+		}
+		err = client.File.CreateBulk(bulk...).Exec(ctx)
+		if err != nil {
+			return fmt.Errorf("create file failed: %w", err)
+		}
+	}
+
+	return nil
 }

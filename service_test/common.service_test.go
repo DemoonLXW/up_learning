@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -10,6 +11,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/injection"
 	"github.com/DemoonLXW/up_learning/service"
 	"github.com/stretchr/testify/assert"
@@ -95,4 +98,34 @@ func TestSaveUploadFile(t *testing.T) {
 	info, err := o.Stat()
 	assert.Nil(t, err)
 	fmt.Println(info.Size())
+}
+
+func TestCreateFile(t *testing.T) {
+	serv, err := CreateTestCommonService()
+	assert.Nil(t, err)
+
+	file1 := entity.ToAddFile{
+		UID:  3,
+		Name: "test2.file",
+		Path: "file/uid/test2.file",
+		Size: 123,
+	}
+
+	file2 := entity.ToAddFile{
+		UID:  3,
+		Name: "test2.file",
+		Path: "file/uid/test2.file",
+		Size: 213,
+	}
+
+	adds := []*entity.ToAddFile{&file2, &file1}
+
+	ctx := context.Background()
+	client := serv.DB
+
+	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
+		return serv.CreateFile(ctx, tx.Client(), adds)
+	})
+	// err = serv.CreateProject(nil, nil, adds)
+	assert.Nil(t, err)
 }

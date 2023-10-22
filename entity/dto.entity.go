@@ -223,6 +223,13 @@ type Executor struct {
 	IDs []uint32 `json:"ids"`
 }
 
+type ToAddFile struct {
+	UID  uint32 `json:"uid"`
+	Name string `json:"name"`
+	Path string `json:"path"`
+	Size int64  `json:"size"`
+}
+
 type ToAddProject struct {
 	UID                 uint32 `json:"uid"`
 	Title               string `json:"title" binding:"required"`
