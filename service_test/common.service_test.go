@@ -60,7 +60,7 @@ func TestSaveImportedFile(t *testing.T) {
 	// os.Remove(o.Name())
 }
 
-func TestSaveUploadImage(t *testing.T) {
+func TestSaveUploadFile(t *testing.T) {
 	serv, err := CreateTestCommonService()
 	assert.Nil(t, err)
 
@@ -86,7 +86,13 @@ func TestSaveUploadImage(t *testing.T) {
 
 	dir := "../temp/uploadImage"
 
-	o, err := serv.SaveUploadImage(fh, dir)
+	o, err := serv.SaveUploadFile(fh, dir)
 	assert.Nil(t, err)
 	fmt.Println(o.Name())
+	o, err = os.Open(o.Name())
+	assert.Nil(t, err)
+
+	info, err := o.Stat()
+	assert.Nil(t, err)
+	fmt.Println(info.Size())
 }

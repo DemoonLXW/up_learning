@@ -33,7 +33,7 @@ func (cont *CommonController) UploadDocumentImage(c *gin.Context) {
 		return
 	}
 
-	f, err := cont.Services.Common.SaveUploadImage(fh, wd+"/files/images/"+uid)
+	f, err := cont.Services.Common.SaveUploadFile(fh, wd+"/files/images/"+uid)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
