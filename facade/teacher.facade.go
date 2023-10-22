@@ -16,7 +16,7 @@ type TeacherFacade struct {
 	Common *service.CommonService
 }
 
-func (serv *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddProject) error {
+func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddProject) error {
 	if ctx == nil || client == nil {
 		return fmt.Errorf("context or client is nil")
 	}
@@ -61,6 +61,13 @@ func (serv *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 		if num == 0 {
 			return fmt.Errorf("create project update deleted project affect 0 row")
 		}
+
+		if toCreates[current].Attachments != nil && len(toCreates[current].Attachments) != 0 {
+			err = faca.Common.CreateFileByProjectID(ctx, client, toCreates[current].Attachments, id)
+			if err != nil {
+				return fmt.Errorf("create project create file failed: %w", err)
+			}
+		}
 	}
 	if current < length {
 		num, err := client.Project.Query().Aggregate(ent.Count()).Int(ctx)
@@ -69,9 +76,9 @@ func (serv *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 		}
 
 		bulkLength := length - current
-		bulk := make([]*ent.ProjectCreate, bulkLength)
+		// bulk := make([]*ent.ProjectCreate, bulkLength)
 		for i := 0; i < bulkLength; i++ {
-			bulk[i] = client.Project.Create().
+			err = client.Project.Create().
 				SetID(uint32(num + i + 1)).
 				SetUID(toCreates[current+i].UID).
 				SetTitle(toCreates[current+i].Title).
@@ -80,11 +87,22 @@ func (serv *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 				SetProcessAndMethod(toCreates[current+i].ProcessAndMethod).
 				SetStep(toCreates[current+i].Step).
 				SetResultAndConclusion(toCreates[current+i].ResultAndConclusion).
-				SetRequirement(toCreates[current+i].Requirement)
+				SetRequirement(toCreates[current+i].Requirement).
+				Exec(ctx)
+
+			if err != nil {
+				return fmt.Errorf("create project failed: %w", err)
+			}
 		}
-		err = client.Project.CreateBulk(bulk...).Exec(ctx)
-		if err != nil {
-			return fmt.Errorf("create project failed: %w", err)
+		// err = client.Project.CreateBulk(bulk...).Exec(ctx)
+
+		for i := 0; i < bulkLength; i++ {
+			if toCreates[current+i].Attachments != nil && len(toCreates[current+i].Attachments) != 0 {
+				err = faca.Common.CreateFileByProjectID(ctx, client, toCreates[current+i].Attachments, uint32(num+i+1))
+				if err != nil {
+					return fmt.Errorf("create project create file failed: %w", err)
+				}
+			}
 		}
 	}
 

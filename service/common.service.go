@@ -135,20 +135,21 @@ func (serv *CommonService) CreateFileByProjectID(ctx context.Context, client *en
 		}
 
 		bulkLength := length - current
-		bulk := make([]*ent.FileCreate, bulkLength)
+		// bulk := make([]*ent.FileCreate, bulkLength)
 		for i := 0; i < bulkLength; i++ {
-			bulk[i] = client.File.Create().
+			err = client.File.Create().
 				SetID(uint32(num + i + 1)).
 				SetUID(toCreates[current+i].UID).
 				SetName(toCreates[current+i].Name).
 				SetPath(toCreates[current+i].Path).
 				SetSize(toCreates[current+i].Size).
-				AddProjectIDs(projectID)
+				AddProjectIDs(projectID).
+				Exec(ctx)
+			if err != nil {
+				return fmt.Errorf("create file failed: %w", err)
+			}
 		}
-		err = client.File.CreateBulk(bulk...).Exec(ctx)
-		if err != nil {
-			return fmt.Errorf("create file failed: %w", err)
-		}
+		// err = client.File.CreateBulk(bulk...).Exec(ctx)
 	}
 
 	return nil
