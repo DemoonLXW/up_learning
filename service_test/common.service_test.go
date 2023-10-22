@@ -129,3 +129,29 @@ func TestCreateFile(t *testing.T) {
 	// err = serv.CreateProject(nil, nil, adds)
 	assert.Nil(t, err)
 }
+
+func TestDeleteFile(t *testing.T) {
+	serv, err := CreateTestCommonService()
+	assert.Nil(t, err)
+
+	ctx := context.Background()
+	client := serv.DB
+
+	files := []*ent.File{
+		{
+			ID:   7,
+			Name: "test2.file",
+		},
+		{
+			ID:   9,
+			Name: "test2.file",
+		},
+	}
+
+	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
+		return serv.DeleteFile(ctx, tx.Client(), files)
+	})
+
+	assert.Nil(t, err)
+
+}

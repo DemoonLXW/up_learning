@@ -151,3 +151,32 @@ func (serv *CommonService) CreateFile(ctx context.Context, client *ent.Client, t
 
 	return nil
 }
+
+func (serv *CommonService) DeleteFile(ctx context.Context, client *ent.Client, toDeletes []*ent.File) error {
+	if ctx == nil || client == nil {
+		return fmt.Errorf("context or client is nil")
+	}
+
+	for i := range toDeletes {
+		num, err := client.File.Update().
+			Where(file.And(
+				file.IDEQ(toDeletes[i].ID),
+				func(s *sql.Selector) {
+					s.Where(sql.IsNull(file.FieldDeletedTime))
+				},
+			)).
+			ClearModifiedTime().
+			SetDeletedTime(time.Now()).
+			SetName("*" + toDeletes[i].Name).
+			Save(ctx)
+
+		if err != nil {
+			return fmt.Errorf("delete file failed: %w", err)
+		}
+		if num == 0 {
+			return fmt.Errorf("delete file affect 0 row: id[%d]", toDeletes[i].ID)
+		}
+	}
+
+	return nil
+}
