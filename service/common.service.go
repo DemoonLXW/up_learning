@@ -180,3 +180,24 @@ func (serv *CommonService) DeleteFile(ctx context.Context, client *ent.Client, t
 
 	return nil
 }
+
+func (serv *CommonService) FindFileByIDs(ctx context.Context, client *ent.Client, IDs []uint32) ([]*ent.File, error) {
+	if ctx == nil || client == nil {
+		return nil, fmt.Errorf("context or client is nil")
+	}
+
+	res, err := client.File.Query().Where(file.And(
+		file.IDIn(IDs...),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(file.FieldDeletedTime))
+		},
+	)).All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("find file by ids failed: %w", err)
+	}
+	if len(res) != len(IDs) {
+		return nil, fmt.Errorf("find file by ids failed: number of result is not enough")
+	}
+
+	return res, nil
+}

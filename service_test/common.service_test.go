@@ -155,3 +155,20 @@ func TestDeleteFile(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
+func TestFindFileByIDs(t *testing.T) {
+	serv, err := CreateTestCommonService()
+	assert.Nil(t, err)
+
+	ctx := context.Background()
+	client := serv.DB
+
+	ids := []uint32{2, 8}
+
+	files, err := serv.FindFileByIDs(ctx, client, ids)
+	assert.Nil(t, err)
+	for i := range files {
+		fmt.Println(files[i])
+	}
+
+}
