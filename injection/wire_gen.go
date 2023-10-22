@@ -11,7 +11,6 @@ import (
 	"github.com/DemoonLXW/up_learning/controller"
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
-	"github.com/DemoonLXW/up_learning/facade"
 	"github.com/DemoonLXW/up_learning/service"
 	"github.com/DemoonLXW/up_learning/workflow"
 	"github.com/gin-gonic/gin"
@@ -78,6 +77,10 @@ func ProvideService() (*service.Services, error) {
 	teacherService := &service.TeacherService{
 		DB: client,
 	}
+	teacherFacade := &service.TeacherFacade{
+		Common: commonService,
+		DB:     client,
+	}
 	workflowHelper, err := workflow.ProvideWorkflowHelper()
 	if err != nil {
 		return nil, err
@@ -91,31 +94,10 @@ func ProvideService() (*service.Services, error) {
 		Auth:       authService,
 		Common:     commonService,
 		Teacher:    teacherService,
+		TeacherFa:  teacherFacade,
 		Workflow:   workflowService,
 	}
 	return services, nil
-}
-
-func ProvideFacade() (*facade.Facades, error) {
-	dataBaseConfig, err := database.ProvideDatabaseConfig()
-	if err != nil {
-		return nil, err
-	}
-	client, err := database.ProvideDB(dataBaseConfig)
-	if err != nil {
-		return nil, err
-	}
-	commonService := &service.CommonService{
-		DB: client,
-	}
-	teacherFacade := &facade.TeacherFacade{
-		Common: commonService,
-	}
-	facades := &facade.Facades{
-		DB:      client,
-		Teacher: teacherFacade,
-	}
-	return facades, nil
 }
 
 func ProvideController() (*controller.Controllers, error) {
@@ -144,6 +126,10 @@ func ProvideController() (*controller.Controllers, error) {
 	teacherService := &service.TeacherService{
 		DB: client,
 	}
+	teacherFacade := &service.TeacherFacade{
+		Common: commonService,
+		DB:     client,
+	}
 	workflowHelper, err := workflow.ProvideWorkflowHelper()
 	if err != nil {
 		return nil, err
@@ -157,6 +143,7 @@ func ProvideController() (*controller.Controllers, error) {
 		Auth:       authService,
 		Common:     commonService,
 		Teacher:    teacherService,
+		TeacherFa:  teacherFacade,
 		Workflow:   workflowService,
 	}
 	authController := &controller.AuthController{
@@ -202,6 +189,10 @@ func ProvideApplication() (*gin.Engine, error) {
 	teacherService := &service.TeacherService{
 		DB: client,
 	}
+	teacherFacade := &service.TeacherFacade{
+		Common: commonService,
+		DB:     client,
+	}
 	workflowHelper, err := workflow.ProvideWorkflowHelper()
 	if err != nil {
 		return nil, err
@@ -215,6 +206,7 @@ func ProvideApplication() (*gin.Engine, error) {
 		Auth:       authService,
 		Common:     commonService,
 		Teacher:    teacherService,
+		TeacherFa:  teacherFacade,
 		Workflow:   workflowService,
 	}
 	authController := &controller.AuthController{
