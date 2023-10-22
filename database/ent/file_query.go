@@ -145,7 +145,7 @@ func (fq *FileQuery) QueryProjectFile() *ProjectFileQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(file.Table, file.FieldID, selector),
-			sqlgraph.To(projectfile.Table, projectfile.FieldID),
+			sqlgraph.To(projectfile.Table, projectfile.FilesColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, file.ProjectFileTable, file.ProjectFileColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
@@ -673,7 +673,7 @@ func (fq *FileQuery) loadProjectFile(ctx context.Context, query *ProjectFileQuer
 		fk := n.Fid
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "fid" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "fid" returned %v for node %v`, fk, n)
 		}
 		assign(node, n)
 	}

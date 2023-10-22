@@ -7,7 +7,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 )
@@ -40,7 +39,7 @@ func (pfd *ProjectFileDelete) ExecX(ctx context.Context) int {
 }
 
 func (pfd *ProjectFileDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(projectfile.Table, sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewDeleteSpec(projectfile.Table, nil)
 	if ps := pfd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

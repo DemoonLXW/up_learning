@@ -12,8 +12,6 @@ import (
 const (
 	// Label holds the string label denoting the projectfile type in the database.
 	Label = "project_file"
-	// FieldID holds the string denoting the id field in the database.
-	FieldID = "id"
 	// FieldPid holds the string denoting the pid field in the database.
 	FieldPid = "pid"
 	// FieldFid holds the string denoting the fid field in the database.
@@ -24,6 +22,10 @@ const (
 	EdgeProject = "project"
 	// EdgeFiles holds the string denoting the files edge name in mutations.
 	EdgeFiles = "files"
+	// ProjectFieldID holds the string denoting the ID field of the Project.
+	ProjectFieldID = "id"
+	// FileFieldID holds the string denoting the ID field of the File.
+	FileFieldID = "id"
 	// Table holds the table name of the projectfile in the database.
 	Table = "project_file"
 	// ProjectTable is the table that holds the project relation/edge.
@@ -44,7 +46,6 @@ const (
 
 // Columns holds all SQL columns for projectfile fields.
 var Columns = []string{
-	FieldID,
 	FieldPid,
 	FieldFid,
 	FieldCreatedTime,
@@ -67,11 +68,6 @@ var (
 
 // OrderOption defines the ordering options for the ProjectFile queries.
 type OrderOption func(*sql.Selector)
-
-// ByID orders the results by the id field.
-func ByID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldID, opts...).ToFunc()
-}
 
 // ByPid orders the results by the pid field.
 func ByPid(opts ...sql.OrderTermOption) OrderOption {
@@ -103,15 +99,15 @@ func ByFilesField(field string, opts ...sql.OrderTermOption) OrderOption {
 }
 func newProjectStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ProjectInverseTable, FieldID),
+		sqlgraph.From(Table, ProjectColumn),
+		sqlgraph.To(ProjectInverseTable, ProjectFieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ProjectTable, ProjectColumn),
 	)
 }
 func newFilesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(FilesInverseTable, FieldID),
+		sqlgraph.From(Table, FilesColumn),
+		sqlgraph.To(FilesInverseTable, FileFieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, FilesTable, FilesColumn),
 	)
 }

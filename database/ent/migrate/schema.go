@@ -173,7 +173,6 @@ var (
 	}
 	// ProjectFileColumns holds the columns for the "project_file" table.
 	ProjectFileColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "pid", Type: field.TypeUint32},
 		{Name: "fid", Type: field.TypeUint32},
@@ -182,26 +181,19 @@ var (
 	ProjectFileTable = &schema.Table{
 		Name:       "project_file",
 		Columns:    ProjectFileColumns,
-		PrimaryKey: []*schema.Column{ProjectFileColumns[0]},
+		PrimaryKey: []*schema.Column{ProjectFileColumns[1], ProjectFileColumns[2]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "project_file_project_project",
-				Columns:    []*schema.Column{ProjectFileColumns[2]},
+				Columns:    []*schema.Column{ProjectFileColumns[1]},
 				RefColumns: []*schema.Column{ProjectColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "project_file_file_files",
-				Columns:    []*schema.Column{ProjectFileColumns[3]},
+				Columns:    []*schema.Column{ProjectFileColumns[2]},
 				RefColumns: []*schema.Column{FileColumns[0]},
 				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "projectfile_pid_fid",
-				Unique:  true,
-				Columns: []*schema.Column{ProjectFileColumns[2], ProjectFileColumns[3]},
 			},
 		},
 	}

@@ -142,17 +142,13 @@ func (pfc *ProjectFileCreate) sqlSave(ctx context.Context) (*ProjectFile, error)
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
-	pfc.mutation.id = &_node.ID
-	pfc.mutation.done = true
 	return _node, nil
 }
 
 func (pfc *ProjectFileCreate) createSpec() (*ProjectFile, *sqlgraph.CreateSpec) {
 	var (
 		_node = &ProjectFile{config: pfc.config}
-		_spec = sqlgraph.NewCreateSpec(projectfile.Table, sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(projectfile.Table, nil)
 	)
 	if value, ok := pfc.mutation.CreatedTime(); ok {
 		_spec.SetField(projectfile.FieldCreatedTime, field.TypeTime, value)
@@ -234,11 +230,6 @@ func (pfcb *ProjectFileCreateBulk) Save(ctx context.Context) ([]*ProjectFile, er
 				}
 				if err != nil {
 					return nil, err
-				}
-				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
 				}
 				mutation.done = true
 				return nodes[i], nil

@@ -221,7 +221,7 @@ func newSampleStep() *sqlgraph.Step {
 func newProjectFileStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ProjectFileInverseTable, FieldID),
+		sqlgraph.To(ProjectFileInverseTable, ProjectFileColumn),
 		sqlgraph.Edge(sqlgraph.O2M, true, ProjectFileTable, ProjectFileColumn),
 	)
 }

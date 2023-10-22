@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
-	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
@@ -161,21 +160,6 @@ func (fc *FileCreate) SetNillableSampleID(id *uint8) *FileCreate {
 // SetSample sets the "sample" edge to the SampleFile entity.
 func (fc *FileCreate) SetSample(s *SampleFile) *FileCreate {
 	return fc.SetSampleID(s.ID)
-}
-
-// AddProjectFileIDs adds the "project_file" edge to the ProjectFile entity by IDs.
-func (fc *FileCreate) AddProjectFileIDs(ids ...int) *FileCreate {
-	fc.mutation.AddProjectFileIDs(ids...)
-	return fc
-}
-
-// AddProjectFile adds the "project_file" edges to the ProjectFile entity.
-func (fc *FileCreate) AddProjectFile(p ...*ProjectFile) *FileCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return fc.AddProjectFileIDs(ids...)
 }
 
 // Mutation returns the FileMutation object of the builder.
@@ -359,22 +343,6 @@ func (fc *FileCreate) createSpec() (*File, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(samplefile.FieldID, field.TypeUint8),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := fc.mutation.ProjectFileIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   file.ProjectFileTable,
-			Columns: []string{file.ProjectFileColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

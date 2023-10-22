@@ -786,7 +786,7 @@ func (c *FileClient) QueryProjectFile(f *File) *ProjectFileQuery {
 		id := f.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(file.Table, file.FieldID, id),
-			sqlgraph.To(projectfile.Table, projectfile.FieldID),
+			sqlgraph.To(projectfile.Table, projectfile.FilesColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, file.ProjectFileTable, file.ProjectFileColumn),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
@@ -1402,7 +1402,7 @@ func (c *ProjectClient) QueryProjectFile(pr *Project) *ProjectFileQuery {
 		id := pr.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(project.Table, project.FieldID, id),
-			sqlgraph.To(projectfile.Table, projectfile.FieldID),
+			sqlgraph.To(projectfile.Table, projectfile.ProjectColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, project.ProjectFileTable, project.ProjectFileColumn),
 		)
 		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
@@ -1477,13 +1477,9 @@ func (c *ProjectFileClient) Update() *ProjectFileUpdate {
 
 // UpdateOne returns an update builder for the given entity.
 func (c *ProjectFileClient) UpdateOne(pf *ProjectFile) *ProjectFileUpdateOne {
-	mutation := newProjectFileMutation(c.config, OpUpdateOne, withProjectFile(pf))
-	return &ProjectFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ProjectFileClient) UpdateOneID(id int) *ProjectFileUpdateOne {
-	mutation := newProjectFileMutation(c.config, OpUpdateOne, withProjectFileID(id))
+	mutation := newProjectFileMutation(c.config, OpUpdateOne)
+	mutation.project = &pf.Pid
+	mutation.files = &pf.Fid
 	return &ProjectFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
@@ -1491,19 +1487,6 @@ func (c *ProjectFileClient) UpdateOneID(id int) *ProjectFileUpdateOne {
 func (c *ProjectFileClient) Delete() *ProjectFileDelete {
 	mutation := newProjectFileMutation(c.config, OpDelete)
 	return &ProjectFileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ProjectFileClient) DeleteOne(pf *ProjectFile) *ProjectFileDeleteOne {
-	return c.DeleteOneID(pf.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ProjectFileClient) DeleteOneID(id int) *ProjectFileDeleteOne {
-	builder := c.Delete().Where(projectfile.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ProjectFileDeleteOne{builder}
 }
 
 // Query returns a query builder for ProjectFile.
@@ -1515,50 +1498,18 @@ func (c *ProjectFileClient) Query() *ProjectFileQuery {
 	}
 }
 
-// Get returns a ProjectFile entity by its id.
-func (c *ProjectFileClient) Get(ctx context.Context, id int) (*ProjectFile, error) {
-	return c.Query().Where(projectfile.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ProjectFileClient) GetX(ctx context.Context, id int) *ProjectFile {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
 // QueryProject queries the project edge of a ProjectFile.
 func (c *ProjectFileClient) QueryProject(pf *ProjectFile) *ProjectQuery {
-	query := (&ProjectClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pf.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(projectfile.Table, projectfile.FieldID, id),
-			sqlgraph.To(project.Table, project.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, projectfile.ProjectTable, projectfile.ProjectColumn),
-		)
-		fromV = sqlgraph.Neighbors(pf.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
+	return c.Query().
+		Where(projectfile.Pid(pf.Pid), projectfile.Fid(pf.Fid)).
+		QueryProject()
 }
 
 // QueryFiles queries the files edge of a ProjectFile.
 func (c *ProjectFileClient) QueryFiles(pf *ProjectFile) *FileQuery {
-	query := (&FileClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pf.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(projectfile.Table, projectfile.FieldID, id),
-			sqlgraph.To(file.Table, file.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, projectfile.FilesTable, projectfile.FilesColumn),
-		)
-		fromV = sqlgraph.Neighbors(pf.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
+	return c.Query().
+		Where(projectfile.Pid(pf.Pid), projectfile.Fid(pf.Fid)).
+		QueryFiles()
 }
 
 // Hooks returns the client hooks.

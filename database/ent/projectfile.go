@@ -17,8 +17,6 @@ import (
 // ProjectFile is the model entity for the ProjectFile schema.
 type ProjectFile struct {
 	config `json:"-"`
-	// ID of the ent.
-	ID int `json:"id,omitempty"`
 	// Pid holds the value of the "pid" field.
 	Pid uint32 `json:"pid,omitempty"`
 	// Fid holds the value of the "fid" field.
@@ -73,7 +71,7 @@ func (*ProjectFile) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case projectfile.FieldID, projectfile.FieldPid, projectfile.FieldFid:
+		case projectfile.FieldPid, projectfile.FieldFid:
 			values[i] = new(sql.NullInt64)
 		case projectfile.FieldCreatedTime:
 			values[i] = new(sql.NullTime)
@@ -92,12 +90,6 @@ func (pf *ProjectFile) assignValues(columns []string, values []any) error {
 	}
 	for i := range columns {
 		switch columns[i] {
-		case projectfile.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
-			}
-			pf.ID = int(value.Int64)
 		case projectfile.FieldPid:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field pid", values[i])
@@ -162,7 +154,6 @@ func (pf *ProjectFile) Unwrap() *ProjectFile {
 func (pf *ProjectFile) String() string {
 	var builder strings.Builder
 	builder.WriteString("ProjectFile(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", pf.ID))
 	builder.WriteString("pid=")
 	builder.WriteString(fmt.Sprintf("%v", pf.Pid))
 	builder.WriteString(", ")

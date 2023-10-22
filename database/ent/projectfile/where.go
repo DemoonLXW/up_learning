@@ -10,51 +10,6 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 )
 
-// ID filters vertices based on their ID field.
-func ID(id int) predicate.ProjectFile {
-	return predicate.ProjectFile(sql.FieldEQ(FieldID, id))
-}
-
-// IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.ProjectFile {
-	return predicate.ProjectFile(sql.FieldEQ(FieldID, id))
-}
-
-// IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.ProjectFile {
-	return predicate.ProjectFile(sql.FieldNEQ(FieldID, id))
-}
-
-// IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.ProjectFile {
-	return predicate.ProjectFile(sql.FieldIn(FieldID, ids...))
-}
-
-// IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.ProjectFile {
-	return predicate.ProjectFile(sql.FieldNotIn(FieldID, ids...))
-}
-
-// IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.ProjectFile {
-	return predicate.ProjectFile(sql.FieldGT(FieldID, id))
-}
-
-// IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.ProjectFile {
-	return predicate.ProjectFile(sql.FieldGTE(FieldID, id))
-}
-
-// IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.ProjectFile {
-	return predicate.ProjectFile(sql.FieldLT(FieldID, id))
-}
-
-// IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.ProjectFile {
-	return predicate.ProjectFile(sql.FieldLTE(FieldID, id))
-}
-
 // Pid applies equality check predicate on the "pid" field. It's identical to PidEQ.
 func Pid(v uint32) predicate.ProjectFile {
 	return predicate.ProjectFile(sql.FieldEQ(FieldPid, v))
@@ -154,7 +109,7 @@ func CreatedTimeLTE(v time.Time) predicate.ProjectFile {
 func HasProject() predicate.ProjectFile {
 	return predicate.ProjectFile(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
+			sqlgraph.From(Table, ProjectColumn),
 			sqlgraph.Edge(sqlgraph.M2O, false, ProjectTable, ProjectColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -177,7 +132,7 @@ func HasProjectWith(preds ...predicate.Project) predicate.ProjectFile {
 func HasFiles() predicate.ProjectFile {
 	return predicate.ProjectFile(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
+			sqlgraph.From(Table, FilesColumn),
 			sqlgraph.Edge(sqlgraph.M2O, false, FilesTable, FilesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)

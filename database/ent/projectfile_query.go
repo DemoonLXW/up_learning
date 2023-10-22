@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
@@ -73,7 +72,7 @@ func (pfq *ProjectFileQuery) QueryProject() *ProjectQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(projectfile.Table, projectfile.FieldID, selector),
+			sqlgraph.From(projectfile.Table, projectfile.ProjectColumn, selector),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, projectfile.ProjectTable, projectfile.ProjectColumn),
 		)
@@ -95,7 +94,7 @@ func (pfq *ProjectFileQuery) QueryFiles() *FileQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(projectfile.Table, projectfile.FieldID, selector),
+			sqlgraph.From(projectfile.Table, projectfile.FilesColumn, selector),
 			sqlgraph.To(file.Table, file.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, projectfile.FilesTable, projectfile.FilesColumn),
 		)
@@ -127,29 +126,6 @@ func (pfq *ProjectFileQuery) FirstX(ctx context.Context) *ProjectFile {
 	return node
 }
 
-// FirstID returns the first ProjectFile ID from the query.
-// Returns a *NotFoundError when no ProjectFile ID was found.
-func (pfq *ProjectFileQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
-	if ids, err = pfq.Limit(1).IDs(setContextOp(ctx, pfq.ctx, "FirstID")); err != nil {
-		return
-	}
-	if len(ids) == 0 {
-		err = &NotFoundError{projectfile.Label}
-		return
-	}
-	return ids[0], nil
-}
-
-// FirstIDX is like FirstID, but panics if an error occurs.
-func (pfq *ProjectFileQuery) FirstIDX(ctx context.Context) int {
-	id, err := pfq.FirstID(ctx)
-	if err != nil && !IsNotFound(err) {
-		panic(err)
-	}
-	return id
-}
-
 // Only returns a single ProjectFile entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one ProjectFile entity is found.
 // Returns a *NotFoundError when no ProjectFile entities are found.
@@ -177,34 +153,6 @@ func (pfq *ProjectFileQuery) OnlyX(ctx context.Context) *ProjectFile {
 	return node
 }
 
-// OnlyID is like Only, but returns the only ProjectFile ID in the query.
-// Returns a *NotSingularError when more than one ProjectFile ID is found.
-// Returns a *NotFoundError when no entities are found.
-func (pfq *ProjectFileQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
-	if ids, err = pfq.Limit(2).IDs(setContextOp(ctx, pfq.ctx, "OnlyID")); err != nil {
-		return
-	}
-	switch len(ids) {
-	case 1:
-		id = ids[0]
-	case 0:
-		err = &NotFoundError{projectfile.Label}
-	default:
-		err = &NotSingularError{projectfile.Label}
-	}
-	return
-}
-
-// OnlyIDX is like OnlyID, but panics if an error occurs.
-func (pfq *ProjectFileQuery) OnlyIDX(ctx context.Context) int {
-	id, err := pfq.OnlyID(ctx)
-	if err != nil {
-		panic(err)
-	}
-	return id
-}
-
 // All executes the query and returns a list of ProjectFiles.
 func (pfq *ProjectFileQuery) All(ctx context.Context) ([]*ProjectFile, error) {
 	ctx = setContextOp(ctx, pfq.ctx, "All")
@@ -222,27 +170,6 @@ func (pfq *ProjectFileQuery) AllX(ctx context.Context) []*ProjectFile {
 		panic(err)
 	}
 	return nodes
-}
-
-// IDs executes the query and returns a list of ProjectFile IDs.
-func (pfq *ProjectFileQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if pfq.ctx.Unique == nil && pfq.path != nil {
-		pfq.Unique(true)
-	}
-	ctx = setContextOp(ctx, pfq.ctx, "IDs")
-	if err = pfq.Select(projectfile.FieldID).Scan(ctx, &ids); err != nil {
-		return nil, err
-	}
-	return ids, nil
-}
-
-// IDsX is like IDs, but panics if an error occurs.
-func (pfq *ProjectFileQuery) IDsX(ctx context.Context) []int {
-	ids, err := pfq.IDs(ctx)
-	if err != nil {
-		panic(err)
-	}
-	return ids
 }
 
 // Count returns the count of the given query.
@@ -266,7 +193,7 @@ func (pfq *ProjectFileQuery) CountX(ctx context.Context) int {
 // Exist returns true if the query has elements in the graph.
 func (pfq *ProjectFileQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, pfq.ctx, "Exist")
-	switch _, err := pfq.FirstID(ctx); {
+	switch _, err := pfq.First(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -504,15 +431,13 @@ func (pfq *ProjectFileQuery) loadFiles(ctx context.Context, query *FileQuery, no
 
 func (pfq *ProjectFileQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := pfq.querySpec()
-	_spec.Node.Columns = pfq.ctx.Fields
-	if len(pfq.ctx.Fields) > 0 {
-		_spec.Unique = pfq.ctx.Unique != nil && *pfq.ctx.Unique
-	}
+	_spec.Unique = false
+	_spec.Node.Columns = nil
 	return sqlgraph.CountNodes(ctx, pfq.driver, _spec)
 }
 
 func (pfq *ProjectFileQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(projectfile.Table, projectfile.Columns, sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(projectfile.Table, projectfile.Columns, nil)
 	_spec.From = pfq.sql
 	if unique := pfq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -521,11 +446,8 @@ func (pfq *ProjectFileQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := pfq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, projectfile.FieldID)
 		for i := range fields {
-			if fields[i] != projectfile.FieldID {
-				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
-			}
+			_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 		}
 		if pfq.withProject != nil {
 			_spec.Node.AddColumnOnce(projectfile.FieldPid)

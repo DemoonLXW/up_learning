@@ -18,7 +18,7 @@ type ProjectFile struct {
 func (ProjectFile) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entsql.Annotation{Table: "project_file"},
-		// field.ID("rid", "pid"),
+		field.ID("pid", "fid"),
 	}
 }
 

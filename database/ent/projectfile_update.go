@@ -137,7 +137,7 @@ func (pfu *ProjectFileUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if err := pfu.check(); err != nil {
 		return n, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(projectfile.Table, projectfile.Columns, sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(projectfile.Table, projectfile.Columns, sqlgraph.NewFieldSpec(projectfile.FieldPid, field.TypeUint32), sqlgraph.NewFieldSpec(projectfile.FieldFid, field.TypeUint32))
 	if ps := pfu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -346,22 +346,24 @@ func (pfuo *ProjectFileUpdateOne) sqlSave(ctx context.Context) (_node *ProjectFi
 	if err := pfuo.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(projectfile.Table, projectfile.Columns, sqlgraph.NewFieldSpec(projectfile.FieldID, field.TypeInt))
-	id, ok := pfuo.mutation.ID()
-	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ProjectFile.id" for update`)}
+	_spec := sqlgraph.NewUpdateSpec(projectfile.Table, projectfile.Columns, sqlgraph.NewFieldSpec(projectfile.FieldPid, field.TypeUint32), sqlgraph.NewFieldSpec(projectfile.FieldFid, field.TypeUint32))
+	if id, ok := pfuo.mutation.Pid(); !ok {
+		return nil, &ValidationError{Name: "pid", err: errors.New(`ent: missing "ProjectFile.pid" for update`)}
+	} else {
+		_spec.Node.CompositeID[0].Value = id
 	}
-	_spec.Node.ID.Value = id
+	if id, ok := pfuo.mutation.Fid(); !ok {
+		return nil, &ValidationError{Name: "fid", err: errors.New(`ent: missing "ProjectFile.fid" for update`)}
+	} else {
+		_spec.Node.CompositeID[1].Value = id
+	}
 	if fields := pfuo.fields; len(fields) > 0 {
-		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, projectfile.FieldID)
-		for _, f := range fields {
+		_spec.Node.Columns = make([]string, len(fields))
+		for i, f := range fields {
 			if !projectfile.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != projectfile.FieldID {
-				_spec.Node.Columns = append(_spec.Node.Columns, f)
-			}
+			_spec.Node.Columns[i] = f
 		}
 	}
 	if ps := pfuo.mutation.predicates; len(ps) > 0 {

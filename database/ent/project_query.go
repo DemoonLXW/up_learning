@@ -145,7 +145,7 @@ func (pq *ProjectQuery) QueryProjectFile() *ProjectFileQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(project.Table, project.FieldID, selector),
-			sqlgraph.To(projectfile.Table, projectfile.FieldID),
+			sqlgraph.To(projectfile.Table, projectfile.ProjectColumn),
 			sqlgraph.Edge(sqlgraph.O2M, true, project.ProjectFileTable, project.ProjectFileColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
@@ -677,7 +677,7 @@ func (pq *ProjectQuery) loadProjectFile(ctx context.Context, query *ProjectFileQ
 		fk := n.Pid
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "pid" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "pid" returned %v for node %v`, fk, n)
 		}
 		assign(node, n)
 	}
