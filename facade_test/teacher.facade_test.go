@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/facade"
 	"github.com/DemoonLXW/up_learning/injection"
@@ -81,4 +82,27 @@ func TestCreateProject(t *testing.T) {
 	})
 	// err = serv.CreateProject(nil, nil, adds)
 	assert.Nil(t, err)
+}
+
+func TestDeleteProject(t *testing.T) {
+	faca, err := CreateTestFacade()
+	assert.Nil(t, err)
+
+	ctx := context.Background()
+	client := faca.DB
+
+	ids := []uint32{2, 4}
+
+	projects, err := client.Project.Query().
+		Where(project.IDIn(ids...)).
+		WithAttachments().
+		All(ctx)
+	assert.Nil(t, err)
+
+	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
+		return faca.Teacher.DeleteProject(ctx, tx.Client(), projects)
+	})
+
+	assert.Nil(t, err)
+
 }

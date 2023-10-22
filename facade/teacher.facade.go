@@ -62,7 +62,7 @@ func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 			return fmt.Errorf("create project update deleted project affect 0 row")
 		}
 
-		if toCreates[current].Attachments != nil && len(toCreates[current].Attachments) != 0 {
+		if toCreates[current].Attachments != nil {
 			err = faca.Common.CreateFileByProjectID(ctx, client, toCreates[current].Attachments, id)
 			if err != nil {
 				return fmt.Errorf("create project create file failed: %w", err)
@@ -97,13 +97,49 @@ func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 		// err = client.Project.CreateBulk(bulk...).Exec(ctx)
 
 		for i := 0; i < bulkLength; i++ {
-			if toCreates[current+i].Attachments != nil && len(toCreates[current+i].Attachments) != 0 {
+			if toCreates[current+i].Attachments != nil {
 				err = faca.Common.CreateFileByProjectID(ctx, client, toCreates[current+i].Attachments, uint32(num+i+1))
 				if err != nil {
 					return fmt.Errorf("create project create file failed: %w", err)
 				}
 			}
 		}
+	}
+
+	return nil
+}
+
+func (faca *TeacherFacade) DeleteProject(ctx context.Context, client *ent.Client, toDeletes []*ent.Project) error {
+	if ctx == nil || client == nil {
+		return fmt.Errorf("context or client is nil")
+	}
+
+	for i := range toDeletes {
+		err := faca.Common.DeleteFile(ctx, client, toDeletes[i].Edges.Attachments)
+		if err != nil {
+			return fmt.Errorf("delete project delete attachments failed: %w", err)
+		}
+
+		num, err := client.Project.Update().
+			Where(project.And(
+				project.IDEQ(toDeletes[i].ID),
+				func(s *sql.Selector) {
+					s.Where(sql.IsNull(project.FieldDeletedTime))
+				},
+			)).
+			ClearModifiedTime().
+			ClearAttachments().
+			SetDeletedTime(time.Now()).
+			SetTitle("*" + toDeletes[i].Title).
+			Save(ctx)
+
+		if err != nil {
+			return fmt.Errorf("delete project failed: %w", err)
+		}
+		if num == 0 {
+			return fmt.Errorf("delete project affect 0 row: id[%d]", toDeletes[i].ID)
+		}
+
 	}
 
 	return nil
