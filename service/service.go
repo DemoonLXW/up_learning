@@ -14,6 +14,7 @@ var ServiceProvider = wire.NewSet(
 	wire.Struct(new(AuthService), "*"),
 	wire.Struct(new(CommonService), "*"),
 	wire.Struct(new(TeacherService), "*"),
+	wire.Struct(new(TeacherFacade), "*"),
 	wire.Struct(new(WorkflowService), "*"),
 )
 
@@ -22,6 +23,7 @@ type Services struct {
 	Auth       *AuthService
 	Common     *CommonService
 	Teacher    *TeacherService
+	TeacherFa  *TeacherFacade
 	Workflow   *WorkflowService
 }
 

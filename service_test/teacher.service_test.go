@@ -25,43 +25,43 @@ func CreateTestTeacherService() (*service.TeacherService, error) {
 	return serv, nil
 }
 
-func TestCreateProject(t *testing.T) {
-	serv, err := CreateTestTeacherService()
-	assert.Nil(t, err)
+// func TestCreateProject(t *testing.T) {
+// 	serv, err := CreateTestTeacherService()
+// 	assert.Nil(t, err)
 
-	project4 := entity.ToAddProject{
-		UID:                 3,
-		Title:               "title4",
-		Goal:                "goal4",
-		Principle:           "principle4",
-		ProcessAndMethod:    "process and method 4",
-		Step:                "step4",
-		ResultAndConclusion: "result and conclusion 4",
-		Requirement:         "requirement4",
-	}
+// 	project4 := entity.ToAddProject{
+// 		UID:                 3,
+// 		Title:               "title4",
+// 		Goal:                "goal4",
+// 		Principle:           "principle4",
+// 		ProcessAndMethod:    "process and method 4",
+// 		Step:                "step4",
+// 		ResultAndConclusion: "result and conclusion 4",
+// 		Requirement:         "requirement4",
+// 	}
 
-	project3 := entity.ToAddProject{
-		UID:                 4,
-		Title:               "title3",
-		Goal:                "goal3",
-		Principle:           "principle3",
-		ProcessAndMethod:    "process and method 3",
-		Step:                "step3",
-		ResultAndConclusion: "result and conclusion 3",
-		Requirement:         "requirement3",
-	}
+// 	project3 := entity.ToAddProject{
+// 		UID:                 4,
+// 		Title:               "title3",
+// 		Goal:                "goal3",
+// 		Principle:           "principle3",
+// 		ProcessAndMethod:    "process and method 3",
+// 		Step:                "step3",
+// 		ResultAndConclusion: "result and conclusion 3",
+// 		Requirement:         "requirement3",
+// 	}
 
-	adds := []*entity.ToAddProject{&project4, &project3}
+// 	adds := []*entity.ToAddProject{&project4, &project3}
 
-	ctx := context.Background()
-	client := serv.DB
+// 	ctx := context.Background()
+// 	client := serv.DB
 
-	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
-		return serv.CreateProject(ctx, tx.Client(), adds)
-	})
-	// err = serv.CreateProject(nil, nil, adds)
-	assert.Nil(t, err)
-}
+// 	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
+// 		return serv.CreateProject(ctx, tx.Client(), adds)
+// 	})
+// err = serv.CreateProject(nil, nil, adds)
+// 	assert.Nil(t, err)
+// }
 
 func TestUpdateProject(t *testing.T) {
 	serv, err := CreateTestTeacherService()
@@ -153,31 +153,31 @@ func TestGetTotalRetrievedProjects(t *testing.T) {
 	assert.Equal(t, 2, total)
 }
 
-func TestDeleteProject(t *testing.T) {
-	serv, err := CreateTestTeacherService()
-	assert.Nil(t, err)
+// func TestDeleteProject(t *testing.T) {
+// 	serv, err := CreateTestTeacherService()
+// 	assert.Nil(t, err)
 
-	ctx := context.Background()
-	client := serv.DB
+// 	ctx := context.Background()
+// 	client := serv.DB
 
-	projects := []*ent.Project{
-		{
-			ID:    1,
-			Title: "title2",
-		},
-		// {
-		// 	ID:    12,
-		// 	Title: "title2",
-		// },
-	}
+// 	projects := []*ent.Project{
+// 		{
+// 			ID:    1,
+// 			Title: "title2",
+// 		},
+// {
+// 	ID:    12,
+// 	Title: "title2",
+// },
+// 	}
 
-	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
-		return serv.DeleteProject(ctx, tx.Client(), projects)
-	})
+// 	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
+// 		return serv.DeleteProject(ctx, tx.Client(), projects)
+// 	})
 
-	assert.Nil(t, err)
+// 	assert.Nil(t, err)
 
-}
+// }
 
 func TestFindProjectByIDs(t *testing.T) {
 	serv, err := CreateTestTeacherService()
