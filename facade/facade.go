@@ -1,6 +1,9 @@
 package facade
 
-import "github.com/google/wire"
+import (
+	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/google/wire"
+)
 
 var FacadeProvider = wire.NewSet(
 	wire.Struct(new(Facades), "*"),
@@ -8,5 +11,6 @@ var FacadeProvider = wire.NewSet(
 )
 
 type Facades struct {
+	DB      *ent.Client
 	Teacher *TeacherFacade
 }

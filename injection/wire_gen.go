@@ -112,6 +112,7 @@ func ProvideFacade() (*facade.Facades, error) {
 		Common: commonService,
 	}
 	facades := &facade.Facades{
+		DB:      client,
 		Teacher: teacherFacade,
 	}
 	return facades, nil
