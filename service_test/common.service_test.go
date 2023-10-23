@@ -139,19 +139,10 @@ func TestDeleteFile(t *testing.T) {
 	ctx := context.Background()
 	client := serv.DB
 
-	files := []*ent.File{
-		{
-			ID:   7,
-			Name: "test2.file",
-		},
-		{
-			ID:   9,
-			Name: "test2.file",
-		},
-	}
+	ids := []uint32{7, 9, 12}
 
 	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
-		return serv.DeleteFile(ctx, tx.Client(), files)
+		return serv.DeleteFile(ctx, tx.Client(), ids)
 	})
 
 	assert.Nil(t, err)
