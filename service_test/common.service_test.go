@@ -100,24 +100,22 @@ func TestSaveUploadFile(t *testing.T) {
 	fmt.Println(info.Size())
 }
 
-func TestCreateFileByProjectID(t *testing.T) {
+func TestCreateFile(t *testing.T) {
 	serv, err := CreateTestCommonService()
 	assert.Nil(t, err)
 
-	projectID := uint32(2)
-
 	file1 := entity.ToAddFile{
-		UID:  1,
-		Name: "test3.file",
-		Path: "file/uid/test3.file",
-		Size: 33,
+		UID:  8,
+		Name: "test7.docx",
+		Path: "file/uid/test7.docx",
+		Size: 3366,
 	}
 
 	file2 := entity.ToAddFile{
-		UID:  1,
-		Name: "test3.file",
-		Path: "file/uid/test3.file",
-		Size: 32,
+		UID:  8,
+		Name: "test7.docx",
+		Path: "file/uid/test7.docx",
+		Size: 327,
 	}
 
 	adds := []*entity.ToAddFile{&file2, &file1}
@@ -126,7 +124,9 @@ func TestCreateFileByProjectID(t *testing.T) {
 	client := serv.DB
 
 	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
-		return serv.CreateFileByProjectID(ctx, tx.Client(), adds, projectID)
+		ids, err := serv.CreateFile(ctx, tx.Client(), adds)
+		fmt.Println(ids)
+		return err
 	})
 	// err = serv.CreateProject(nil, nil, adds)
 	assert.Nil(t, err)

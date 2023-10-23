@@ -86,20 +86,23 @@ func (serv *CommonService) SaveUploadFile(file *multipart.FileHeader, dir string
 	return out, nil
 }
 
-func (serv *CommonService) CreateFileByProjectID(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddFile, projectID uint32) error {
+func (serv *CommonService) CreateFile(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddFile) ([]uint32, error) {
 	if ctx == nil || client == nil {
-		return fmt.Errorf("context or client is nil")
+		return nil, fmt.Errorf("context or client is nil")
 	}
 
 	current := 0
 	length := len(toCreates)
+
+	createIDs := make([]uint32, 0, length)
+
 	for ; current < length; current++ {
 		id, err := client.File.Query().Where(func(s *sql.Selector) {
 			s.Where(sql.NotNull(file.FieldDeletedTime))
 		}).FirstID(ctx)
 		if err != nil {
 			if !ent.IsNotFound(err) {
-				return fmt.Errorf("create file find a deleted file id query failed: %w", err)
+				return nil, fmt.Errorf("create file find a deleted file id query failed: %w", err)
 			}
 			break
 		}
@@ -118,20 +121,21 @@ func (serv *CommonService) CreateFileByProjectID(ctx context.Context, client *en
 			SetPath(toCreates[current].Path).
 			SetSize(toCreates[current].Size).
 			SetIsDisabled(false).
-			AddProjectIDs(projectID).
 			Save(ctx)
 
 		if err != nil {
-			return fmt.Errorf("create file: %w", err)
+			return nil, fmt.Errorf("create file: %w", err)
 		}
 		if num == 0 {
-			return fmt.Errorf("create file update deleted file affect 0 row")
+			return nil, fmt.Errorf("create file update deleted file affect 0 row")
 		}
+
+		createIDs = append(createIDs, id)
 	}
 	if current < length {
 		num, err := client.File.Query().Aggregate(ent.Count()).Int(ctx)
 		if err != nil {
-			return fmt.Errorf("create file count failed: %w", err)
+			return nil, fmt.Errorf("create file count failed: %w", err)
 		}
 
 		bulkLength := length - current
@@ -143,16 +147,18 @@ func (serv *CommonService) CreateFileByProjectID(ctx context.Context, client *en
 				SetName(toCreates[current+i].Name).
 				SetPath(toCreates[current+i].Path).
 				SetSize(toCreates[current+i].Size).
-				AddProjectIDs(projectID).
 				Exec(ctx)
 			if err != nil {
-				return fmt.Errorf("create file failed: %w", err)
+				return nil, fmt.Errorf("create file failed: %w", err)
 			}
+
+			createIDs = append(createIDs, uint32(num+i+1))
+
 		}
 		// err = client.File.CreateBulk(bulk...).Exec(ctx)
 	}
 
-	return nil
+	return createIDs, nil
 }
 
 func (serv *CommonService) DeleteFile(ctx context.Context, client *ent.Client, toDeleteIDs []uint32) error {
