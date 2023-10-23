@@ -155,10 +155,14 @@ func ProvideController() (*controller.Controllers, error) {
 	commonController := &controller.CommonController{
 		Services: services,
 	}
+	teacherController := &controller.TeacherController{
+		Services: services,
+	}
 	controllers := &controller.Controllers{
 		Auth:       authController,
 		Management: managementController,
 		Common:     commonController,
+		Teacher:    teacherController,
 	}
 	return controllers, nil
 }
@@ -218,10 +222,14 @@ func ProvideApplication() (*gin.Engine, error) {
 	commonController := &controller.CommonController{
 		Services: services,
 	}
+	teacherController := &controller.TeacherController{
+		Services: services,
+	}
 	controllers := &controller.Controllers{
 		Auth:       authController,
 		Management: managementController,
 		Common:     commonController,
+		Teacher:    teacherController,
 	}
 	engine, err := application.SetupApplication(controllers, workflowHelper)
 	if err != nil {
