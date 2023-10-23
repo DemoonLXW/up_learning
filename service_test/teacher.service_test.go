@@ -31,12 +31,12 @@ func TestRetrieveProject(t *testing.T) {
 	ctx := context.Background()
 	client := serv.DB
 
-	current := 2
+	current := 4
 	pageSize := 1
 	// var status uint8 = 0
 	// order := true
 	// disabled := true
-	projects, err := serv.RetrieveProject(ctx, client, &entity.SearchProject{
+	projects, err := serv.RetrieveProjectWithFile(ctx, client, &entity.SearchProject{
 		// Order: &order,
 		// Sort:  sort,
 		Current:  &current,
@@ -49,6 +49,11 @@ func TestRetrieveProject(t *testing.T) {
 	for _, v := range projects {
 
 		fmt.Println(v)
+		if v.Edges.Attachments != nil {
+			for _, f := range v.Edges.Attachments {
+				fmt.Print(f)
+			}
+		}
 	}
 	assert.Len(t, projects, 1)
 }

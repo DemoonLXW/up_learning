@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/entity"
 )
@@ -141,7 +142,7 @@ func (serv *TeacherService) UpdateProject(ctx context.Context, client *ent.Clien
 	return nil
 }
 
-func (serv *TeacherService) RetrieveProject(ctx context.Context, client *ent.Client, search *entity.SearchProject) ([]*ent.Project, error) {
+func (serv *TeacherService) RetrieveProjectWithFile(ctx context.Context, client *ent.Client, search *entity.SearchProject) ([]*ent.Project, error) {
 	if ctx == nil || client == nil {
 		return nil, fmt.Errorf("context or client is nil")
 	}
@@ -176,6 +177,11 @@ func (serv *TeacherService) RetrieveProject(ctx context.Context, client *ent.Cli
 					s.OrderBy(sql.Asc(search.Sort))
 				}
 			}
+		}).
+		WithAttachments(func(fq *ent.FileQuery) {
+			fq.Where(func(s *sql.Selector) {
+				s.Where(sql.IsNull(file.FieldDeletedTime))
+			})
 		})
 
 	if search.PageSize != nil && search.Current != nil {
