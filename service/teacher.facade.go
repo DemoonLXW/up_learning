@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/entity"
 )
 
@@ -34,7 +35,7 @@ func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 			break
 		}
 
-		num, err := client.Project.Update().Where(project.And(
+		uNum, err := client.Project.Update().Where(project.And(
 			project.IDEQ(id),
 			func(s *sql.Selector) {
 				s.Where(sql.NotNull(project.FieldDeletedTime))
@@ -58,14 +59,28 @@ func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 		if err != nil {
 			return fmt.Errorf("create project: %w", err)
 		}
-		if num == 0 {
+		if uNum == 0 {
 			return fmt.Errorf("create project update deleted project affect 0 row")
 		}
 
 		if toCreates[current].Attachments != nil {
-			err = faca.Common.CreateFileByProjectID(ctx, client, toCreates[current].Attachments, id)
+			fileIDs, err := faca.Common.CreateFile(ctx, client, toCreates[current].Attachments)
 			if err != nil {
 				return fmt.Errorf("create project create file failed: %w", err)
+			}
+
+			fileNum := len(fileIDs)
+			bulk := make([]*ent.ProjectFileCreate, fileNum)
+			for i := 0; i < fileNum; i++ {
+				bulk[i] = client.ProjectFile.Create().SetFid(fileIDs[i]).SetPid(id)
+			}
+
+			creates, err := client.ProjectFile.CreateBulk(bulk...).Save(ctx)
+			if err != nil {
+				return fmt.Errorf("create project add attachments: %w", err)
+			}
+			if len(creates) != fileNum {
+				return fmt.Errorf("create project add attachments: some files can not be found")
 			}
 		}
 	}
@@ -78,8 +93,10 @@ func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 		bulkLength := length - current
 		// bulk := make([]*ent.ProjectCreate, bulkLength)
 		for i := 0; i < bulkLength; i++ {
-			err = client.Project.Create().
-				SetID(uint32(num + i + 1)).
+			projectID := uint32(num + i + 1)
+
+			err := client.Project.Create().
+				SetID(projectID).
 				SetUID(toCreates[current+i].UID).
 				SetTitle(toCreates[current+i].Title).
 				SetGoal(toCreates[current+i].Goal).
@@ -93,14 +110,25 @@ func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 			if err != nil {
 				return fmt.Errorf("create project failed: %w", err)
 			}
-		}
-		// err = client.Project.CreateBulk(bulk...).Exec(ctx)
 
-		for i := 0; i < bulkLength; i++ {
 			if toCreates[current+i].Attachments != nil {
-				err = faca.Common.CreateFileByProjectID(ctx, client, toCreates[current+i].Attachments, uint32(num+i+1))
+				fileIDs, err := faca.Common.CreateFile(ctx, client, toCreates[current+i].Attachments)
 				if err != nil {
 					return fmt.Errorf("create project create file failed: %w", err)
+				}
+
+				fileNum := len(fileIDs)
+				bulk := make([]*ent.ProjectFileCreate, fileNum)
+				for i := 0; i < fileNum; i++ {
+					bulk[i] = client.ProjectFile.Create().SetFid(fileIDs[i]).SetPid(projectID)
+				}
+				creates, err := client.ProjectFile.CreateBulk(bulk...).Save(ctx)
+
+				if err != nil {
+					return fmt.Errorf("create project add attachments: %w", err)
+				}
+				if len(creates) != fileNum {
+					return fmt.Errorf("create project add attachments: some files can not be found")
 				}
 			}
 		}
@@ -109,13 +137,29 @@ func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 	return nil
 }
 
-func (faca *TeacherFacade) DeleteProject(ctx context.Context, client *ent.Client, toDeletes []*ent.Project) error {
+func (faca *TeacherFacade) DeleteProject(ctx context.Context, client *ent.Client, toDeleteIDs []uint32) error {
 	if ctx == nil || client == nil {
 		return fmt.Errorf("context or client is nil")
 	}
 
+	toDeletes, err := client.Project.Query().Where(project.And(
+		project.IDIn(toDeleteIDs...),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(project.FieldDeletedTime))
+		},
+	)).
+		WithAttachments().
+		All(ctx)
+	if err != nil || len(toDeleteIDs) != len(toDeletes) {
+		return fmt.Errorf("delete project not found projects failed: %w", err)
+	}
+
 	for i := range toDeletes {
-		err := faca.Common.DeleteFile(ctx, client, toDeletes[i].Edges.Attachments)
+		attachmentIDs := make([]uint32, 0)
+		for _, a := range toDeletes[i].Edges.Attachments {
+			attachmentIDs = append(attachmentIDs, a.ID)
+		}
+		err := faca.Common.DeleteFile(ctx, client, attachmentIDs)
 		if err != nil {
 			return fmt.Errorf("delete project delete attachments failed: %w", err)
 		}
@@ -140,6 +184,99 @@ func (faca *TeacherFacade) DeleteProject(ctx context.Context, client *ent.Client
 			return fmt.Errorf("delete project affect 0 row: id[%d]", toDeletes[i].ID)
 		}
 
+	}
+
+	return nil
+}
+
+func (faca *TeacherFacade) UpdateProject(ctx context.Context, client *ent.Client, toUpdate *entity.ToModifyProject) error {
+	if ctx == nil || client == nil {
+		return fmt.Errorf("context or client is nil")
+	}
+
+	updater := client.Project.Update().Where(
+		project.IDEQ(toUpdate.ID),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(project.FieldDeletedTime))
+		},
+	)
+	if toUpdate.Title != nil {
+		updater.SetTitle(*toUpdate.Title)
+	}
+	if toUpdate.Goal != nil {
+		updater.SetGoal(*toUpdate.Goal)
+	}
+	if toUpdate.Principle != nil {
+		updater.SetPrinciple(*toUpdate.Principle)
+	}
+	if toUpdate.ProcessAndMethod != nil {
+		updater.SetProcessAndMethod(*toUpdate.ProcessAndMethod)
+	}
+	if toUpdate.Step != nil {
+		updater.SetStep(*toUpdate.Step)
+	}
+	if toUpdate.ResultAndConclusion != nil {
+		updater.SetResultAndConclusion(*toUpdate.ResultAndConclusion)
+	}
+	if toUpdate.Requirement != nil {
+		updater.SetRequirement(*toUpdate.Requirement)
+	}
+	if toUpdate.ReviewStatus != nil {
+		updater.SetReviewStatus(*toUpdate.ReviewStatus)
+	}
+	if toUpdate.IsDisabled != nil {
+		updater.SetIsDisabled(*toUpdate.IsDisabled)
+	}
+	updater.SetModifiedTime(time.Now())
+
+	uNum, err := updater.Save(ctx)
+	if err != nil {
+		return fmt.Errorf("update project failed: %w", err)
+	}
+	if uNum == 0 {
+		return fmt.Errorf("update project affect 0 row")
+	}
+
+	if toUpdate.DeleteFileIDs != nil {
+		// Ensure that the deleted attachment belongs to the project
+		dNum, err := client.ProjectFile.Delete().Where(
+			projectfile.FidIn(toUpdate.DeleteFileIDs...),
+			projectfile.Pid(toUpdate.ID),
+		).Exec(ctx)
+		if err != nil {
+			return fmt.Errorf("update project delete attachments: %w", err)
+		}
+		if dNum != len(toUpdate.DeleteFileIDs) {
+			return fmt.Errorf("update project delete attachments: some files can not be found")
+		}
+		// the order is important
+		err = faca.Common.DeleteFile(ctx, client, toUpdate.DeleteFileIDs)
+		if err != nil {
+			return fmt.Errorf("update project delete file failed: %w", err)
+		}
+
+	}
+
+	if toUpdate.AddFile != nil {
+		fileIDs, err := faca.Common.CreateFile(ctx, client, toUpdate.AddFile)
+		if err != nil {
+			return fmt.Errorf("update project add file failed: %w", err)
+		}
+
+		fileNum := len(fileIDs)
+		bulk := make([]*ent.ProjectFileCreate, fileNum)
+		for i := 0; i < fileNum; i++ {
+			bulk[i] = client.ProjectFile.Create().SetFid(fileIDs[i]).SetPid(toUpdate.ID)
+		}
+
+		creates, err := client.ProjectFile.CreateBulk(bulk...).Save(ctx)
+
+		if err != nil {
+			return fmt.Errorf("update project add attachments: %w", err)
+		}
+		if len(creates) != fileNum {
+			return fmt.Errorf("update project add attachments: some files can not be found")
+		}
 	}
 
 	return nil

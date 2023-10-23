@@ -243,16 +243,18 @@ type ToAddProject struct {
 }
 
 type ToModifyProject struct {
-	ID                  uint32  `json:"id" binding:"required"`
-	Title               *string `json:"title"`
-	Goal                *string `json:"goal"`
-	Principle           *string `json:"principle"`
-	ProcessAndMethod    *string `json:"process_and_method"`
-	Step                *string `json:"step"`
-	ResultAndConclusion *string `json:"result_and_conclusion"`
-	Requirement         *string `json:"requirement"`
-	ReviewStatus        *uint8  `json:"review_status"`
-	IsDisabled          *bool   `json:"isDisabled"`
+	ID                  uint32       `json:"id" binding:"required"`
+	Title               *string      `json:"title"`
+	Goal                *string      `json:"goal"`
+	Principle           *string      `json:"principle"`
+	ProcessAndMethod    *string      `json:"process_and_method"`
+	Step                *string      `json:"step"`
+	ResultAndConclusion *string      `json:"result_and_conclusion"`
+	Requirement         *string      `json:"requirement"`
+	AddFile             []*ToAddFile `json:"add_file"`
+	DeleteFileIDs       []uint32     `json:"delete_file_ids"`
+	ReviewStatus        *uint8       `json:"review_status"`
+	IsDisabled          *bool        `json:"isDisabled"`
 }
 
 type SearchProject struct {

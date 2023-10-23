@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/DemoonLXW/up_learning/database/ent"
-	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/injection"
 	"github.com/DemoonLXW/up_learning/service"
@@ -73,7 +72,7 @@ func TestCreateProject(t *testing.T) {
 		},
 	}
 
-	adds := []*entity.ToAddProject{&project1, &project2}
+	adds := []*entity.ToAddProject{&project2, &project1}
 
 	ctx := context.Background()
 	client := faca.DB
@@ -94,16 +93,53 @@ func TestDeleteProject(t *testing.T) {
 
 	ids := []uint32{2, 4}
 
-	projects, err := client.Project.Query().
-		Where(project.IDIn(ids...)).
-		WithAttachments().
-		All(ctx)
-	assert.Nil(t, err)
-
 	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
-		return faca.DeleteProject(ctx, tx.Client(), projects)
+		return faca.DeleteProject(ctx, tx.Client(), ids)
 	})
 
 	assert.Nil(t, err)
 
+}
+
+func TestUpdateProject(t *testing.T) {
+	faca, err := CreateTestTeacherFacade()
+	assert.Nil(t, err)
+
+	id := uint32(4)
+	// title := "update title2"
+	goal := "update goal4"
+	step := "update step4"
+	requirement := "update requirement4"
+	file1 := entity.ToAddFile{
+		UID:  4,
+		Name: "testupdate.json",
+		Path: "file/uid/testupdate.json",
+		Size: 69822,
+	}
+
+	// project := entity.ToModifyProject{
+	// 	Title:               "title1",
+	// 	Goal:                "goal1",
+	// 	Principle:           "principle1",
+	// 	ProcessAndMethod:    "process and method 1",
+	// 	Step:                "step1",
+	// 	ResultAndConclusion: "result and conclusion 1",
+	// 	Requirement:         "requirement1",
+	// }
+
+	ctx := context.Background()
+	client := faca.DB
+
+	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
+		return faca.UpdateProject(ctx, tx.Client(), &entity.ToModifyProject{
+			ID:            id,
+			Goal:          &goal,
+			Step:          &step,
+			Requirement:   &requirement,
+			AddFile:       []*entity.ToAddFile{&file1, &file1},
+			DeleteFileIDs: []uint32{9},
+		})
+	})
+	// err = serv.CreateProject(nil, nil, adds)
+	assert.Nil(t, err)
 }
