@@ -13,7 +13,8 @@ import (
 )
 
 func CreateTestTeacherService() (*service.TeacherService, error) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
+	os.Chdir("../")
+	os.Setenv("DB_CONFIG", "./database.config.json")
 	serv := new(service.TeacherService)
 	db, err := injection.ProvideDataBase()
 	if err != nil {
@@ -84,19 +85,19 @@ func TestGetTotalRetrievedProjects(t *testing.T) {
 	assert.Equal(t, 2, total)
 }
 
-func TestFindProjectByIDs(t *testing.T) {
+func TestFindOneProjectWithFileById(t *testing.T) {
 	serv, err := CreateTestTeacherService()
 	assert.Nil(t, err)
 
 	ctx := context.Background()
 	client := serv.DB
 
-	ids := []uint32{2, 3}
-
-	projects, err := serv.FindProjectByIDs(ctx, client, ids)
+	id := uint32(4)
+	p, err := serv.FindOneProjectWithFileById(ctx, client, id)
 	assert.Nil(t, err)
-	for i := range projects {
-		fmt.Println(projects[i])
-	}
 
+	fmt.Println(p)
+	for _, v := range p.Edges.Attachments {
+		fmt.Println(v.Name)
+	}
 }
