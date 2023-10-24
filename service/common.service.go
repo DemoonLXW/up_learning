@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"path/filepath"
 	"regexp"
 	"time"
 
@@ -45,7 +46,7 @@ func (serv *CommonService) SaveImportedFile(file *multipart.FileHeader, dir, pre
 	return out, nil
 }
 
-func (serv *CommonService) SaveUploadFile(file *multipart.FileHeader, dir string) (*os.File, error) {
+func (serv *CommonService) SaveUploadFile(file *multipart.FileHeader, dir string) (*entity.ToAddFile, error) {
 	src, err := file.Open()
 	if err != nil {
 		return nil, fmt.Errorf("save upload file open file failed: %w", err)
@@ -56,7 +57,12 @@ func (serv *CommonService) SaveUploadFile(file *multipart.FileHeader, dir string
 	res := re.FindStringSubmatch(file.Filename)
 	suffix := res[0]
 
-	if err = os.MkdirAll(dir, 0750); err != nil {
+	absDir, err := filepath.Abs(dir)
+	if err != nil {
+		return nil, fmt.Errorf("save upload file get abs directory failed: %w", err)
+	}
+
+	if err = os.MkdirAll(absDir, 0750); err != nil {
 		return nil, fmt.Errorf("save upload file mkdir failed: %w", err)
 	}
 
@@ -67,10 +73,11 @@ func (serv *CommonService) SaveUploadFile(file *multipart.FileHeader, dir string
 
 	fname := fmt.Sprintf("%x", h.Sum(nil))
 
-	out, err := os.OpenFile(dir+"/"+fname+suffix, os.O_RDWR|os.O_CREATE, 0750)
+	out, err := os.OpenFile(absDir+"/"+fname+suffix, os.O_RDWR|os.O_CREATE, 0750)
 	if err != nil {
 		return nil, fmt.Errorf("save upload file create out file failed: %w", err)
 	}
+	defer out.Close()
 
 	_, err = src.Seek(0, io.SeekStart)
 	if err != nil {
@@ -81,9 +88,26 @@ func (serv *CommonService) SaveUploadFile(file *multipart.FileHeader, dir string
 	if err != nil {
 		return nil, fmt.Errorf("save upload file copy failed: %w", err)
 	}
-	defer out.Close()
 
-	return out, nil
+	info, err := out.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("save upload file get info failed: %w", err)
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("save upload file get working directory failed: %w", err)
+	}
+	path, err := filepath.Rel(wd, out.Name())
+	if err != nil {
+		return nil, fmt.Errorf("save upload file get addfile path failed: %w", err)
+	}
+
+	var addFile entity.ToAddFile
+	addFile.Name = file.Filename
+	addFile.Path = path
+	addFile.Size = info.Size()
+	return &addFile, nil
 }
 
 func (serv *CommonService) CreateFile(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddFile) ([]uint32, error) {

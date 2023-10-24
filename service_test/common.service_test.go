@@ -19,7 +19,8 @@ import (
 )
 
 func CreateTestCommonService() (*service.CommonService, error) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
+	os.Chdir("../")
+	os.Setenv("DB_CONFIG", "./database.config.json")
 	serv := new(service.CommonService)
 	db, err := injection.ProvideDataBase()
 	if err != nil {
@@ -28,6 +29,27 @@ func CreateTestCommonService() (*service.CommonService, error) {
 	serv.DB = db
 
 	return serv, nil
+}
+
+func AddFilesToForm(writer *multipart.Writer, fnames []string, field string) error {
+	for _, v := range fnames {
+		f, err := os.Open(v)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		part, err := writer.CreateFormFile(field, filepath.Base(f.Name()))
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(part, f)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func TestSaveImportedFile(t *testing.T) {
@@ -67,37 +89,27 @@ func TestSaveUploadFile(t *testing.T) {
 	serv, err := CreateTestCommonService()
 	assert.Nil(t, err)
 
-	f, err := os.Open("../domain.config.json")
-	assert.Nil(t, err)
-	defer f.Close()
-
 	b := bytes.Buffer{}
 	writer := multipart.NewWriter(&b)
-	part, err := writer.CreateFormFile("upload", filepath.Base(f.Name()))
-	assert.Nil(t, err)
 
-	_, err = io.Copy(part, f)
-	assert.Nil(t, err)
-	err = writer.Close()
+	err = AddFilesToForm(writer, []string{"./domain.config.json"}, "upload")
 	assert.Nil(t, err)
 
 	req, err := http.NewRequest(http.MethodPost, "localhost:8080", &b)
 	assert.Nil(t, err)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
+	err = writer.Close()
+	assert.Nil(t, err)
 	_, fh, err := req.FormFile("upload")
 	assert.Nil(t, err)
 
-	dir := "../temp/uploadImage"
+	dir := "./temp/uploadImage"
 
 	o, err := serv.SaveUploadFile(fh, dir)
 	assert.Nil(t, err)
-	fmt.Println(o.Name())
-	o, err = os.Open(o.Name())
-	assert.Nil(t, err)
-
-	info, err := o.Stat()
-	assert.Nil(t, err)
-	fmt.Println(info.Size())
+	fmt.Println(o.Name)
+	fmt.Println(o.Size)
+	fmt.Println(o.Path)
 }
 
 func TestCreateFile(t *testing.T) {

@@ -40,7 +40,7 @@ func (cont *CommonController) UploadDocumentImage(c *gin.Context) {
 	}
 
 	domain := c.Value("domain").(string)
-	fname := filepath.Base(f.Name())
+	fname := filepath.Base(f.Path)
 	url := "http://" + domain + "/images/" + uid + "/" + fname
 
 	var res entity.Result
