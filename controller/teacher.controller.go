@@ -2,10 +2,13 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/service"
 	"github.com/gin-gonic/gin"
@@ -72,5 +75,40 @@ func (cont *TeacherController) AddProject(c *gin.Context) {
 
 	var res entity.Result
 	res.Message = "Add Project Successfully"
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *TeacherController) RemoveProjectsByIds(c *gin.Context) {
+	var remove entity.ToRemoveProjectIDs
+	if err := c.ShouldBindJSON(&remove); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx := context.Background()
+	client := cont.TeacherFa.DB
+	err := service.WithTx(ctx, client, func(tx *ent.Tx) error {
+		toDeletes, err := tx.Client().Project.Query().Where(project.And(
+			project.IDIn(remove.IDs...),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(project.FieldDeletedTime))
+			},
+			project.ReviewStatusNotIn(uint8(1), uint8(2)),
+		)).
+			WithAttachments().
+			All(ctx)
+		if err != nil || len(remove.IDs) != len(toDeletes) {
+			return fmt.Errorf("delete project not found projects or project is ineligible failed: %w", err)
+		}
+
+		return cont.TeacherFa.DeleteProject(ctx, tx.Client(), toDeletes)
+	})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Remove Projects By Ids Successfully"
 	c.JSON(http.StatusOK, res)
 }

@@ -266,3 +266,7 @@ type SearchProject struct {
 	IsDisabled   *bool  `form:"isdisabled"`
 	ReviewStatus *uint8 `form:"reviewstatus"`
 }
+
+type ToRemoveProjectIDs struct {
+	IDs []uint32 `json:"ids" binding:"required,gte=1"`
+}

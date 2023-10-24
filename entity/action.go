@@ -42,5 +42,6 @@ const (
 
 	UploadDocumentImage = "upload document image"
 
-	AddProject = "add project"
+	AddProject          = "add project"
+	RemoveProjectsByIds = "remove projects by ids"
 )

@@ -137,21 +137,9 @@ func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 	return nil
 }
 
-func (faca *TeacherFacade) DeleteProject(ctx context.Context, client *ent.Client, toDeleteIDs []uint32) error {
+func (faca *TeacherFacade) DeleteProject(ctx context.Context, client *ent.Client, toDeletes []*ent.Project) error {
 	if ctx == nil || client == nil {
 		return fmt.Errorf("context or client is nil")
-	}
-
-	toDeletes, err := client.Project.Query().Where(project.And(
-		project.IDIn(toDeleteIDs...),
-		func(s *sql.Selector) {
-			s.Where(sql.IsNull(project.FieldDeletedTime))
-		},
-	)).
-		WithAttachments().
-		All(ctx)
-	if err != nil || len(toDeleteIDs) != len(toDeletes) {
-		return fmt.Errorf("delete project not found projects failed: %w", err)
 	}
 
 	for i := range toDeletes {

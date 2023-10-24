@@ -41,20 +41,19 @@ func TestAddProject(t *testing.T) {
 	assert.Nil(t, err)
 
 	project := entity.ToAddProject{
-		UID:                 3,
-		Title:               "api title1",
-		Goal:                "api goal1",
-		Principle:           "api principle1",
-		ProcessAndMethod:    "api process and method 1",
-		Step:                "api step1",
-		ResultAndConclusion: "api result and conclusion 1",
-		Requirement:         "api requirement1",
+		Title:               "api title2",
+		Goal:                "api goal2",
+		Principle:           "api principle2",
+		ProcessAndMethod:    "api process and method 2",
+		Step:                "api step2",
+		ResultAndConclusion: "api result and conclusion 2",
+		Requirement:         "api requirement2",
 	}
 
 	b := bytes.Buffer{}
 	writer := multipart.NewWriter(&b)
 
-	fnames := []string{"./workflow.config.yaml", "./domain.config.json"}
+	fnames := []string{"./main.go", "./workflow.config.yaml"}
 
 	err = AddFilesToForm(writer, fnames, "attachments")
 	assert.Nil(t, err)
@@ -75,7 +74,25 @@ func TestAddProject(t *testing.T) {
 	err = writer.Close()
 	assert.Nil(t, err)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "230eeb1aeff1d068a164183820992a71"}
+	token_cookie := &http.Cookie{Name: "token", Value: "004e9f57ec5bd6b100d211fd3e3b7d23"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
+
+func TestRemoveProjectsByIds(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	body := bytes.NewReader([]byte(`{"ids":[5]}`))
+	req, _ := http.NewRequest(http.MethodPost, "/project/remove", body)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "004e9f57ec5bd6b100d211fd3e3b7d23"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

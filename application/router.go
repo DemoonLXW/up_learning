@@ -93,6 +93,7 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 		project := auth.Group("/project")
 		{
 			project.POST("/add", Check(authService, []string{entity.AddProject}), controllers.Teacher.AddProject)
+			project.POST("/remove", Check(authService, []string{entity.RemoveProjectsByIds}), controllers.Teacher.RemoveProjectsByIds)
 		}
 	}
 
