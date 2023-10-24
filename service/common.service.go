@@ -185,19 +185,9 @@ func (serv *CommonService) CreateFile(ctx context.Context, client *ent.Client, t
 	return createIDs, nil
 }
 
-func (serv *CommonService) DeleteFile(ctx context.Context, client *ent.Client, toDeleteIDs []uint32) error {
+func (serv *CommonService) DeleteFile(ctx context.Context, client *ent.Client, toDeletes []*ent.File) error {
 	if ctx == nil || client == nil {
 		return fmt.Errorf("context or client is nil")
-	}
-
-	toDeletes, err := client.File.Query().Where(file.And(
-		file.IDIn(toDeleteIDs...),
-		func(s *sql.Selector) {
-			s.Where(sql.IsNull(file.FieldDeletedTime))
-		},
-	)).All(ctx)
-	if err != nil || len(toDeletes) != len(toDeleteIDs) {
-		return fmt.Errorf("delete files not found files failed: %w", err)
 	}
 
 	for i := range toDeletes {

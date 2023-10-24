@@ -11,7 +11,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/injection"
 	"github.com/DemoonLXW/up_learning/service"
@@ -154,7 +156,16 @@ func TestDeleteFile(t *testing.T) {
 	ids := []uint32{7, 9, 12}
 
 	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
-		return serv.DeleteFile(ctx, tx.Client(), ids)
+		toDeleteFiles, err := tx.Client().File.Query().Where(file.And(
+			file.IDIn(ids...),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(file.FieldDeletedTime))
+			},
+		)).All(ctx)
+		if err != nil {
+			return err
+		}
+		return serv.DeleteFile(ctx, tx.Client(), toDeleteFiles)
 	})
 
 	assert.Nil(t, err)

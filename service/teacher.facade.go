@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database/ent"
+	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/entity"
@@ -147,7 +148,17 @@ func (faca *TeacherFacade) DeleteProject(ctx context.Context, client *ent.Client
 		for _, a := range toDeletes[i].Edges.Attachments {
 			attachmentIDs = append(attachmentIDs, a.ID)
 		}
-		err := faca.Common.DeleteFile(ctx, client, attachmentIDs)
+		toDeleteFiles, err := client.File.Query().Where(file.And(
+			file.IDIn(attachmentIDs...),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(file.FieldDeletedTime))
+			},
+		)).All(ctx)
+		if err != nil || len(toDeleteFiles) != len(attachmentIDs) {
+			return fmt.Errorf("delete project delete attachments not found files failed: %w", err)
+		}
+
+		err = faca.Common.DeleteFile(ctx, client, toDeleteFiles)
 		if err != nil {
 			return fmt.Errorf("delete project delete attachments failed: %w", err)
 		}
@@ -232,15 +243,24 @@ func (faca *TeacherFacade) UpdateProject(ctx context.Context, client *ent.Client
 			projectfile.Pid(toUpdate.ID),
 		).Exec(ctx)
 		if err != nil {
-			return fmt.Errorf("update project delete attachments: %w", err)
+			return fmt.Errorf("update project delete attachments relationship: %w", err)
 		}
 		if dNum != len(toUpdate.DeleteFileIDs) {
-			return fmt.Errorf("update project delete attachments: some files can not be found")
+			return fmt.Errorf("update project delete attachments relationship: some files can not be found")
 		}
 		// the order is important
-		err = faca.Common.DeleteFile(ctx, client, toUpdate.DeleteFileIDs)
+		toDeleteFiles, err := client.File.Query().Where(file.And(
+			file.IDIn(toUpdate.DeleteFileIDs...),
+			func(s *sql.Selector) {
+				s.Where(sql.IsNull(file.FieldDeletedTime))
+			},
+		)).All(ctx)
+		if err != nil || len(toDeleteFiles) != len(toUpdate.DeleteFileIDs) {
+			return fmt.Errorf("update project delete attachments not found files failed: %w", err)
+		}
+		err = faca.Common.DeleteFile(ctx, client, toDeleteFiles)
 		if err != nil {
-			return fmt.Errorf("update project delete file failed: %w", err)
+			return fmt.Errorf("update project delete attachments failed: %w", err)
 		}
 
 	}
