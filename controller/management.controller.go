@@ -342,16 +342,12 @@ func (cont *ManagementController) GetUserList(c *gin.Context) {
 
 	users := make([]entity.RetrievedUser, len(us))
 	for i, v := range us {
-		users[i].ID = v.ID
-		users[i].Account = v.Account
-		users[i].Username = v.Username
-		if v.Email != nil {
-			users[i].Email = *v.Email
-		}
-		if v.Phone != nil {
-			users[i].Phone = *v.Phone
-		}
-		users[i].IsDisabled = v.IsDisabled
+		users[i].ID = &v.ID
+		users[i].Account = &v.Account
+		users[i].Username = &v.Username
+		users[i].Email = v.Email
+		users[i].Phone = v.Phone
+		users[i].IsDisabled = &v.IsDisabled
 	}
 
 	var data entity.RetrievedListData
@@ -541,16 +537,16 @@ func (cont *ManagementController) GetStudentList(c *gin.Context) {
 		vUser := v.Edges.User
 		if vUser != nil {
 			students[i].User = &entity.RetrievedUser{
-				ID:         vUser.ID,
-				Account:    vUser.Account,
-				Username:   vUser.Username,
-				IsDisabled: vUser.IsDisabled,
+				ID:         &vUser.ID,
+				Account:    &vUser.Account,
+				Username:   &vUser.Username,
+				IsDisabled: &vUser.IsDisabled,
 			}
 			if vUser.Email != nil {
-				students[i].User.Email = *vUser.Email
+				students[i].User.Email = vUser.Email
 			}
 			if vUser.Phone != nil {
-				students[i].User.Phone = *vUser.Phone
+				students[i].User.Phone = vUser.Phone
 
 			}
 		}
@@ -959,17 +955,13 @@ func (cont *ManagementController) GetTeacherList(c *gin.Context) {
 		vUser := v.Edges.User
 		if vUser != nil {
 			teachers[i].User = &entity.RetrievedUser{
-				ID:         vUser.ID,
-				Account:    vUser.Account,
-				Username:   vUser.Username,
-				IsDisabled: vUser.IsDisabled,
+				ID:         &vUser.ID,
+				Account:    &vUser.Account,
+				Username:   &vUser.Username,
+				IsDisabled: &vUser.IsDisabled,
 			}
-			if vUser.Email != nil {
-				teachers[i].User.Email = *vUser.Email
-			}
-			if vUser.Phone != nil {
-				teachers[i].User.Phone = *vUser.Phone
-			}
+			teachers[i].User.Email = vUser.Email
+			teachers[i].User.Phone = vUser.Phone
 		}
 	}
 

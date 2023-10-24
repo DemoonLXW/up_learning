@@ -32,12 +32,12 @@ func TestRetrieveProject(t *testing.T) {
 	ctx := context.Background()
 	client := serv.DB
 
-	current := 4
-	pageSize := 1
+	current := uint(4)
+	pageSize := uint(1)
 	// var status uint8 = 0
 	// order := true
 	// disabled := true
-	projects, err := serv.RetrieveProjectWithFile(ctx, client, &entity.SearchProject{
+	projects, err := serv.RetrieveProjectWithFileAndUserByUserID(ctx, client, &entity.SearchProject{
 		// Order: &order,
 		// Sort:  sort,
 		Current:  &current,
@@ -45,7 +45,7 @@ func TestRetrieveProject(t *testing.T) {
 		// ReviewStatus: &status,
 		// Like:         "e2",
 		// IsDisabled:   &disabled,
-	})
+	}, uint32(4))
 	assert.Nil(t, err)
 	for _, v := range projects {
 
@@ -71,7 +71,7 @@ func TestGetTotalRetrievedProjects(t *testing.T) {
 	var status uint8 = 0
 	// order := true
 	// disabled := false
-	total, err := serv.GetTotalRetrievedProjects(ctx, client, &entity.SearchProject{
+	total, err := serv.GetTotalRetrievedProjectsByUserID(ctx, client, &entity.SearchProject{
 		// Order: &order,
 		// Sort:  sort,
 		// Current:      &current,
@@ -79,7 +79,7 @@ func TestGetTotalRetrievedProjects(t *testing.T) {
 		ReviewStatus: &status,
 		Like:         "title",
 		// IsDisabled:   &disabled,
-	})
+	}, uint32(4))
 	assert.Nil(t, err)
 
 	assert.Equal(t, 2, total)
@@ -92,12 +92,15 @@ func TestFindOneProjectWithFileById(t *testing.T) {
 	ctx := context.Background()
 	client := serv.DB
 
-	id := uint32(4)
-	p, err := serv.FindOneProjectWithFileById(ctx, client, id)
+	id := uint32(1)
+	p, err := serv.FindOneProjectWithFileAndUserById(ctx, client, id)
 	assert.Nil(t, err)
 
 	fmt.Println(p)
 	for _, v := range p.Edges.Attachments {
 		fmt.Println(v.Name)
+	}
+	if p.Edges.User != nil {
+		fmt.Println(p.Edges.User)
 	}
 }

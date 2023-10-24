@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -175,7 +176,7 @@ func (cont *TeacherController) ModifyAProject(c *gin.Context) {
 }
 
 func (cont *TeacherController) GetAProjectById(c *gin.Context) {
-	var project entity.RetrievedDetailedProject
+	var project entity.RetrievedProject
 	if err := c.ShouldBindUri(&project); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -183,7 +184,7 @@ func (cont *TeacherController) GetAProjectById(c *gin.Context) {
 
 	ctx := context.Background()
 	client := cont.Teacher.DB
-	object, err := cont.Teacher.FindOneProjectWithFileById(ctx, client, project.ID)
+	object, err := cont.Teacher.FindOneProjectWithFileAndUserById(ctx, client, *project.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -194,34 +195,94 @@ func (cont *TeacherController) GetAProjectById(c *gin.Context) {
 		return
 	}
 
-	project.Title = object.Title
-	project.Goal = object.Goal
-	project.Principle = object.Principle
-	project.ProcessAndMethod = object.ProcessAndMethod
-	project.Step = object.Step
-	project.ResultAndConclusion = object.ResultAndConclusion
-	project.Requirement = object.Requirement
+	project.Title = &object.Title
+	project.Goal = &object.Goal
+	project.Principle = &object.Principle
+	project.ProcessAndMethod = &object.ProcessAndMethod
+	project.Step = &object.Step
+	project.ResultAndConclusion = &object.ResultAndConclusion
+	project.Requirement = &object.Requirement
+	project.ReviewStatus = &object.ReviewStatus
 	project.CreatedTime = object.CreatedTime
 	project.ModifiedTime = object.ModifiedTime
 	user := object.Edges.User
 	if user != nil {
-		project.User = &entity.RetrievedWithUser{
-			ID:       user.ID,
-			Account:  user.Account,
-			Username: user.Username,
+		project.User = &entity.RetrievedUser{
+			ID:       &user.ID,
+			Account:  &user.Account,
+			Username: &user.Username,
 		}
 	}
 	attachments := object.Edges.Attachments
 	for _, v := range attachments {
-		project.Attachments = append(project.Attachments, &entity.RetrievedWithFile{
-			ID:   v.ID,
-			Name: v.Name,
-			Size: v.Size,
+		project.Attachments = append(project.Attachments, &entity.RetrievedFile{
+			ID:   &v.ID,
+			Name: &v.Name,
+			Size: &v.Size,
 		})
 	}
 
 	var res entity.Result
 	res.Message = "Get a Project By Id Successfully"
 	res.Data = project
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *TeacherController) GetProjectListByUserID(c *gin.Context) {
+	var search entity.SearchProject
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	uid, err := c.Cookie("uid")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	userID, err := strconv.ParseUint(uid, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx := context.Background()
+	client := cont.Teacher.DB
+	objects, err := cont.Teacher.RetrieveProjectWithFileAndUserByUserID(ctx, client, &search, uint32(userID))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	total, err := cont.Teacher.GetTotalRetrievedProjectsByUserID(ctx, client, &search, uint32(userID))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var projects []entity.RetrievedProject
+	for _, v := range objects {
+		if v.IsDisabled {
+			total--
+			continue
+		}
+		var p entity.RetrievedProject
+		p.ID = &v.ID
+		p.Title = &v.Title
+		p.ReviewStatus = &v.ReviewStatus
+		projects = append(projects, p)
+	}
+
+	var data entity.RetrievedListData
+	data.Record = projects
+	data.Total = total
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < uint(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
+
+	var res entity.Result
+	res.Message = "Get List of My Projects Successfully"
+	res.Data = data
 	c.JSON(http.StatusOK, res)
 }

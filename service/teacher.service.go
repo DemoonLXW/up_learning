@@ -8,6 +8,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/entity"
 )
 
@@ -15,7 +16,7 @@ type TeacherService struct {
 	DB *ent.Client
 }
 
-func (serv *TeacherService) RetrieveProjectWithFile(ctx context.Context, client *ent.Client, search *entity.SearchProject) ([]*ent.Project, error) {
+func (serv *TeacherService) RetrieveProjectWithFileAndUserByUserID(ctx context.Context, client *ent.Client, search *entity.SearchProject, userID uint32) ([]*ent.Project, error) {
 	if ctx == nil || client == nil {
 		return nil, fmt.Errorf("context or client is nil")
 	}
@@ -39,6 +40,7 @@ func (serv *TeacherService) RetrieveProjectWithFile(ctx context.Context, client 
 						s.Where(sql.EQ(project.FieldReviewStatus, *search.ReviewStatus))
 					}
 				},
+				project.UIDEQ(userID),
 			),
 		).
 		Order(func(s *sql.Selector) {
@@ -55,11 +57,16 @@ func (serv *TeacherService) RetrieveProjectWithFile(ctx context.Context, client 
 			fq.Where(func(s *sql.Selector) {
 				s.Where(sql.IsNull(file.FieldDeletedTime))
 			})
+		}).
+		WithUser(func(uq *ent.UserQuery) {
+			uq.Where(func(s *sql.Selector) {
+				s.Where(sql.IsNull(user.FieldDeletedTime))
+			})
 		})
 
 	if search.PageSize != nil && search.Current != nil {
-		offset := (*search.Current - 1) * (*search.PageSize)
-		query.Limit(*search.PageSize).Offset(offset)
+		offset := int((*search.Current - 1) * (*search.PageSize))
+		query.Limit(int(*search.PageSize)).Offset(offset)
 	}
 	projects, err := query.All(ctx)
 	if err != nil {
@@ -69,7 +76,7 @@ func (serv *TeacherService) RetrieveProjectWithFile(ctx context.Context, client 
 	return projects, nil
 }
 
-func (serv *TeacherService) GetTotalRetrievedProjects(ctx context.Context, client *ent.Client, search *entity.SearchProject) (int, error) {
+func (serv *TeacherService) GetTotalRetrievedProjectsByUserID(ctx context.Context, client *ent.Client, search *entity.SearchProject, userID uint32) (int, error) {
 	if ctx == nil || client == nil {
 		return -1, fmt.Errorf("context or client is nil")
 	}
@@ -89,6 +96,7 @@ func (serv *TeacherService) GetTotalRetrievedProjects(ctx context.Context, clien
 						s.Where(sql.EQ(project.FieldReviewStatus, *search.ReviewStatus))
 					}
 				},
+				project.UIDEQ(userID),
 			),
 		).Count(ctx)
 
@@ -99,7 +107,7 @@ func (serv *TeacherService) GetTotalRetrievedProjects(ctx context.Context, clien
 	return total, nil
 }
 
-func (serv *TeacherService) FindOneProjectWithFileById(ctx context.Context, client *ent.Client, id uint32) (*ent.Project, error) {
+func (serv *TeacherService) FindOneProjectWithFileAndUserById(ctx context.Context, client *ent.Client, id uint32) (*ent.Project, error) {
 	res, err := client.Project.Query().Where(project.And(
 		project.IDEQ(id),
 		func(s *sql.Selector) {
@@ -109,6 +117,11 @@ func (serv *TeacherService) FindOneProjectWithFileById(ctx context.Context, clie
 		WithAttachments(func(fq *ent.FileQuery) {
 			fq.Where(func(s *sql.Selector) {
 				s.Where(sql.IsNull(file.FieldDeletedTime))
+			})
+		}).
+		WithUser(func(uq *ent.UserQuery) {
+			uq.Where(func(s *sql.Selector) {
+				s.Where(sql.IsNull(user.FieldDeletedTime))
 			})
 		}).First(ctx)
 	if err != nil {

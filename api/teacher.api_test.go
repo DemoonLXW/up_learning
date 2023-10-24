@@ -156,9 +156,27 @@ func TestGetAProjectById(t *testing.T) {
 	assert.Nil(t, err)
 
 	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodGet, "/project/get/4", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/teacher/project/get/4", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "612469b4e4b8143676d6e9528cab20d9"}
+	token_cookie := &http.Cookie{Name: "token", Value: "19392940f31df4e7af91269133cf330c"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
+
+func TestGetMyProjectList(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	query := "?current=1&page_size=5"
+	req, _ := http.NewRequest(http.MethodGet, "/teacher/project/getlist"+query, nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "1dcbb38902c972818e11b007fb95a211"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
