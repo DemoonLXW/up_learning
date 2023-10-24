@@ -112,3 +112,63 @@ func (cont *TeacherController) RemoveProjectsByIds(c *gin.Context) {
 	res.Message = "Remove Projects By Ids Successfully"
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *TeacherController) ModifyAProject(c *gin.Context) {
+	var project entity.ToModifyProject
+	if err := c.ShouldBind(&project); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	uid, err := c.Cookie("uid")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	userID, err := strconv.ParseUint(uid, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	dir := "files/project/" + uid
+
+	fhs, ok := form.File["add_file"]
+	if ok {
+		files := make([]*entity.ToAddFile, len(fhs))
+		for i := range fhs {
+			addFile, err := cont.Common.SaveUploadFile(fhs[i], dir)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+
+			addFile.UID = uint32(userID)
+
+			files[i] = addFile
+		}
+		project.AddFile = files
+	}
+
+	ctx := context.Background()
+	client := cont.TeacherFa.DB
+	// can not change review status here
+	project.ReviewStatus = nil
+	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
+		return cont.TeacherFa.UpdateProject(ctx, tx.Client(), &project)
+	})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Modify a Project Successfully"
+	c.JSON(http.StatusOK, res)
+}

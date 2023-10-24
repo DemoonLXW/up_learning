@@ -44,4 +44,5 @@ const (
 
 	AddProject          = "add project"
 	RemoveProjectsByIds = "remove projects by ids"
+	ModifyAProject      = "modify a project"
 )

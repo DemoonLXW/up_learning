@@ -243,28 +243,28 @@ type ToAddProject struct {
 }
 
 type ToModifyProject struct {
-	ID                  uint32       `json:"id" binding:"required"`
-	Title               *string      `json:"title"`
-	Goal                *string      `json:"goal"`
-	Principle           *string      `json:"principle"`
-	ProcessAndMethod    *string      `json:"process_and_method"`
-	Step                *string      `json:"step"`
-	ResultAndConclusion *string      `json:"result_and_conclusion"`
-	Requirement         *string      `json:"requirement"`
+	ID                  uint32       `json:"id" form:"id" binding:"required"`
+	Title               *string      `json:"title" form:"title"`
+	Goal                *string      `json:"goal" form:"goal"`
+	Principle           *string      `json:"principle" form:"principle"`
+	ProcessAndMethod    *string      `json:"process_and_method" form:"process_and_method"`
+	Step                *string      `json:"step" form:"step"`
+	ResultAndConclusion *string      `json:"result_and_conclusion" form:"result_and_conclusion"`
+	Requirement         *string      `json:"requirement" form:"requirement"`
 	AddFile             []*ToAddFile `json:"add_file"`
-	DeleteFileIDs       []uint32     `json:"delete_file_ids"`
-	ReviewStatus        *uint8       `json:"review_status"`
-	IsDisabled          *bool        `json:"isDisabled"`
+	DeleteFileIDs       []uint32     `json:"delete_file_ids" form:"delete_file_ids"`
+	ReviewStatus        *uint8       `json:"review_status" form:"review_status"`
+	IsDisabled          *bool        `json:"is_disabled" form:"is_disabled"`
 }
 
 type SearchProject struct {
 	Current      *int   `form:"current"`
-	PageSize     *int   `form:"pagesize"`
+	PageSize     *int   `form:"page_size"`
 	Like         string `form:"like"`
 	Sort         string `form:"sort"`
 	Order        *bool  `form:"order"`
-	IsDisabled   *bool  `form:"isdisabled"`
-	ReviewStatus *uint8 `form:"reviewstatus"`
+	IsDisabled   *bool  `form:"is_disabled"`
+	ReviewStatus *uint8 `form:"review_status"`
 }
 
 type ToRemoveProjectIDs struct {

@@ -101,3 +101,52 @@ func TestRemoveProjectsByIds(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestModifyAProject(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	b := bytes.Buffer{}
+	writer := multipart.NewWriter(&b)
+
+	project := entity.ToAddProject{
+		Title:               "api update title4",
+		Goal:                "api update goal4",
+		Principle:           "api update principle4",
+		ProcessAndMethod:    "api update process and method 4",
+		Step:                "api update step4",
+		ResultAndConclusion: "api update result and conclusion 4",
+		Requirement:         "api update requirement4",
+	}
+
+	writer.WriteField("id", "4")
+
+	writer.WriteField("title", project.Title)
+	writer.WriteField("goal", project.Goal)
+	writer.WriteField("principle", project.Principle)
+	writer.WriteField("process_and_method", project.ProcessAndMethod)
+	writer.WriteField("step", project.Step)
+	writer.WriteField("result_and_conclusion", project.ResultAndConclusion)
+	writer.WriteField("requirement", project.Requirement)
+	writer.WriteField("delete_file_ids", "9")
+	writer.WriteField("delete_file_ids", "12")
+
+	fnames := []string{"./workflow.config.yaml", "./main.go"}
+	err = AddFilesToForm(writer, fnames, "add_file")
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/project/modify", &b)
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	err = writer.Close()
+	assert.Nil(t, err)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "1b6d693867af533f53ba5a2b3ff81fbd"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
