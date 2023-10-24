@@ -95,6 +95,8 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 			project.POST("/add", Check(authService, []string{entity.AddProject}), controllers.Teacher.AddProject)
 			project.POST("/remove", Check(authService, []string{entity.RemoveProjectsByIds}), controllers.Teacher.RemoveProjectsByIds)
 			project.POST("/modify", Check(authService, []string{entity.ModifyAProject}), controllers.Teacher.ModifyAProject)
+			project.GET("/get/:id", Check(authService, []string{entity.GetAProjectById}), controllers.Teacher.GetAProjectById)
+
 		}
 	}
 

@@ -230,6 +230,18 @@ type ToAddFile struct {
 	Size int64  `json:"size"`
 }
 
+type RetrievedWithFile struct {
+	ID   uint32 `json:"id"`
+	Name string `json:"name"`
+	Size int64  `json:"size"`
+}
+
+type RetrievedWithUser struct {
+	ID       uint32 `json:"id"`
+	Account  string `json:"account"`
+	Username string `json:"username"`
+}
+
 type ToAddProject struct {
 	UID                 uint32       `json:"uid" form:"uid"`
 	Title               string       `json:"title" form:"title" binding:"required"`
@@ -254,7 +266,6 @@ type ToModifyProject struct {
 	AddFile             []*ToAddFile `json:"add_file"`
 	DeleteFileIDs       []uint32     `json:"delete_file_ids" form:"delete_file_ids"`
 	ReviewStatus        *uint8       `json:"review_status" form:"review_status"`
-	IsDisabled          *bool        `json:"is_disabled" form:"is_disabled"`
 }
 
 type SearchProject struct {
@@ -269,4 +280,19 @@ type SearchProject struct {
 
 type ToRemoveProjectIDs struct {
 	IDs []uint32 `json:"ids" binding:"required,gte=1"`
+}
+
+type RetrievedDetailedProject struct {
+	ID                  uint32               `json:"id" uri:"id" binding:"required"`
+	User                *RetrievedWithUser   `json:"user" `
+	Title               string               `json:"title"`
+	Goal                string               `json:"goal" `
+	Principle           string               `json:"principle" `
+	ProcessAndMethod    string               `json:"process_and_method" `
+	Step                string               `json:"step" `
+	ResultAndConclusion string               `json:"result_and_conclusion" `
+	Requirement         string               `json:"requirement"`
+	Attachments         []*RetrievedWithFile `json:"attachments"`
+	CreatedTime         *time.Time           `json:"created_time"`
+	ModifiedTime        *time.Time           `json:"modified_time"`
 }

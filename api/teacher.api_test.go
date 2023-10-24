@@ -150,3 +150,20 @@ func TestModifyAProject(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestGetAProjectById(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/project/get/4", nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
+	token_cookie := &http.Cookie{Name: "token", Value: "612469b4e4b8143676d6e9528cab20d9"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}

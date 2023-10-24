@@ -223,9 +223,6 @@ func (faca *TeacherFacade) UpdateProject(ctx context.Context, client *ent.Client
 	if toUpdate.ReviewStatus != nil {
 		updater.SetReviewStatus(*toUpdate.ReviewStatus)
 	}
-	if toUpdate.IsDisabled != nil {
-		updater.SetIsDisabled(*toUpdate.IsDisabled)
-	}
 	updater.SetModifiedTime(time.Now())
 
 	uNum, err := updater.Save(ctx)

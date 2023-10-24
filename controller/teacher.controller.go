@@ -16,6 +16,7 @@ import (
 
 type TeacherController struct {
 	TeacherFa *service.TeacherFacade
+	Teacher   *service.TeacherService
 	Common    *service.CommonService
 }
 
@@ -170,5 +171,57 @@ func (cont *TeacherController) ModifyAProject(c *gin.Context) {
 
 	var res entity.Result
 	res.Message = "Modify a Project Successfully"
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *TeacherController) GetAProjectById(c *gin.Context) {
+	var project entity.RetrievedDetailedProject
+	if err := c.ShouldBindUri(&project); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx := context.Background()
+	client := cont.Teacher.DB
+	object, err := cont.Teacher.FindOneProjectWithFileById(ctx, client, project.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if object.IsDisabled {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "the project is disabled"})
+		return
+	}
+
+	project.Title = object.Title
+	project.Goal = object.Goal
+	project.Principle = object.Principle
+	project.ProcessAndMethod = object.ProcessAndMethod
+	project.Step = object.Step
+	project.ResultAndConclusion = object.ResultAndConclusion
+	project.Requirement = object.Requirement
+	project.CreatedTime = object.CreatedTime
+	project.ModifiedTime = object.ModifiedTime
+	user := object.Edges.User
+	if user != nil {
+		project.User = &entity.RetrievedWithUser{
+			ID:       user.ID,
+			Account:  user.Account,
+			Username: user.Username,
+		}
+	}
+	attachments := object.Edges.Attachments
+	for _, v := range attachments {
+		project.Attachments = append(project.Attachments, &entity.RetrievedWithFile{
+			ID:   v.ID,
+			Name: v.Name,
+			Size: v.Size,
+		})
+	}
+
+	var res entity.Result
+	res.Message = "Get a Project By Id Successfully"
+	res.Data = project
 	c.JSON(http.StatusOK, res)
 }
