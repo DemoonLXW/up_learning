@@ -231,14 +231,14 @@ type ToAddFile struct {
 }
 
 type ToAddProject struct {
-	UID                 uint32       `json:"uid"`
-	Title               string       `json:"title" binding:"required"`
-	Goal                string       `json:"goal"`
-	Principle           string       `json:"principle"`
-	ProcessAndMethod    string       `json:"process_and_method"`
-	Step                string       `json:"step"`
-	ResultAndConclusion string       `json:"result_and_conclusion"`
-	Requirement         string       `json:"requirement"`
+	UID                 uint32       `json:"uid" form:"uid"`
+	Title               string       `json:"title" form:"title" binding:"required"`
+	Goal                string       `json:"goal" form:"goal"`
+	Principle           string       `json:"principle" form:"principle"`
+	ProcessAndMethod    string       `json:"process_and_method" form:"process_and_method"`
+	Step                string       `json:"step" form:"step"`
+	ResultAndConclusion string       `json:"result_and_conclusion" form:"result_and_conclusion"`
+	Requirement         string       `json:"requirement" form:"requirement"`
 	Attachments         []*ToAddFile `json:"attachments"`
 }
 

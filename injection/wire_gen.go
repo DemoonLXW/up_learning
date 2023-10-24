@@ -156,7 +156,7 @@ func ProvideController() (*controller.Controllers, error) {
 		Services: services,
 	}
 	teacherController := &controller.TeacherController{
-		Services: services,
+		TeacherFa: teacherFacade,
 	}
 	controllers := &controller.Controllers{
 		Auth:       authController,
@@ -223,7 +223,7 @@ func ProvideApplication() (*gin.Engine, error) {
 		Services: services,
 	}
 	teacherController := &controller.TeacherController{
-		Services: services,
+		TeacherFa: teacherFacade,
 	}
 	controllers := &controller.Controllers{
 		Auth:       authController,

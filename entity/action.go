@@ -41,4 +41,6 @@ const (
 	GetClassList         = "get class list"
 
 	UploadDocumentImage = "upload document image"
+
+	AddProject = "add project"
 )

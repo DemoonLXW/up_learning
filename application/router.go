@@ -90,6 +90,10 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 			file.POST("/uploadimage", Check(authService, []string{entity.UploadDocumentImage}), controllers.Common.UploadDocumentImage)
 		}
 
+		project := auth.Group("/project")
+		{
+			project.POST("/add", Check(authService, []string{entity.AddProject}), controllers.Teacher.AddProject)
+		}
 	}
 
 	return app

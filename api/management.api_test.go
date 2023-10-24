@@ -18,9 +18,11 @@ import (
 )
 
 func CreateTestApp() (*gin.Engine, error) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	os.Setenv("DOMAIN_CONFIG", "../domain.config.json")
-	os.Setenv("GIN_LOG", "../gin.log")
+	os.Chdir("../")
+	os.Setenv("DB_CONFIG", "./database.config.json")
+	os.Setenv("DOMAIN_CONFIG", "./domain.config.json")
+	os.Setenv("GIN_LOG", "./gin.log")
+	os.Setenv("WORKFLOW_CONFIG", "./workflow.config.yaml")
 	app, err := injection.ProvideApplication()
 	if err != nil {
 		return nil, err
