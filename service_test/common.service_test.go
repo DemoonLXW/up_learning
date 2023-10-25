@@ -188,3 +188,19 @@ func TestFindFileByIDs(t *testing.T) {
 	}
 
 }
+
+func TestDownloadFilesByIDs(t *testing.T) {
+	serv, err := CreateTestCommonService()
+	assert.Nil(t, err)
+
+	ctx := context.Background()
+	client := serv.DB
+
+	ids := []uint32{9, 12}
+
+	file, err := serv.DownloadFilesByIDs(ctx, client, ids)
+	assert.Nil(t, err)
+	fmt.Println(*file.Name)
+	fmt.Println(*file.Path)
+
+}

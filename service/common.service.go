@@ -1,6 +1,7 @@
 package service
 
 import (
+	"archive/zip"
 	"context"
 	"crypto/md5"
 	"fmt"
@@ -233,4 +234,73 @@ func (serv *CommonService) FindFileByIDs(ctx context.Context, client *ent.Client
 	}
 
 	return res, nil
+}
+
+func (serv *CommonService) DownloadFilesByIDs(ctx context.Context, client *ent.Client, IDs []uint32) (*entity.RetrievedFile, error) {
+	if ctx == nil || client == nil {
+		return nil, fmt.Errorf("context or client is nil")
+	}
+
+	var res entity.RetrievedFile
+
+	files, err := serv.FindFileByIDs(ctx, client, IDs)
+	if err != nil {
+		return nil, fmt.Errorf("download files by ids failed: %w", err)
+	}
+	fl := len(files)
+	if fl == 1 {
+		res.Name = &files[0].Name
+		res.Path = &files[0].Path
+		return &res, nil
+	}
+
+	tempDir := "temp/download"
+	if err = os.MkdirAll(tempDir, 0750); err != nil {
+		return nil, fmt.Errorf("download files by ids mkdir failed: %w", err)
+	}
+
+	zipFile, err := os.CreateTemp(tempDir, "download-")
+	if err != nil {
+		return nil, fmt.Errorf("download files by ids create zip failed: %w", err)
+	}
+
+	zw := zip.NewWriter(zipFile)
+
+	for _, v := range files {
+
+		if v.IsDisabled {
+			res.IsDisabled = &v.IsDisabled
+		}
+
+		zf, err := zw.Create(v.Name)
+		if err != nil {
+			return nil, fmt.Errorf("download files by ids create file in zip failed: %w", err)
+		}
+
+		f, err := os.Open(v.Path)
+		if err != nil {
+			return nil, fmt.Errorf("download files by ids open file(%s) failed: %w", v.Name, err)
+		}
+		defer f.Close()
+
+		if _, err := io.Copy(zf, f); err != nil {
+			return nil, fmt.Errorf("download files by ids copy file(%s) failed: %w", v.Name, err)
+		}
+
+	}
+
+	fname := "attachments.zip"
+	fpath := tempDir + "/" + filepath.Base(zipFile.Name())
+	res.Name = &fname
+	res.Path = &fpath
+
+	if err := zw.Close(); err != nil {
+		return nil, fmt.Errorf("download files by ids close zip writer failed: %w", err)
+	}
+
+	if err := zipFile.Close(); err != nil {
+		return nil, fmt.Errorf("download files by ids close zip file failed: %w", err)
+	}
+
+	return &res, nil
 }
