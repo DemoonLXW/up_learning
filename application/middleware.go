@@ -32,11 +32,11 @@ func SetupMiddleware(app *gin.Engine) *gin.Engine {
 }
 
 func GetDomainConfig() (map[string]interface{}, error) {
-	filepath, ok := os.LookupEnv("DOMAIN_CONFIG")
+	fp, ok := os.LookupEnv("DOMAIN_CONFIG")
 	if !ok {
-		filepath = "./domain.config.json"
+		fp = "./domain.config.json"
 	}
-	data, err := os.ReadFile(filepath)
+	data, err := os.ReadFile(fp)
 	if err != nil {
 		return nil, fmt.Errorf("read domain config of database failed: %w", err)
 	}

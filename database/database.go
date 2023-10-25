@@ -22,11 +22,11 @@ var DataBaseProvider = wire.NewSet(
 type DataBaseConfig map[string]interface{}
 
 func ProvideDatabaseConfig() (DataBaseConfig, error) {
-	filepath, ok := os.LookupEnv("DB_CONFIG")
+	fp, ok := os.LookupEnv("DB_CONFIG")
 	if !ok {
-		filepath = "./database.config.json"
+		fp = "./database.config.json"
 	}
-	data, err := os.ReadFile(filepath)
+	data, err := os.ReadFile(fp)
 	if err != nil {
 		return nil, fmt.Errorf("read config of database failed: %w", err)
 	}

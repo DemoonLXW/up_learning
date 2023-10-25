@@ -29,7 +29,7 @@ func (serv *CommonService) SaveImportedFile(file *multipart.FileHeader, dir, pre
 	}
 	defer src.Close()
 
-	if err = os.MkdirAll(dir, 0750); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		return nil, fmt.Errorf("save imported file mkdir failed: %w", err)
 	}
 
@@ -244,10 +244,13 @@ func (serv *CommonService) DownloadFilesByIDs(ctx context.Context, client *ent.C
 	var res entity.RetrievedFile
 
 	files, err := serv.FindFileByIDs(ctx, client, IDs)
+	fl := len(files)
 	if err != nil {
 		return nil, fmt.Errorf("download files by ids failed: %w", err)
 	}
-	fl := len(files)
+	if fl == 0 {
+		return nil, fmt.Errorf("download files by ids not found")
+	}
 	if fl == 1 {
 		res.Name = &files[0].Name
 		res.Path = &files[0].Path

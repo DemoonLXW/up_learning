@@ -40,7 +40,8 @@ const (
 	ImportClassByMajorID = "import class by major id"
 	GetClassList         = "get class list"
 
-	UploadDocumentImage = "upload document image"
+	CommomUploadDocumentImage = "commom upload document image"
+	CommomDownloadFile        = "common download file"
 
 	ApplicantAddProject             = "applicant add project"
 	ApplicantRemoveProjectsByIds    = "applicant remove projects by ids"

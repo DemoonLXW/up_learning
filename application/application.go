@@ -3,6 +3,7 @@ package application
 import (
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/DemoonLXW/up_learning/controller"
 	"github.com/DemoonLXW/up_learning/workflow"
@@ -15,11 +16,17 @@ var ApplicationProvider = wire.NewSet(
 )
 
 func SetupApplication(controllers *controller.Controllers, workflowHelper *workflow.WorkflowHelper) (*gin.Engine, error) {
-	filepath, ok := os.LookupEnv("GIN_LOG")
+	fp, ok := os.LookupEnv("GIN_LOG")
 	if !ok {
-		filepath = "./gin.log"
+		fp = "./gin.log"
 	}
-	f, _ := os.Create(filepath)
+
+	dir := filepath.Dir(fp)
+	if err := os.MkdirAll(dir, 0750); err != nil {
+		return nil, err
+	}
+
+	f, _ := os.Create(fp)
 	gin.DefaultWriter = io.MultiWriter(f)
 
 	app := gin.New()

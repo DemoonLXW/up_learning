@@ -153,7 +153,7 @@ func ProvideController() (*controller.Controllers, error) {
 		Services: services,
 	}
 	commonController := &controller.CommonController{
-		Services: services,
+		Common: commonService,
 	}
 	applicantController := &controller.ApplicantController{
 		ApplicantFa: applicantFacade,
@@ -222,7 +222,7 @@ func ProvideApplication() (*gin.Engine, error) {
 		Services: services,
 	}
 	commonController := &controller.CommonController{
-		Services: services,
+		Common: commonService,
 	}
 	applicantController := &controller.ApplicantController{
 		ApplicantFa: applicantFacade,

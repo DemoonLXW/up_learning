@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,7 +12,7 @@ import (
 )
 
 type CommonController struct {
-	Services *service.Services
+	Common *service.CommonService
 }
 
 func (cont *CommonController) UploadDocumentImage(c *gin.Context) {
@@ -33,7 +34,7 @@ func (cont *CommonController) UploadDocumentImage(c *gin.Context) {
 		return
 	}
 
-	f, err := cont.Services.Common.SaveUploadFile(fh, wd+"/files/images/"+uid)
+	f, err := cont.Common.SaveUploadFile(fh, wd+"/files/images/"+uid)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -48,4 +49,28 @@ func (cont *CommonController) UploadDocumentImage(c *gin.Context) {
 	res.Message = "Save Upload Image Successfully"
 
 	c.JSON(http.StatusOK, res)
+}
+
+func (cont *CommonController) DownloadFile(c *gin.Context) {
+
+	var download struct {
+		IDs []uint32 `form:"ids" binding:"gte=1"`
+	}
+
+	if err := c.ShouldBindQuery(&download); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx := context.Background()
+	client := cont.Common.DB
+
+	f, err := cont.Common.DownloadFilesByIDs(ctx, client, download.IDs)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.FileAttachment(*f.Path, *f.Name)
+
 }

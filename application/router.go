@@ -87,7 +87,15 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 		file := auth.Group("/file")
 		{
 			file.GET("/getsample", Check(authService, []string{entity.GetSampleOfImport}), controllers.Management.GetSampleOfImport)
-			file.POST("/uploadimage", Check(authService, []string{entity.UploadDocumentImage}), controllers.Common.UploadDocumentImage)
+		}
+
+		common := auth.Group("common")
+		{
+			file := common.Group("file")
+			{
+				file.POST("/upload-image", Check(authService, []string{entity.CommomUploadDocumentImage}), controllers.Common.UploadDocumentImage)
+				file.GET("/download", Check(authService, []string{entity.CommomDownloadFile}), controllers.Common.DownloadFile)
+			}
 		}
 
 		applicant := auth.Group("/applicant")
