@@ -93,7 +93,6 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 		{
 			file := common.Group("file")
 			{
-				file.POST("/upload-image", Check(authService, []string{entity.CommomUploadDocumentImage}), controllers.Common.UploadDocumentImage)
 				file.GET("/download", Check(authService, []string{entity.CommomDownloadFile}), controllers.Common.DownloadFile)
 			}
 		}
@@ -107,7 +106,7 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 				project.POST("/modify", Check(authService, []string{entity.ApplicantModifyAProject}), controllers.Applicant.ModifyAProject)
 				project.GET("/get/:id", Check(authService, []string{entity.ApplicantGetAProjectById}), controllers.Applicant.GetAProjectById)
 				project.GET("/getlist", Check(authService, []string{entity.ApplicantGetProjectListByUserID}), controllers.Applicant.GetProjectListByUserID)
-
+				project.POST("/upload-image", Check(authService, []string{entity.ApplicantUploadDocumentImage}), controllers.Applicant.UploadDocumentImage)
 			}
 		}
 	}

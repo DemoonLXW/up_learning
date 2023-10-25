@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"entgo.io/ent/dialect/sql"
@@ -282,7 +284,43 @@ func (cont *ApplicantController) GetProjectListByUserID(c *gin.Context) {
 	}
 
 	var res entity.Result
-	res.Message = "Get List of My Projects Successfully"
+	res.Message = "Get List of Projects By UserID Successfully"
 	res.Data = data
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *ApplicantController) UploadDocumentImage(c *gin.Context) {
+	fh, err := c.FormFile("upload")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	uid, err := c.Cookie("uid")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	f, err := cont.Common.SaveUploadFile(fh, wd+"/files/images/"+uid)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	domain := c.Value("domain").(string)
+	fname := filepath.Base(f.Path)
+	url := "http://" + domain + "/images/" + uid + "/" + fname
+
+	var res entity.Result
+	res.Data = gin.H{"url": url, "alt": fname, "href": url}
+	res.Message = "Save Upload Image Successfully"
+
 	c.JSON(http.StatusOK, res)
 }
