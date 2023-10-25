@@ -7,12 +7,12 @@ var ControllerProvider = wire.NewSet(
 	wire.Struct(new(AuthController), "*"),
 	wire.Struct(new(ManagementController), "*"),
 	wire.Struct(new(CommonController), "*"),
-	wire.Struct(new(TeacherController), "*"),
+	wire.Struct(new(ApplicantController), "*"),
 )
 
 type Controllers struct {
 	Auth       *AuthController
 	Management *ManagementController
 	Common     *CommonController
-	Teacher    *TeacherController
+	Applicant  *ApplicantController
 }

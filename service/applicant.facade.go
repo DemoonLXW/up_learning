@@ -13,12 +13,12 @@ import (
 	"github.com/DemoonLXW/up_learning/entity"
 )
 
-type TeacherFacade struct {
+type ApplicantFacade struct {
 	Common *CommonService
 	DB     *ent.Client
 }
 
-func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddProject) error {
+func (faca *ApplicantFacade) CreateProject(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddProject) error {
 	if ctx == nil || client == nil {
 		return fmt.Errorf("context or client is nil")
 	}
@@ -138,7 +138,7 @@ func (faca *TeacherFacade) CreateProject(ctx context.Context, client *ent.Client
 	return nil
 }
 
-func (faca *TeacherFacade) DeleteProject(ctx context.Context, client *ent.Client, toDeletes []*ent.Project) error {
+func (faca *ApplicantFacade) DeleteProject(ctx context.Context, client *ent.Client, toDeletes []*ent.Project) error {
 	if ctx == nil || client == nil {
 		return fmt.Errorf("context or client is nil")
 	}
@@ -188,7 +188,7 @@ func (faca *TeacherFacade) DeleteProject(ctx context.Context, client *ent.Client
 	return nil
 }
 
-func (faca *TeacherFacade) UpdateProject(ctx context.Context, client *ent.Client, toUpdate *entity.ToModifyProject) error {
+func (faca *ApplicantFacade) UpdateProject(ctx context.Context, client *ent.Client, toUpdate *entity.ToModifyProject) error {
 	if ctx == nil || client == nil {
 		return fmt.Errorf("context or client is nil")
 	}

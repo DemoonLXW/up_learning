@@ -12,10 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func CreateTestTeacherService() (*service.TeacherService, error) {
+func CreateTestTeacherService() (*service.ApplicantService, error) {
 	os.Chdir("../")
 	os.Setenv("DB_CONFIG", "./database.config.json")
-	serv := new(service.TeacherService)
+	serv := new(service.ApplicantService)
 	db, err := injection.ProvideDataBase()
 	if err != nil {
 		return nil, err

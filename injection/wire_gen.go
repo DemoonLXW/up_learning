@@ -74,10 +74,10 @@ func ProvideService() (*service.Services, error) {
 	commonService := &service.CommonService{
 		DB: client,
 	}
-	teacherService := &service.TeacherService{
+	applicantService := &service.ApplicantService{
 		DB: client,
 	}
-	teacherFacade := &service.TeacherFacade{
+	applicantFacade := &service.ApplicantFacade{
 		Common: commonService,
 		DB:     client,
 	}
@@ -90,12 +90,12 @@ func ProvideService() (*service.Services, error) {
 		WH: workflowHelper,
 	}
 	services := &service.Services{
-		Management: managementService,
-		Auth:       authService,
-		Common:     commonService,
-		Teacher:    teacherService,
-		TeacherFa:  teacherFacade,
-		Workflow:   workflowService,
+		Management:  managementService,
+		Auth:        authService,
+		Common:      commonService,
+		Applicant:   applicantService,
+		ApplicantFa: applicantFacade,
+		Workflow:    workflowService,
 	}
 	return services, nil
 }
@@ -123,10 +123,10 @@ func ProvideController() (*controller.Controllers, error) {
 	commonService := &service.CommonService{
 		DB: client,
 	}
-	teacherService := &service.TeacherService{
+	applicantService := &service.ApplicantService{
 		DB: client,
 	}
-	teacherFacade := &service.TeacherFacade{
+	applicantFacade := &service.ApplicantFacade{
 		Common: commonService,
 		DB:     client,
 	}
@@ -139,12 +139,12 @@ func ProvideController() (*controller.Controllers, error) {
 		WH: workflowHelper,
 	}
 	services := &service.Services{
-		Management: managementService,
-		Auth:       authService,
-		Common:     commonService,
-		Teacher:    teacherService,
-		TeacherFa:  teacherFacade,
-		Workflow:   workflowService,
+		Management:  managementService,
+		Auth:        authService,
+		Common:      commonService,
+		Applicant:   applicantService,
+		ApplicantFa: applicantFacade,
+		Workflow:    workflowService,
 	}
 	authController := &controller.AuthController{
 		Services: services,
@@ -155,16 +155,16 @@ func ProvideController() (*controller.Controllers, error) {
 	commonController := &controller.CommonController{
 		Services: services,
 	}
-	teacherController := &controller.TeacherController{
-		TeacherFa: teacherFacade,
-		Teacher:   teacherService,
-		Common:    commonService,
+	applicantController := &controller.ApplicantController{
+		ApplicantFa: applicantFacade,
+		Applicant:   applicantService,
+		Common:      commonService,
 	}
 	controllers := &controller.Controllers{
 		Auth:       authController,
 		Management: managementController,
 		Common:     commonController,
-		Teacher:    teacherController,
+		Applicant:  applicantController,
 	}
 	return controllers, nil
 }
@@ -192,10 +192,10 @@ func ProvideApplication() (*gin.Engine, error) {
 	commonService := &service.CommonService{
 		DB: client,
 	}
-	teacherService := &service.TeacherService{
+	applicantService := &service.ApplicantService{
 		DB: client,
 	}
-	teacherFacade := &service.TeacherFacade{
+	applicantFacade := &service.ApplicantFacade{
 		Common: commonService,
 		DB:     client,
 	}
@@ -208,12 +208,12 @@ func ProvideApplication() (*gin.Engine, error) {
 		WH: workflowHelper,
 	}
 	services := &service.Services{
-		Management: managementService,
-		Auth:       authService,
-		Common:     commonService,
-		Teacher:    teacherService,
-		TeacherFa:  teacherFacade,
-		Workflow:   workflowService,
+		Management:  managementService,
+		Auth:        authService,
+		Common:      commonService,
+		Applicant:   applicantService,
+		ApplicantFa: applicantFacade,
+		Workflow:    workflowService,
 	}
 	authController := &controller.AuthController{
 		Services: services,
@@ -224,16 +224,16 @@ func ProvideApplication() (*gin.Engine, error) {
 	commonController := &controller.CommonController{
 		Services: services,
 	}
-	teacherController := &controller.TeacherController{
-		TeacherFa: teacherFacade,
-		Teacher:   teacherService,
-		Common:    commonService,
+	applicantController := &controller.ApplicantController{
+		ApplicantFa: applicantFacade,
+		Applicant:   applicantService,
+		Common:      commonService,
 	}
 	controllers := &controller.Controllers{
 		Auth:       authController,
 		Management: managementController,
 		Common:     commonController,
-		Teacher:    teacherController,
+		Applicant:  applicantController,
 	}
 	engine, err := application.SetupApplication(controllers, workflowHelper)
 	if err != nil {

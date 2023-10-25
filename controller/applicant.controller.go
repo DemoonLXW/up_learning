@@ -15,13 +15,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type TeacherController struct {
-	TeacherFa *service.TeacherFacade
-	Teacher   *service.TeacherService
-	Common    *service.CommonService
+type ApplicantController struct {
+	ApplicantFa *service.ApplicantFacade
+	Applicant   *service.ApplicantService
+	Common      *service.CommonService
 }
 
-func (cont *TeacherController) AddProject(c *gin.Context) {
+func (cont *ApplicantController) AddProject(c *gin.Context) {
 	var project entity.ToAddProject
 	if err := c.ShouldBind(&project); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -66,9 +66,9 @@ func (cont *TeacherController) AddProject(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	client := cont.TeacherFa.DB
+	client := cont.ApplicantFa.DB
 	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
-		return cont.TeacherFa.CreateProject(ctx, tx.Client(), []*entity.ToAddProject{&project})
+		return cont.ApplicantFa.CreateProject(ctx, tx.Client(), []*entity.ToAddProject{&project})
 	})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -80,7 +80,7 @@ func (cont *TeacherController) AddProject(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func (cont *TeacherController) RemoveProjectsByIds(c *gin.Context) {
+func (cont *ApplicantController) RemoveProjectsByIds(c *gin.Context) {
 	var remove entity.ToRemoveProjectIDs
 	if err := c.ShouldBindJSON(&remove); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -88,7 +88,7 @@ func (cont *TeacherController) RemoveProjectsByIds(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	client := cont.TeacherFa.DB
+	client := cont.ApplicantFa.DB
 	err := service.WithTx(ctx, client, func(tx *ent.Tx) error {
 		toDeletes, err := tx.Client().Project.Query().Where(project.And(
 			project.IDIn(remove.IDs...),
@@ -103,7 +103,7 @@ func (cont *TeacherController) RemoveProjectsByIds(c *gin.Context) {
 			return fmt.Errorf("delete project not found projects or project is ineligible failed: %w", err)
 		}
 
-		return cont.TeacherFa.DeleteProject(ctx, tx.Client(), toDeletes)
+		return cont.ApplicantFa.DeleteProject(ctx, tx.Client(), toDeletes)
 	})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -115,7 +115,7 @@ func (cont *TeacherController) RemoveProjectsByIds(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func (cont *TeacherController) ModifyAProject(c *gin.Context) {
+func (cont *ApplicantController) ModifyAProject(c *gin.Context) {
 	var project entity.ToModifyProject
 	if err := c.ShouldBind(&project); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -159,11 +159,11 @@ func (cont *TeacherController) ModifyAProject(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	client := cont.TeacherFa.DB
+	client := cont.ApplicantFa.DB
 	// can not change review status here
 	project.ReviewStatus = nil
 	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
-		return cont.TeacherFa.UpdateProject(ctx, tx.Client(), &project)
+		return cont.ApplicantFa.UpdateProject(ctx, tx.Client(), &project)
 	})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -175,7 +175,7 @@ func (cont *TeacherController) ModifyAProject(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func (cont *TeacherController) GetAProjectById(c *gin.Context) {
+func (cont *ApplicantController) GetAProjectById(c *gin.Context) {
 	var project entity.RetrievedProject
 	if err := c.ShouldBindUri(&project); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -183,8 +183,8 @@ func (cont *TeacherController) GetAProjectById(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	client := cont.Teacher.DB
-	object, err := cont.Teacher.FindOneProjectWithFileAndUserById(ctx, client, *project.ID)
+	client := cont.Applicant.DB
+	object, err := cont.Applicant.FindOneProjectWithFileAndUserById(ctx, client, *project.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -228,7 +228,7 @@ func (cont *TeacherController) GetAProjectById(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func (cont *TeacherController) GetProjectListByUserID(c *gin.Context) {
+func (cont *ApplicantController) GetProjectListByUserID(c *gin.Context) {
 	var search entity.SearchProject
 	if err := c.ShouldBindQuery(&search); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -247,14 +247,14 @@ func (cont *TeacherController) GetProjectListByUserID(c *gin.Context) {
 	}
 
 	ctx := context.Background()
-	client := cont.Teacher.DB
-	objects, err := cont.Teacher.RetrieveProjectWithFileAndUserByUserID(ctx, client, &search, uint32(userID))
+	client := cont.Applicant.DB
+	objects, err := cont.Applicant.RetrieveProjectWithFileAndUserByUserID(ctx, client, &search, uint32(userID))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	total, err := cont.Teacher.GetTotalRetrievedProjectsByUserID(ctx, client, &search, uint32(userID))
+	total, err := cont.Applicant.GetTotalRetrievedProjectsByUserID(ctx, client, &search, uint32(userID))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

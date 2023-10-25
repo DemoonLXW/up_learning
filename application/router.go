@@ -94,11 +94,11 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 		{
 			project := applicant.Group("/project")
 			{
-				project.POST("/add", Check(authService, []string{entity.ApplicantAddProject}), controllers.Teacher.AddProject)
-				project.POST("/remove", Check(authService, []string{entity.ApplicantRemoveProjectsByIds}), controllers.Teacher.RemoveProjectsByIds)
-				project.POST("/modify", Check(authService, []string{entity.ApplicantModifyAProject}), controllers.Teacher.ModifyAProject)
-				project.GET("/get/:id", Check(authService, []string{entity.ApplicantGetAProjectById}), controllers.Teacher.GetAProjectById)
-				project.GET("/getlist", Check(authService, []string{entity.ApplicantGetProjectListByUserID}), controllers.Teacher.GetProjectListByUserID)
+				project.POST("/add", Check(authService, []string{entity.ApplicantAddProject}), controllers.Applicant.AddProject)
+				project.POST("/remove", Check(authService, []string{entity.ApplicantRemoveProjectsByIds}), controllers.Applicant.RemoveProjectsByIds)
+				project.POST("/modify", Check(authService, []string{entity.ApplicantModifyAProject}), controllers.Applicant.ModifyAProject)
+				project.GET("/get/:id", Check(authService, []string{entity.ApplicantGetAProjectById}), controllers.Applicant.GetAProjectById)
+				project.GET("/getlist", Check(authService, []string{entity.ApplicantGetProjectListByUserID}), controllers.Applicant.GetProjectListByUserID)
 
 			}
 		}

@@ -13,9 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func CreateTestTeacherFacade() (*service.TeacherFacade, error) {
-	os.Setenv("DB_CONFIG", "../database.config.json")
-	faca := new(service.TeacherFacade)
+func CreateTestTeacherFacade() (*service.ApplicantFacade, error) {
+	os.Chdir("../")
+	os.Setenv("DB_CONFIG", "./database.config.json")
+	faca := new(service.ApplicantFacade)
 	db, err := injection.ProvideDataBase()
 	if err != nil {
 		return nil, err

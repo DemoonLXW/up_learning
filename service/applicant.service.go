@@ -12,11 +12,11 @@ import (
 	"github.com/DemoonLXW/up_learning/entity"
 )
 
-type TeacherService struct {
+type ApplicantService struct {
 	DB *ent.Client
 }
 
-func (serv *TeacherService) RetrieveProjectWithFileAndUserByUserID(ctx context.Context, client *ent.Client, search *entity.SearchProject, userID uint32) ([]*ent.Project, error) {
+func (serv *ApplicantService) RetrieveProjectWithFileAndUserByUserID(ctx context.Context, client *ent.Client, search *entity.SearchProject, userID uint32) ([]*ent.Project, error) {
 	if ctx == nil || client == nil {
 		return nil, fmt.Errorf("context or client is nil")
 	}
@@ -76,7 +76,7 @@ func (serv *TeacherService) RetrieveProjectWithFileAndUserByUserID(ctx context.C
 	return projects, nil
 }
 
-func (serv *TeacherService) GetTotalRetrievedProjectsByUserID(ctx context.Context, client *ent.Client, search *entity.SearchProject, userID uint32) (int, error) {
+func (serv *ApplicantService) GetTotalRetrievedProjectsByUserID(ctx context.Context, client *ent.Client, search *entity.SearchProject, userID uint32) (int, error) {
 	if ctx == nil || client == nil {
 		return -1, fmt.Errorf("context or client is nil")
 	}
@@ -107,7 +107,7 @@ func (serv *TeacherService) GetTotalRetrievedProjectsByUserID(ctx context.Contex
 	return total, nil
 }
 
-func (serv *TeacherService) FindOneProjectWithFileAndUserById(ctx context.Context, client *ent.Client, id uint32) (*ent.Project, error) {
+func (serv *ApplicantService) FindOneProjectWithFileAndUserById(ctx context.Context, client *ent.Client, id uint32) (*ent.Project, error) {
 	res, err := client.Project.Query().Where(project.And(
 		project.IDEQ(id),
 		func(s *sql.Selector) {
