@@ -251,7 +251,7 @@ type ToAddProject struct {
 	Step                string       `json:"step" form:"step"`
 	ResultAndConclusion string       `json:"result_and_conclusion" form:"result_and_conclusion"`
 	Requirement         string       `json:"requirement" form:"requirement"`
-	Attachments         []*ToAddFile `json:"attachments"`
+	Attachments         []*ToAddFile `json:"attachments" form:"attachments"`
 }
 
 type ToModifyProject struct {
@@ -263,7 +263,7 @@ type ToModifyProject struct {
 	Step                *string      `json:"step" form:"step"`
 	ResultAndConclusion *string      `json:"result_and_conclusion" form:"result_and_conclusion"`
 	Requirement         *string      `json:"requirement" form:"requirement"`
-	AddFile             []*ToAddFile `json:"add_file"`
+	AddFile             []*ToAddFile `json:"add_file" form:"add_file"`
 	DeleteFileIDs       []uint32     `json:"delete_file_ids" form:"delete_file_ids"`
 	ReviewStatus        *uint8       `json:"review_status" form:"review_status"`
 }
