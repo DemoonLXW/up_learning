@@ -24,11 +24,6 @@ const (
 
 	GetTeacherList           = "get teacher list"
 	ImportTeacherByCollegeID = "import teacher by college id"
-	AddProject               = "teacher add project"
-	RemoveProjectsByIds      = "teacher remove projects by ids"
-	ModifyAProject           = "teacher modify a project"
-	GetAProjectById          = "teacher get a project by id"
-	GetProjectListByUserID   = "teacher get project list by user id"
 
 	GetStudentList         = "get student list"
 	ImportStudentByClassID = "import student by class id"
@@ -46,4 +41,10 @@ const (
 	GetClassList         = "get class list"
 
 	UploadDocumentImage = "upload document image"
+
+	ApplicantAddProject             = "applicant add project"
+	ApplicantRemoveProjectsByIds    = "applicant remove projects by ids"
+	ApplicantModifyAProject         = "applicant modify a project"
+	ApplicantGetAProjectById        = "applicant get a project by id"
+	ApplicantGetProjectListByUserID = "applicant get project list by user id"
 )

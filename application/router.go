@@ -55,15 +55,6 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 		{
 			teacher.GET("/getlist", Check(authService, []string{entity.GetTeacherList}), controllers.Management.GetTeacherList)
 			teacher.POST("/import", Check(authService, []string{entity.ImportTeacherByCollegeID}), controllers.Management.ImportTeacherByCollegeID)
-			project := teacher.Group("/project")
-			{
-				project.POST("/add", Check(authService, []string{entity.AddProject}), controllers.Teacher.AddProject)
-				project.POST("/remove", Check(authService, []string{entity.RemoveProjectsByIds}), controllers.Teacher.RemoveProjectsByIds)
-				project.POST("/modify", Check(authService, []string{entity.ModifyAProject}), controllers.Teacher.ModifyAProject)
-				project.GET("/get/:id", Check(authService, []string{entity.GetAProjectById}), controllers.Teacher.GetAProjectById)
-				project.GET("/getlist", Check(authService, []string{entity.GetProjectListByUserID}), controllers.Teacher.GetProjectListByUserID)
-
-			}
 		}
 
 		student := auth.Group("/student")
@@ -99,6 +90,18 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 			file.POST("/uploadimage", Check(authService, []string{entity.UploadDocumentImage}), controllers.Common.UploadDocumentImage)
 		}
 
+		applicant := auth.Group("/applicant")
+		{
+			project := applicant.Group("/project")
+			{
+				project.POST("/add", Check(authService, []string{entity.ApplicantAddProject}), controllers.Teacher.AddProject)
+				project.POST("/remove", Check(authService, []string{entity.ApplicantRemoveProjectsByIds}), controllers.Teacher.RemoveProjectsByIds)
+				project.POST("/modify", Check(authService, []string{entity.ApplicantModifyAProject}), controllers.Teacher.ModifyAProject)
+				project.GET("/get/:id", Check(authService, []string{entity.ApplicantGetAProjectById}), controllers.Teacher.GetAProjectById)
+				project.GET("/getlist", Check(authService, []string{entity.ApplicantGetProjectListByUserID}), controllers.Teacher.GetProjectListByUserID)
+
+			}
+		}
 	}
 
 	return app

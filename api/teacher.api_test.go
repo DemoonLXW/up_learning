@@ -174,9 +174,9 @@ func TestGetMyProjectList(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 	query := "?current=1&page_size=5"
-	req, _ := http.NewRequest(http.MethodGet, "/teacher/project/getlist"+query, nil)
+	req, _ := http.NewRequest(http.MethodGet, "/applicant/project/getlist"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "1dcbb38902c972818e11b007fb95a211"}
+	token_cookie := &http.Cookie{Name: "token", Value: "b827b0201fdc8a1bd14909d2598f3e52"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
