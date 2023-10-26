@@ -18,6 +18,28 @@ type ApplicantFacade struct {
 	DB     *ent.Client
 }
 
+func (faca *ApplicantFacade) createProjectAttachments(ctx context.Context, client *ent.Client, attachments []*entity.ToAddFile, projectID uint32) error {
+	fileIDs, err := faca.Common.CreateFile(ctx, client, attachments)
+	if err != nil {
+		return fmt.Errorf("create project attachments create file failed: %w", err)
+	}
+
+	fileNum := len(fileIDs)
+	bulk := make([]*ent.ProjectFileCreate, fileNum)
+	for i := 0; i < fileNum; i++ {
+		bulk[i] = client.ProjectFile.Create().SetFid(fileIDs[i]).SetPid(projectID)
+	}
+
+	creates, err := client.ProjectFile.CreateBulk(bulk...).Save(ctx)
+	if err != nil {
+		return fmt.Errorf("create project attachments add attachments: %w", err)
+	}
+	if len(creates) != fileNum {
+		return fmt.Errorf("create project attachments add attachments: some files can not be found")
+	}
+	return nil
+}
+
 func (faca *ApplicantFacade) CreateProject(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddProject) error {
 	if ctx == nil || client == nil {
 		return fmt.Errorf("context or client is nil")
@@ -65,23 +87,27 @@ func (faca *ApplicantFacade) CreateProject(ctx context.Context, client *ent.Clie
 		}
 
 		if toCreates[current].Attachments != nil {
-			fileIDs, err := faca.Common.CreateFile(ctx, client, toCreates[current].Attachments)
-			if err != nil {
-				return fmt.Errorf("create project create file failed: %w", err)
-			}
+			// fileIDs, err := faca.Common.CreateFile(ctx, client, toCreates[current].Attachments)
+			// if err != nil {
+			// 	return fmt.Errorf("create project create file failed: %w", err)
+			// }
 
-			fileNum := len(fileIDs)
-			bulk := make([]*ent.ProjectFileCreate, fileNum)
-			for i := 0; i < fileNum; i++ {
-				bulk[i] = client.ProjectFile.Create().SetFid(fileIDs[i]).SetPid(id)
-			}
+			// fileNum := len(fileIDs)
+			// bulk := make([]*ent.ProjectFileCreate, fileNum)
+			// for i := 0; i < fileNum; i++ {
+			// 	bulk[i] = client.ProjectFile.Create().SetFid(fileIDs[i]).SetPid(id)
+			// }
 
-			creates, err := client.ProjectFile.CreateBulk(bulk...).Save(ctx)
+			// creates, err := client.ProjectFile.CreateBulk(bulk...).Save(ctx)
+			// if err != nil {
+			// 	return fmt.Errorf("create project add attachments: %w", err)
+			// }
+			// if len(creates) != fileNum {
+			// 	return fmt.Errorf("create project add attachments: some files can not be found")
+			// }
+			err := faca.createProjectAttachments(ctx, client, toCreates[current].Attachments, id)
 			if err != nil {
-				return fmt.Errorf("create project add attachments: %w", err)
-			}
-			if len(creates) != fileNum {
-				return fmt.Errorf("create project add attachments: some files can not be found")
+				return fmt.Errorf("create project attachments failed: %w", err)
 			}
 		}
 	}
@@ -113,23 +139,27 @@ func (faca *ApplicantFacade) CreateProject(ctx context.Context, client *ent.Clie
 			}
 
 			if toCreates[current+i].Attachments != nil {
-				fileIDs, err := faca.Common.CreateFile(ctx, client, toCreates[current+i].Attachments)
-				if err != nil {
-					return fmt.Errorf("create project create file failed: %w", err)
-				}
+				// fileIDs, err := faca.Common.CreateFile(ctx, client, toCreates[current+i].Attachments)
+				// if err != nil {
+				// 	return fmt.Errorf("create project create file failed: %w", err)
+				// }
 
-				fileNum := len(fileIDs)
-				bulk := make([]*ent.ProjectFileCreate, fileNum)
-				for i := 0; i < fileNum; i++ {
-					bulk[i] = client.ProjectFile.Create().SetFid(fileIDs[i]).SetPid(projectID)
-				}
-				creates, err := client.ProjectFile.CreateBulk(bulk...).Save(ctx)
+				// fileNum := len(fileIDs)
+				// bulk := make([]*ent.ProjectFileCreate, fileNum)
+				// for i := 0; i < fileNum; i++ {
+				// 	bulk[i] = client.ProjectFile.Create().SetFid(fileIDs[i]).SetPid(projectID)
+				// }
+				// creates, err := client.ProjectFile.CreateBulk(bulk...).Save(ctx)
 
+				// if err != nil {
+				// 	return fmt.Errorf("create project add attachments: %w", err)
+				// }
+				// if len(creates) != fileNum {
+				// 	return fmt.Errorf("create project add attachments: some files can not be found")
+				// }
+				err := faca.createProjectAttachments(ctx, client, toCreates[current+i].Attachments, projectID)
 				if err != nil {
-					return fmt.Errorf("create project add attachments: %w", err)
-				}
-				if len(creates) != fileNum {
-					return fmt.Errorf("create project add attachments: some files can not be found")
+					return fmt.Errorf("create project attachments failed: %w", err)
 				}
 			}
 		}
@@ -263,24 +293,28 @@ func (faca *ApplicantFacade) UpdateProject(ctx context.Context, client *ent.Clie
 	}
 
 	if toUpdate.AddFile != nil {
-		fileIDs, err := faca.Common.CreateFile(ctx, client, toUpdate.AddFile)
+		// fileIDs, err := faca.Common.CreateFile(ctx, client, toUpdate.AddFile)
+		// if err != nil {
+		// 	return fmt.Errorf("update project add file failed: %w", err)
+		// }
+
+		// fileNum := len(fileIDs)
+		// bulk := make([]*ent.ProjectFileCreate, fileNum)
+		// for i := 0; i < fileNum; i++ {
+		// 	bulk[i] = client.ProjectFile.Create().SetFid(fileIDs[i]).SetPid(toUpdate.ID)
+		// }
+
+		// creates, err := client.ProjectFile.CreateBulk(bulk...).Save(ctx)
+
+		// if err != nil {
+		// 	return fmt.Errorf("update project add attachments: %w", err)
+		// }
+		// if len(creates) != fileNum {
+		// 	return fmt.Errorf("update project add attachments: some files can not be found")
+		// }
+		err := faca.createProjectAttachments(ctx, client, toUpdate.AddFile, toUpdate.ID)
 		if err != nil {
-			return fmt.Errorf("update project add file failed: %w", err)
-		}
-
-		fileNum := len(fileIDs)
-		bulk := make([]*ent.ProjectFileCreate, fileNum)
-		for i := 0; i < fileNum; i++ {
-			bulk[i] = client.ProjectFile.Create().SetFid(fileIDs[i]).SetPid(toUpdate.ID)
-		}
-
-		creates, err := client.ProjectFile.CreateBulk(bulk...).Save(ctx)
-
-		if err != nil {
-			return fmt.Errorf("update project add attachments: %w", err)
-		}
-		if len(creates) != fileNum {
-			return fmt.Errorf("update project add attachments: some files can not be found")
+			return fmt.Errorf("update project attachments failed: %w", err)
 		}
 	}
 
