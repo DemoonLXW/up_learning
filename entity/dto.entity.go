@@ -243,29 +243,31 @@ type RetrievedFile struct {
 }
 
 type ToAddProject struct {
-	UID                 uint32       `json:"uid" form:"uid"`
-	Title               string       `json:"title" form:"title" binding:"required"`
-	Goal                string       `json:"goal" form:"goal"`
-	Principle           string       `json:"principle" form:"principle"`
-	ProcessAndMethod    string       `json:"process_and_method" form:"process_and_method"`
-	Step                string       `json:"step" form:"step"`
-	ResultAndConclusion string       `json:"result_and_conclusion" form:"result_and_conclusion"`
-	Requirement         string       `json:"requirement" form:"requirement"`
-	Attachments         []*ToAddFile `json:"attachments" form:"attachments"`
+	UID                 uint32 `json:"uid" form:"uid"`
+	Title               string `json:"title" form:"title" binding:"required"`
+	Goal                string `json:"goal" form:"goal"`
+	Principle           string `json:"principle" form:"principle"`
+	ProcessAndMethod    string `json:"process_and_method" form:"process_and_method"`
+	Step                string `json:"step" form:"step"`
+	ResultAndConclusion string `json:"result_and_conclusion" form:"result_and_conclusion"`
+	Requirement         string `json:"requirement" form:"requirement"`
+	// form:"attachments"
+	Attachments []*ToAddFile
 }
 
 type ToModifyProject struct {
-	ID                  uint32       `json:"id" form:"id" binding:"required"`
-	Title               *string      `json:"title" form:"title"`
-	Goal                *string      `json:"goal" form:"goal"`
-	Principle           *string      `json:"principle" form:"principle"`
-	ProcessAndMethod    *string      `json:"process_and_method" form:"process_and_method"`
-	Step                *string      `json:"step" form:"step"`
-	ResultAndConclusion *string      `json:"result_and_conclusion" form:"result_and_conclusion"`
-	Requirement         *string      `json:"requirement" form:"requirement"`
-	AddFile             []*ToAddFile `json:"add_file" form:"add_file"`
-	DeleteFileIDs       []uint32     `json:"delete_file_ids" form:"delete_file_ids"`
-	ReviewStatus        *uint8       `json:"review_status" form:"review_status"`
+	ID                  uint32  `json:"id" form:"id" binding:"required"`
+	Title               *string `json:"title" form:"title"`
+	Goal                *string `json:"goal" form:"goal"`
+	Principle           *string `json:"principle" form:"principle"`
+	ProcessAndMethod    *string `json:"process_and_method" form:"process_and_method"`
+	Step                *string `json:"step" form:"step"`
+	ResultAndConclusion *string `json:"result_and_conclusion" form:"result_and_conclusion"`
+	Requirement         *string `json:"requirement" form:"requirement"`
+	// form:"add_file"
+	AddFile       []*ToAddFile
+	DeleteFileIDs []uint32 `json:"delete_file_ids" form:"delete_file_ids"`
+	ReviewStatus  *uint8   `json:"review_status" form:"review_status"`
 }
 
 type SearchProject struct {

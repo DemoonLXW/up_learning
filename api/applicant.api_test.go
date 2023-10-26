@@ -69,12 +69,13 @@ func TestAddProject(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	// body := bytes.NewReader([]byte(`{"title": "new project1", "goal": "new goal1", "requirement": "new requirement1"}`))
 	// body := bytes.NewReader([]byte(`{}`))
-	req, _ := http.NewRequest(http.MethodPost, "/project/add", &b)
+	req, _ := http.NewRequest(http.MethodPost, "/applicant/project/add", &b)
+	// req.Header.Add("Content-Type", binding.MIMEJSON)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 	err = writer.Close()
 	assert.Nil(t, err)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "004e9f57ec5bd6b100d211fd3e3b7d23"}
+	token_cookie := &http.Cookie{Name: "token", Value: "c07ecb8dd6d63d50ab834f0303c1e282"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
@@ -135,13 +136,15 @@ func TestModifyAProject(t *testing.T) {
 	err = AddFilesToForm(writer, fnames, "add_file")
 	assert.Nil(t, err)
 
+	body := bytes.NewReader([]byte(`{"id": 32, "title": "new project1", "goal": "new goal1", "requirement": "new requirement1"}`))
+
 	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodPost, "/project/modify", &b)
+	req, _ := http.NewRequest(http.MethodPost, "/applicant/project/modify", body)
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 	err = writer.Close()
 	assert.Nil(t, err)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "1b6d693867af533f53ba5a2b3ff81fbd"}
+	token_cookie := &http.Cookie{Name: "token", Value: "c07ecb8dd6d63d50ab834f0303c1e282"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

@@ -15,6 +15,7 @@ import (
 	"github.com/DemoonLXW/up_learning/entity"
 	"github.com/DemoonLXW/up_learning/service"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type ApplicantController struct {
@@ -25,7 +26,7 @@ type ApplicantController struct {
 
 func (cont *ApplicantController) AddProject(c *gin.Context) {
 	var project entity.ToAddProject
-	if err := c.ShouldBind(&project); err != nil {
+	if err := c.ShouldBindWith(&project, binding.Form); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -119,7 +120,7 @@ func (cont *ApplicantController) RemoveProjectsByIds(c *gin.Context) {
 
 func (cont *ApplicantController) ModifyAProject(c *gin.Context) {
 	var project entity.ToModifyProject
-	if err := c.ShouldBind(&project); err != nil {
+	if err := c.ShouldBindWith(&project, binding.Form); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
