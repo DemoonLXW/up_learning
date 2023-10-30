@@ -308,6 +308,13 @@ type ToAddReviewProject struct {
 	ApplicantID uint32 `json:"applicant_id"`
 }
 
+type ToModifyReviewProject struct {
+	ID         uint32  `json:"id" binding:"required"`
+	WorkflowID *string `json:"workflow_id"`
+	RunID      *string `json:"run_id"`
+	Status     *uint8  `json:"status"`
+}
+
 type ToAddReviewProjectDetail struct {
 	ReviewProjectID uint32    `json:"review_project_id"`
 	Order           uint8     `json:"order"`

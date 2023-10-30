@@ -3,12 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
+	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/entity"
 )
@@ -165,6 +167,39 @@ func (serv *ApplicantService) CreateReviewProject(ctx context.Context, client *e
 	}
 
 	return createIDs, nil
+}
+
+func (serv *ApplicantService) UpdateReviewProject(ctx context.Context, client *ent.Client, toUpdate *entity.ToModifyReviewProject) error {
+	if ctx == nil || client == nil {
+		return fmt.Errorf("context or client is nil")
+	}
+
+	updater := client.ReviewProject.Update().Where(
+		reviewproject.IDEQ(toUpdate.ID),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(project.FieldDeletedTime))
+		},
+	)
+	if toUpdate.RunID != nil {
+		updater.SetRunID(*toUpdate.RunID)
+	}
+	if toUpdate.WorkflowID != nil {
+		updater.SetWorkflowID(*toUpdate.WorkflowID)
+	}
+	if toUpdate.Status != nil {
+		updater.SetStatus(*toUpdate.Status)
+	}
+	updater.SetModifiedTime(time.Now())
+
+	uNum, err := updater.Save(ctx)
+	if err != nil {
+		return fmt.Errorf("update review project failed: %w", err)
+	}
+	if uNum == 0 {
+		return fmt.Errorf("update review project affect 0 row")
+	}
+
+	return nil
 }
 
 func (serv *ApplicantService) CreateReviewProjectDetail(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddReviewProjectDetail) error {
