@@ -300,3 +300,18 @@ type RetrievedProject struct {
 	CreatedTime         *time.Time       `json:"created_time,omitempty"`
 	ModifiedTime        *time.Time       `json:"modified_time,omitempty"`
 }
+
+type ToAddReviewProject struct {
+	ProjectID   uint32 `json:"project_id"  binding:"required"`
+	WorkflowID  string `json:"workflow_id"`
+	RunID       string `json:"run_id"`
+	ApplicantID uint32 `json:"applicant_id"`
+}
+
+type ToAddReviewProjectDetail struct {
+	ReviewProjectID uint32    `json:"review_project_id"`
+	Order           uint8     `json:"order"`
+	Reviewer        *Reviewer `json:"reviewer"`
+	Executor        *Executor `json:"executor"`
+	NodeType        uint8     `json:"node_type"`
+}

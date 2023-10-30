@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
@@ -128,4 +129,66 @@ func (serv *ApplicantService) FindOneProjectWithFileAndUserById(ctx context.Cont
 		return nil, fmt.Errorf("project with file find one by id failed: %w", err)
 	}
 	return res, nil
+}
+
+func (serv *ApplicantService) CreateReviewProject(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddReviewProject) ([]uint32, error) {
+	if ctx == nil || client == nil {
+		return nil, fmt.Errorf("context or client is nil")
+	}
+
+	length := len(toCreates)
+
+	createIDs := make([]uint32, 0, length)
+
+	num, err := client.ReviewProject.Query().Aggregate(ent.Count()).Int(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("create review project count failed: %w", err)
+	}
+
+	for i := 0; i < length; i++ {
+		reviewProjectID := uint32(num + i + 1)
+
+		err := client.ReviewProject.Create().
+			SetID(reviewProjectID).
+			SetApplicantID(toCreates[i].ApplicantID).
+			SetProjectID(toCreates[i].ProjectID).
+			SetWorkflowID(toCreates[i].WorkflowID).
+			SetRunID(toCreates[i].RunID).
+			SetStatus(database.ReviewProjectStarted).
+			Exec(ctx)
+
+		if err != nil {
+			return nil, fmt.Errorf("create review project failed: %w", err)
+		}
+
+		createIDs = append(createIDs, reviewProjectID)
+	}
+
+	return createIDs, nil
+}
+
+func (serv *ApplicantService) CreateReviewProjectDetail(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddReviewProjectDetail) error {
+	if ctx == nil || client == nil {
+		return fmt.Errorf("context or client is nil")
+	}
+
+	length := len(toCreates)
+
+	for i := 0; i < length; i++ {
+
+		err := client.ReviewProjectDetail.Create().
+			SetReviewProjectID(toCreates[i].ReviewProjectID).
+			SetNodeType(toCreates[i].NodeType).
+			SetOrder(toCreates[i].Order).
+			SetReviewer(toCreates[i].Reviewer).
+			SetStatus(database.ReviewProjectDetailPending).
+			Exec(ctx)
+
+		if err != nil {
+			return fmt.Errorf("create review project failed: %w", err)
+		}
+
+	}
+
+	return nil
 }
