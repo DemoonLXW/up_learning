@@ -1,6 +1,6 @@
 database.config.json
 domain.config.json
-gin.log
+*.log
 up_learning
 temp/
 *.xlsx
