@@ -26,7 +26,7 @@ func (pfd *ProjectFileDelete) Where(ps ...predicate.ProjectFile) *ProjectFileDel
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (pfd *ProjectFileDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, pfd.sqlExec, pfd.mutation, pfd.hooks)
+	return withHooks[int, ProjectFileMutation](ctx, pfd.sqlExec, pfd.mutation, pfd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

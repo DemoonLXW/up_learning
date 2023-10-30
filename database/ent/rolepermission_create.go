@@ -78,7 +78,7 @@ func (rpc *RolePermissionCreate) Mutation() *RolePermissionMutation {
 // Save creates the RolePermission in the database.
 func (rpc *RolePermissionCreate) Save(ctx context.Context) (*RolePermission, error) {
 	rpc.defaults()
-	return withHooks(ctx, rpc.sqlSave, rpc.mutation, rpc.hooks)
+	return withHooks[*RolePermission, RolePermissionMutation](ctx, rpc.sqlSave, rpc.mutation, rpc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

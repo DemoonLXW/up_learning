@@ -27,7 +27,7 @@ func (rpdd *ReviewProjectDetailDelete) Where(ps ...predicate.ReviewProjectDetail
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (rpdd *ReviewProjectDetailDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, rpdd.sqlExec, rpdd.mutation, rpdd.hooks)
+	return withHooks[int, ReviewProjectDetailMutation](ctx, rpdd.sqlExec, rpdd.mutation, rpdd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

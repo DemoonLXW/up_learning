@@ -130,7 +130,7 @@ func (mc *MajorCreate) Mutation() *MajorMutation {
 // Save creates the Major in the database.
 func (mc *MajorCreate) Save(ctx context.Context) (*Major, error) {
 	mc.defaults()
-	return withHooks(ctx, mc.sqlSave, mc.mutation, mc.hooks)
+	return withHooks[*Major, MajorMutation](ctx, mc.sqlSave, mc.mutation, mc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

@@ -183,7 +183,7 @@ func (cu *CollegeUpdate) RemoveTeachers(t ...*Teacher) *CollegeUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (cu *CollegeUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, cu.sqlSave, cu.mutation, cu.hooks)
+	return withHooks[int, CollegeMutation](ctx, cu.sqlSave, cu.mutation, cu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -514,7 +514,7 @@ func (cuo *CollegeUpdateOne) Select(field string, fields ...string) *CollegeUpda
 
 // Save executes the query and returns the updated College entity.
 func (cuo *CollegeUpdateOne) Save(ctx context.Context) (*College, error) {
-	return withHooks(ctx, cuo.sqlSave, cuo.mutation, cuo.hooks)
+	return withHooks[*College, CollegeMutation](ctx, cuo.sqlSave, cuo.mutation, cuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

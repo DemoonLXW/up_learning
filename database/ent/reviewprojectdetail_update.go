@@ -61,16 +61,22 @@ func (rpdu *ReviewProjectDetailUpdate) SetExecutor(e *entity.Executor) *ReviewPr
 	return rpdu
 }
 
-// SetTypee sets the "typee" field.
-func (rpdu *ReviewProjectDetailUpdate) SetTypee(u uint8) *ReviewProjectDetailUpdate {
-	rpdu.mutation.ResetTypee()
-	rpdu.mutation.SetTypee(u)
+// SetNodeType sets the "node_type" field.
+func (rpdu *ReviewProjectDetailUpdate) SetNodeType(u uint8) *ReviewProjectDetailUpdate {
+	rpdu.mutation.ResetNodeType()
+	rpdu.mutation.SetNodeType(u)
 	return rpdu
 }
 
-// AddTypee adds u to the "typee" field.
-func (rpdu *ReviewProjectDetailUpdate) AddTypee(u int8) *ReviewProjectDetailUpdate {
-	rpdu.mutation.AddTypee(u)
+// AddNodeType adds u to the "node_type" field.
+func (rpdu *ReviewProjectDetailUpdate) AddNodeType(u int8) *ReviewProjectDetailUpdate {
+	rpdu.mutation.AddNodeType(u)
+	return rpdu
+}
+
+// SetOpinion sets the "opinion" field.
+func (rpdu *ReviewProjectDetailUpdate) SetOpinion(s string) *ReviewProjectDetailUpdate {
+	rpdu.mutation.SetOpinion(s)
 	return rpdu
 }
 
@@ -159,7 +165,7 @@ func (rpdu *ReviewProjectDetailUpdate) ClearReviewProject() *ReviewProjectDetail
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (rpdu *ReviewProjectDetailUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, rpdu.sqlSave, rpdu.mutation, rpdu.hooks)
+	return withHooks[int, ReviewProjectDetailMutation](ctx, rpdu.sqlSave, rpdu.mutation, rpdu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -216,11 +222,14 @@ func (rpdu *ReviewProjectDetailUpdate) sqlSave(ctx context.Context) (n int, err 
 	if value, ok := rpdu.mutation.Executor(); ok {
 		_spec.SetField(reviewprojectdetail.FieldExecutor, field.TypeJSON, value)
 	}
-	if value, ok := rpdu.mutation.Typee(); ok {
-		_spec.SetField(reviewprojectdetail.FieldTypee, field.TypeUint8, value)
+	if value, ok := rpdu.mutation.NodeType(); ok {
+		_spec.SetField(reviewprojectdetail.FieldNodeType, field.TypeUint8, value)
 	}
-	if value, ok := rpdu.mutation.AddedTypee(); ok {
-		_spec.AddField(reviewprojectdetail.FieldTypee, field.TypeUint8, value)
+	if value, ok := rpdu.mutation.AddedNodeType(); ok {
+		_spec.AddField(reviewprojectdetail.FieldNodeType, field.TypeUint8, value)
+	}
+	if value, ok := rpdu.mutation.Opinion(); ok {
+		_spec.SetField(reviewprojectdetail.FieldOpinion, field.TypeString, value)
 	}
 	if value, ok := rpdu.mutation.Status(); ok {
 		_spec.SetField(reviewprojectdetail.FieldStatus, field.TypeUint8, value)
@@ -323,16 +332,22 @@ func (rpduo *ReviewProjectDetailUpdateOne) SetExecutor(e *entity.Executor) *Revi
 	return rpduo
 }
 
-// SetTypee sets the "typee" field.
-func (rpduo *ReviewProjectDetailUpdateOne) SetTypee(u uint8) *ReviewProjectDetailUpdateOne {
-	rpduo.mutation.ResetTypee()
-	rpduo.mutation.SetTypee(u)
+// SetNodeType sets the "node_type" field.
+func (rpduo *ReviewProjectDetailUpdateOne) SetNodeType(u uint8) *ReviewProjectDetailUpdateOne {
+	rpduo.mutation.ResetNodeType()
+	rpduo.mutation.SetNodeType(u)
 	return rpduo
 }
 
-// AddTypee adds u to the "typee" field.
-func (rpduo *ReviewProjectDetailUpdateOne) AddTypee(u int8) *ReviewProjectDetailUpdateOne {
-	rpduo.mutation.AddTypee(u)
+// AddNodeType adds u to the "node_type" field.
+func (rpduo *ReviewProjectDetailUpdateOne) AddNodeType(u int8) *ReviewProjectDetailUpdateOne {
+	rpduo.mutation.AddNodeType(u)
+	return rpduo
+}
+
+// SetOpinion sets the "opinion" field.
+func (rpduo *ReviewProjectDetailUpdateOne) SetOpinion(s string) *ReviewProjectDetailUpdateOne {
+	rpduo.mutation.SetOpinion(s)
 	return rpduo
 }
 
@@ -434,7 +449,7 @@ func (rpduo *ReviewProjectDetailUpdateOne) Select(field string, fields ...string
 
 // Save executes the query and returns the updated ReviewProjectDetail entity.
 func (rpduo *ReviewProjectDetailUpdateOne) Save(ctx context.Context) (*ReviewProjectDetail, error) {
-	return withHooks(ctx, rpduo.sqlSave, rpduo.mutation, rpduo.hooks)
+	return withHooks[*ReviewProjectDetail, ReviewProjectDetailMutation](ctx, rpduo.sqlSave, rpduo.mutation, rpduo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -508,11 +523,14 @@ func (rpduo *ReviewProjectDetailUpdateOne) sqlSave(ctx context.Context) (_node *
 	if value, ok := rpduo.mutation.Executor(); ok {
 		_spec.SetField(reviewprojectdetail.FieldExecutor, field.TypeJSON, value)
 	}
-	if value, ok := rpduo.mutation.Typee(); ok {
-		_spec.SetField(reviewprojectdetail.FieldTypee, field.TypeUint8, value)
+	if value, ok := rpduo.mutation.NodeType(); ok {
+		_spec.SetField(reviewprojectdetail.FieldNodeType, field.TypeUint8, value)
 	}
-	if value, ok := rpduo.mutation.AddedTypee(); ok {
-		_spec.AddField(reviewprojectdetail.FieldTypee, field.TypeUint8, value)
+	if value, ok := rpduo.mutation.AddedNodeType(); ok {
+		_spec.AddField(reviewprojectdetail.FieldNodeType, field.TypeUint8, value)
+	}
+	if value, ok := rpduo.mutation.Opinion(); ok {
+		_spec.SetField(reviewprojectdetail.FieldOpinion, field.TypeString, value)
 	}
 	if value, ok := rpduo.mutation.Status(); ok {
 		_spec.SetField(reviewprojectdetail.FieldStatus, field.TypeUint8, value)

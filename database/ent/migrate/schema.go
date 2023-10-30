@@ -235,7 +235,8 @@ var (
 		{Name: "order", Type: field.TypeUint8},
 		{Name: "reviewer", Type: field.TypeJSON},
 		{Name: "executor", Type: field.TypeJSON},
-		{Name: "typee", Type: field.TypeUint8},
+		{Name: "node_type", Type: field.TypeUint8},
+		{Name: "opinion", Type: field.TypeString},
 		{Name: "status", Type: field.TypeUint8},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
@@ -250,7 +251,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "review_project_detail_review_project_review_project_detail",
-				Columns:    []*schema.Column{ReviewProjectDetailColumns[9]},
+				Columns:    []*schema.Column{ReviewProjectDetailColumns[10]},
 				RefColumns: []*schema.Column{ReviewProjectColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

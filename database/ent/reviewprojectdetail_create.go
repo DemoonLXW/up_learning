@@ -46,9 +46,15 @@ func (rpdc *ReviewProjectDetailCreate) SetExecutor(e *entity.Executor) *ReviewPr
 	return rpdc
 }
 
-// SetTypee sets the "typee" field.
-func (rpdc *ReviewProjectDetailCreate) SetTypee(u uint8) *ReviewProjectDetailCreate {
-	rpdc.mutation.SetTypee(u)
+// SetNodeType sets the "node_type" field.
+func (rpdc *ReviewProjectDetailCreate) SetNodeType(u uint8) *ReviewProjectDetailCreate {
+	rpdc.mutation.SetNodeType(u)
+	return rpdc
+}
+
+// SetOpinion sets the "opinion" field.
+func (rpdc *ReviewProjectDetailCreate) SetOpinion(s string) *ReviewProjectDetailCreate {
+	rpdc.mutation.SetOpinion(s)
 	return rpdc
 }
 
@@ -113,7 +119,7 @@ func (rpdc *ReviewProjectDetailCreate) Mutation() *ReviewProjectDetailMutation {
 // Save creates the ReviewProjectDetail in the database.
 func (rpdc *ReviewProjectDetailCreate) Save(ctx context.Context) (*ReviewProjectDetail, error) {
 	rpdc.defaults()
-	return withHooks(ctx, rpdc.sqlSave, rpdc.mutation, rpdc.hooks)
+	return withHooks[*ReviewProjectDetail, ReviewProjectDetailMutation](ctx, rpdc.sqlSave, rpdc.mutation, rpdc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -160,8 +166,11 @@ func (rpdc *ReviewProjectDetailCreate) check() error {
 	if _, ok := rpdc.mutation.Executor(); !ok {
 		return &ValidationError{Name: "executor", err: errors.New(`ent: missing required field "ReviewProjectDetail.executor"`)}
 	}
-	if _, ok := rpdc.mutation.Typee(); !ok {
-		return &ValidationError{Name: "typee", err: errors.New(`ent: missing required field "ReviewProjectDetail.typee"`)}
+	if _, ok := rpdc.mutation.NodeType(); !ok {
+		return &ValidationError{Name: "node_type", err: errors.New(`ent: missing required field "ReviewProjectDetail.node_type"`)}
+	}
+	if _, ok := rpdc.mutation.Opinion(); !ok {
+		return &ValidationError{Name: "opinion", err: errors.New(`ent: missing required field "ReviewProjectDetail.opinion"`)}
 	}
 	if _, ok := rpdc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "ReviewProjectDetail.status"`)}
@@ -210,9 +219,13 @@ func (rpdc *ReviewProjectDetailCreate) createSpec() (*ReviewProjectDetail, *sqlg
 		_spec.SetField(reviewprojectdetail.FieldExecutor, field.TypeJSON, value)
 		_node.Executor = value
 	}
-	if value, ok := rpdc.mutation.Typee(); ok {
-		_spec.SetField(reviewprojectdetail.FieldTypee, field.TypeUint8, value)
-		_node.Typee = value
+	if value, ok := rpdc.mutation.NodeType(); ok {
+		_spec.SetField(reviewprojectdetail.FieldNodeType, field.TypeUint8, value)
+		_node.NodeType = value
+	}
+	if value, ok := rpdc.mutation.Opinion(); ok {
+		_spec.SetField(reviewprojectdetail.FieldOpinion, field.TypeString, value)
+		_node.Opinion = value
 	}
 	if value, ok := rpdc.mutation.Status(); ok {
 		_spec.SetField(reviewprojectdetail.FieldStatus, field.TypeUint8, value)

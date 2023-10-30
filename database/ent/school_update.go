@@ -183,7 +183,7 @@ func (su *SchoolUpdate) RemoveStudents(s ...*Student) *SchoolUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (su *SchoolUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, su.sqlSave, su.mutation, su.hooks)
+	return withHooks[int, SchoolMutation](ctx, su.sqlSave, su.mutation, su.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -488,7 +488,7 @@ func (suo *SchoolUpdateOne) Select(field string, fields ...string) *SchoolUpdate
 
 // Save executes the query and returns the updated School entity.
 func (suo *SchoolUpdateOne) Save(ctx context.Context) (*School, error) {
-	return withHooks(ctx, suo.sqlSave, suo.mutation, suo.hooks)
+	return withHooks[*School, SchoolMutation](ctx, suo.sqlSave, suo.mutation, suo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

@@ -27,7 +27,7 @@ func (md *MajorDelete) Where(ps ...predicate.Major) *MajorDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (md *MajorDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, md.sqlExec, md.mutation, md.hooks)
+	return withHooks[int, MajorMutation](ctx, md.sqlExec, md.mutation, md.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

@@ -78,7 +78,7 @@ func (urc *UserRoleCreate) Mutation() *UserRoleMutation {
 // Save creates the UserRole in the database.
 func (urc *UserRoleCreate) Save(ctx context.Context) (*UserRole, error) {
 	urc.defaults()
-	return withHooks(ctx, urc.sqlSave, urc.mutation, urc.hooks)
+	return withHooks[*UserRole, UserRoleMutation](ctx, urc.sqlSave, urc.mutation, urc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

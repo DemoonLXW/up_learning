@@ -134,7 +134,7 @@ func (rpc *ReviewProjectCreate) Mutation() *ReviewProjectMutation {
 // Save creates the ReviewProject in the database.
 func (rpc *ReviewProjectCreate) Save(ctx context.Context) (*ReviewProject, error) {
 	rpc.defaults()
-	return withHooks(ctx, rpc.sqlSave, rpc.mutation, rpc.hooks)
+	return withHooks[*ReviewProject, ReviewProjectMutation](ctx, rpc.sqlSave, rpc.mutation, rpc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

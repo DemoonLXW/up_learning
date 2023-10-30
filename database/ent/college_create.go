@@ -128,7 +128,7 @@ func (cc *CollegeCreate) Mutation() *CollegeMutation {
 // Save creates the College in the database.
 func (cc *CollegeCreate) Save(ctx context.Context) (*College, error) {
 	cc.defaults()
-	return withHooks(ctx, cc.sqlSave, cc.mutation, cc.hooks)
+	return withHooks[*College, CollegeMutation](ctx, cc.sqlSave, cc.mutation, cc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

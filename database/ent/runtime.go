@@ -135,7 +135,7 @@ func init() {
 	reviewprojectdetailFields := schema.ReviewProjectDetail{}.Fields()
 	_ = reviewprojectdetailFields
 	// reviewprojectdetailDescCreatedTime is the schema descriptor for created_time field.
-	reviewprojectdetailDescCreatedTime := reviewprojectdetailFields[6].Descriptor()
+	reviewprojectdetailDescCreatedTime := reviewprojectdetailFields[7].Descriptor()
 	// reviewprojectdetail.DefaultCreatedTime holds the default value on creation for the created_time field.
 	reviewprojectdetail.DefaultCreatedTime = reviewprojectdetailDescCreatedTime.Default.(func() time.Time)
 	roleFields := schema.Role{}.Fields()

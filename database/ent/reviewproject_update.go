@@ -187,7 +187,7 @@ func (rpu *ReviewProjectUpdate) RemoveReviewProjectDetail(r ...*ReviewProjectDet
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (rpu *ReviewProjectUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, rpu.sqlSave, rpu.mutation, rpu.hooks)
+	return withHooks[int, ReviewProjectMutation](ctx, rpu.sqlSave, rpu.mutation, rpu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -554,7 +554,7 @@ func (rpuo *ReviewProjectUpdateOne) Select(field string, fields ...string) *Revi
 
 // Save executes the query and returns the updated ReviewProject entity.
 func (rpuo *ReviewProjectUpdateOne) Save(ctx context.Context) (*ReviewProject, error) {
-	return withHooks(ctx, rpuo.sqlSave, rpuo.mutation, rpuo.hooks)
+	return withHooks[*ReviewProject, ReviewProjectMutation](ctx, rpuo.sqlSave, rpuo.mutation, rpuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

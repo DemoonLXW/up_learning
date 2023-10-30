@@ -7780,8 +7780,9 @@ type ReviewProjectDetailMutation struct {
 	add_order             *int8
 	reviewer              **entity.Reviewer
 	executor              **entity.Executor
-	typee                 *uint8
-	addtypee              *int8
+	node_type             *uint8
+	addnode_type          *int8
+	opinion               *string
 	status                *uint8
 	addstatus             *int8
 	created_time          *time.Time
@@ -8057,60 +8058,96 @@ func (m *ReviewProjectDetailMutation) ResetExecutor() {
 	m.executor = nil
 }
 
-// SetTypee sets the "typee" field.
-func (m *ReviewProjectDetailMutation) SetTypee(u uint8) {
-	m.typee = &u
-	m.addtypee = nil
+// SetNodeType sets the "node_type" field.
+func (m *ReviewProjectDetailMutation) SetNodeType(u uint8) {
+	m.node_type = &u
+	m.addnode_type = nil
 }
 
-// Typee returns the value of the "typee" field in the mutation.
-func (m *ReviewProjectDetailMutation) Typee() (r uint8, exists bool) {
-	v := m.typee
+// NodeType returns the value of the "node_type" field in the mutation.
+func (m *ReviewProjectDetailMutation) NodeType() (r uint8, exists bool) {
+	v := m.node_type
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTypee returns the old "typee" field's value of the ReviewProjectDetail entity.
+// OldNodeType returns the old "node_type" field's value of the ReviewProjectDetail entity.
 // If the ReviewProjectDetail object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ReviewProjectDetailMutation) OldTypee(ctx context.Context) (v uint8, err error) {
+func (m *ReviewProjectDetailMutation) OldNodeType(ctx context.Context) (v uint8, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTypee is only allowed on UpdateOne operations")
+		return v, errors.New("OldNodeType is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTypee requires an ID field in the mutation")
+		return v, errors.New("OldNodeType requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTypee: %w", err)
+		return v, fmt.Errorf("querying old value for OldNodeType: %w", err)
 	}
-	return oldValue.Typee, nil
+	return oldValue.NodeType, nil
 }
 
-// AddTypee adds u to the "typee" field.
-func (m *ReviewProjectDetailMutation) AddTypee(u int8) {
-	if m.addtypee != nil {
-		*m.addtypee += u
+// AddNodeType adds u to the "node_type" field.
+func (m *ReviewProjectDetailMutation) AddNodeType(u int8) {
+	if m.addnode_type != nil {
+		*m.addnode_type += u
 	} else {
-		m.addtypee = &u
+		m.addnode_type = &u
 	}
 }
 
-// AddedTypee returns the value that was added to the "typee" field in this mutation.
-func (m *ReviewProjectDetailMutation) AddedTypee() (r int8, exists bool) {
-	v := m.addtypee
+// AddedNodeType returns the value that was added to the "node_type" field in this mutation.
+func (m *ReviewProjectDetailMutation) AddedNodeType() (r int8, exists bool) {
+	v := m.addnode_type
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetTypee resets all changes to the "typee" field.
-func (m *ReviewProjectDetailMutation) ResetTypee() {
-	m.typee = nil
-	m.addtypee = nil
+// ResetNodeType resets all changes to the "node_type" field.
+func (m *ReviewProjectDetailMutation) ResetNodeType() {
+	m.node_type = nil
+	m.addnode_type = nil
+}
+
+// SetOpinion sets the "opinion" field.
+func (m *ReviewProjectDetailMutation) SetOpinion(s string) {
+	m.opinion = &s
+}
+
+// Opinion returns the value of the "opinion" field in the mutation.
+func (m *ReviewProjectDetailMutation) Opinion() (r string, exists bool) {
+	v := m.opinion
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOpinion returns the old "opinion" field's value of the ReviewProjectDetail entity.
+// If the ReviewProjectDetail object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ReviewProjectDetailMutation) OldOpinion(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOpinion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOpinion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOpinion: %w", err)
+	}
+	return oldValue.Opinion, nil
+}
+
+// ResetOpinion resets all changes to the "opinion" field.
+func (m *ReviewProjectDetailMutation) ResetOpinion() {
+	m.opinion = nil
 }
 
 // SetStatus sets the "status" field.
@@ -8363,7 +8400,7 @@ func (m *ReviewProjectDetailMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ReviewProjectDetailMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.review_project != nil {
 		fields = append(fields, reviewprojectdetail.FieldReviewProjectID)
 	}
@@ -8376,8 +8413,11 @@ func (m *ReviewProjectDetailMutation) Fields() []string {
 	if m.executor != nil {
 		fields = append(fields, reviewprojectdetail.FieldExecutor)
 	}
-	if m.typee != nil {
-		fields = append(fields, reviewprojectdetail.FieldTypee)
+	if m.node_type != nil {
+		fields = append(fields, reviewprojectdetail.FieldNodeType)
+	}
+	if m.opinion != nil {
+		fields = append(fields, reviewprojectdetail.FieldOpinion)
 	}
 	if m.status != nil {
 		fields = append(fields, reviewprojectdetail.FieldStatus)
@@ -8407,8 +8447,10 @@ func (m *ReviewProjectDetailMutation) Field(name string) (ent.Value, bool) {
 		return m.Reviewer()
 	case reviewprojectdetail.FieldExecutor:
 		return m.Executor()
-	case reviewprojectdetail.FieldTypee:
-		return m.Typee()
+	case reviewprojectdetail.FieldNodeType:
+		return m.NodeType()
+	case reviewprojectdetail.FieldOpinion:
+		return m.Opinion()
 	case reviewprojectdetail.FieldStatus:
 		return m.Status()
 	case reviewprojectdetail.FieldCreatedTime:
@@ -8434,8 +8476,10 @@ func (m *ReviewProjectDetailMutation) OldField(ctx context.Context, name string)
 		return m.OldReviewer(ctx)
 	case reviewprojectdetail.FieldExecutor:
 		return m.OldExecutor(ctx)
-	case reviewprojectdetail.FieldTypee:
-		return m.OldTypee(ctx)
+	case reviewprojectdetail.FieldNodeType:
+		return m.OldNodeType(ctx)
+	case reviewprojectdetail.FieldOpinion:
+		return m.OldOpinion(ctx)
 	case reviewprojectdetail.FieldStatus:
 		return m.OldStatus(ctx)
 	case reviewprojectdetail.FieldCreatedTime:
@@ -8481,12 +8525,19 @@ func (m *ReviewProjectDetailMutation) SetField(name string, value ent.Value) err
 		}
 		m.SetExecutor(v)
 		return nil
-	case reviewprojectdetail.FieldTypee:
+	case reviewprojectdetail.FieldNodeType:
 		v, ok := value.(uint8)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTypee(v)
+		m.SetNodeType(v)
+		return nil
+	case reviewprojectdetail.FieldOpinion:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOpinion(v)
 		return nil
 	case reviewprojectdetail.FieldStatus:
 		v, ok := value.(uint8)
@@ -8527,8 +8578,8 @@ func (m *ReviewProjectDetailMutation) AddedFields() []string {
 	if m.add_order != nil {
 		fields = append(fields, reviewprojectdetail.FieldOrder)
 	}
-	if m.addtypee != nil {
-		fields = append(fields, reviewprojectdetail.FieldTypee)
+	if m.addnode_type != nil {
+		fields = append(fields, reviewprojectdetail.FieldNodeType)
 	}
 	if m.addstatus != nil {
 		fields = append(fields, reviewprojectdetail.FieldStatus)
@@ -8543,8 +8594,8 @@ func (m *ReviewProjectDetailMutation) AddedField(name string) (ent.Value, bool) 
 	switch name {
 	case reviewprojectdetail.FieldOrder:
 		return m.AddedOrder()
-	case reviewprojectdetail.FieldTypee:
-		return m.AddedTypee()
+	case reviewprojectdetail.FieldNodeType:
+		return m.AddedNodeType()
 	case reviewprojectdetail.FieldStatus:
 		return m.AddedStatus()
 	}
@@ -8563,12 +8614,12 @@ func (m *ReviewProjectDetailMutation) AddField(name string, value ent.Value) err
 		}
 		m.AddOrder(v)
 		return nil
-	case reviewprojectdetail.FieldTypee:
+	case reviewprojectdetail.FieldNodeType:
 		v, ok := value.(int8)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddTypee(v)
+		m.AddNodeType(v)
 		return nil
 	case reviewprojectdetail.FieldStatus:
 		v, ok := value.(int8)
@@ -8631,8 +8682,11 @@ func (m *ReviewProjectDetailMutation) ResetField(name string) error {
 	case reviewprojectdetail.FieldExecutor:
 		m.ResetExecutor()
 		return nil
-	case reviewprojectdetail.FieldTypee:
-		m.ResetTypee()
+	case reviewprojectdetail.FieldNodeType:
+		m.ResetNodeType()
+		return nil
+	case reviewprojectdetail.FieldOpinion:
+		m.ResetOpinion()
 		return nil
 	case reviewprojectdetail.FieldStatus:
 		m.ResetStatus()

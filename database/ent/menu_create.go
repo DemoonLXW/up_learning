@@ -121,7 +121,7 @@ func (mc *MenuCreate) Mutation() *MenuMutation {
 // Save creates the Menu in the database.
 func (mc *MenuCreate) Save(ctx context.Context) (*Menu, error) {
 	mc.defaults()
-	return withHooks(ctx, mc.sqlSave, mc.mutation, mc.hooks)
+	return withHooks[*Menu, MenuMutation](ctx, mc.sqlSave, mc.mutation, mc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

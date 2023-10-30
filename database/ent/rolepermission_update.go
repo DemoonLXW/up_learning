@@ -97,7 +97,7 @@ func (rpu *RolePermissionUpdate) ClearPermission() *RolePermissionUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (rpu *RolePermissionUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, rpu.sqlSave, rpu.mutation, rpu.hooks)
+	return withHooks[int, RolePermissionMutation](ctx, rpu.sqlSave, rpu.mutation, rpu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -306,7 +306,7 @@ func (rpuo *RolePermissionUpdateOne) Select(field string, fields ...string) *Rol
 
 // Save executes the query and returns the updated RolePermission entity.
 func (rpuo *RolePermissionUpdateOne) Save(ctx context.Context) (*RolePermission, error) {
-	return withHooks(ctx, rpuo.sqlSave, rpuo.mutation, rpuo.hooks)
+	return withHooks[*RolePermission, RolePermissionMutation](ctx, rpuo.sqlSave, rpuo.mutation, rpuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

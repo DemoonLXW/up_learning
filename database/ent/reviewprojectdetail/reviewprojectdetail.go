@@ -22,8 +22,10 @@ const (
 	FieldReviewer = "reviewer"
 	// FieldExecutor holds the string denoting the executor field in the database.
 	FieldExecutor = "executor"
-	// FieldTypee holds the string denoting the typee field in the database.
-	FieldTypee = "typee"
+	// FieldNodeType holds the string denoting the node_type field in the database.
+	FieldNodeType = "node_type"
+	// FieldOpinion holds the string denoting the opinion field in the database.
+	FieldOpinion = "opinion"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldCreatedTime holds the string denoting the created_time field in the database.
@@ -52,7 +54,8 @@ var Columns = []string{
 	FieldOrder,
 	FieldReviewer,
 	FieldExecutor,
-	FieldTypee,
+	FieldNodeType,
+	FieldOpinion,
 	FieldStatus,
 	FieldCreatedTime,
 	FieldDeletedTime,
@@ -92,9 +95,14 @@ func ByOrder(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOrder, opts...).ToFunc()
 }
 
-// ByTypee orders the results by the typee field.
-func ByTypee(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTypee, opts...).ToFunc()
+// ByNodeType orders the results by the node_type field.
+func ByNodeType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNodeType, opts...).ToFunc()
+}
+
+// ByOpinion orders the results by the opinion field.
+func ByOpinion(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOpinion, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

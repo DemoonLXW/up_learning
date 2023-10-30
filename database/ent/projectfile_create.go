@@ -78,7 +78,7 @@ func (pfc *ProjectFileCreate) Mutation() *ProjectFileMutation {
 // Save creates the ProjectFile in the database.
 func (pfc *ProjectFileCreate) Save(ctx context.Context) (*ProjectFile, error) {
 	pfc.defaults()
-	return withHooks(ctx, pfc.sqlSave, pfc.mutation, pfc.hooks)
+	return withHooks[*ProjectFile, ProjectFileMutation](ctx, pfc.sqlSave, pfc.mutation, pfc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

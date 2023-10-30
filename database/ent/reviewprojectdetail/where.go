@@ -65,9 +65,14 @@ func Order(v uint8) predicate.ReviewProjectDetail {
 	return predicate.ReviewProjectDetail(sql.FieldEQ(FieldOrder, v))
 }
 
-// Typee applies equality check predicate on the "typee" field. It's identical to TypeeEQ.
-func Typee(v uint8) predicate.ReviewProjectDetail {
-	return predicate.ReviewProjectDetail(sql.FieldEQ(FieldTypee, v))
+// NodeType applies equality check predicate on the "node_type" field. It's identical to NodeTypeEQ.
+func NodeType(v uint8) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldEQ(FieldNodeType, v))
+}
+
+// Opinion applies equality check predicate on the "opinion" field. It's identical to OpinionEQ.
+func Opinion(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldEQ(FieldOpinion, v))
 }
 
 // Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
@@ -150,44 +155,109 @@ func OrderLTE(v uint8) predicate.ReviewProjectDetail {
 	return predicate.ReviewProjectDetail(sql.FieldLTE(FieldOrder, v))
 }
 
-// TypeeEQ applies the EQ predicate on the "typee" field.
-func TypeeEQ(v uint8) predicate.ReviewProjectDetail {
-	return predicate.ReviewProjectDetail(sql.FieldEQ(FieldTypee, v))
+// NodeTypeEQ applies the EQ predicate on the "node_type" field.
+func NodeTypeEQ(v uint8) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldEQ(FieldNodeType, v))
 }
 
-// TypeeNEQ applies the NEQ predicate on the "typee" field.
-func TypeeNEQ(v uint8) predicate.ReviewProjectDetail {
-	return predicate.ReviewProjectDetail(sql.FieldNEQ(FieldTypee, v))
+// NodeTypeNEQ applies the NEQ predicate on the "node_type" field.
+func NodeTypeNEQ(v uint8) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldNEQ(FieldNodeType, v))
 }
 
-// TypeeIn applies the In predicate on the "typee" field.
-func TypeeIn(vs ...uint8) predicate.ReviewProjectDetail {
-	return predicate.ReviewProjectDetail(sql.FieldIn(FieldTypee, vs...))
+// NodeTypeIn applies the In predicate on the "node_type" field.
+func NodeTypeIn(vs ...uint8) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldIn(FieldNodeType, vs...))
 }
 
-// TypeeNotIn applies the NotIn predicate on the "typee" field.
-func TypeeNotIn(vs ...uint8) predicate.ReviewProjectDetail {
-	return predicate.ReviewProjectDetail(sql.FieldNotIn(FieldTypee, vs...))
+// NodeTypeNotIn applies the NotIn predicate on the "node_type" field.
+func NodeTypeNotIn(vs ...uint8) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldNotIn(FieldNodeType, vs...))
 }
 
-// TypeeGT applies the GT predicate on the "typee" field.
-func TypeeGT(v uint8) predicate.ReviewProjectDetail {
-	return predicate.ReviewProjectDetail(sql.FieldGT(FieldTypee, v))
+// NodeTypeGT applies the GT predicate on the "node_type" field.
+func NodeTypeGT(v uint8) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldGT(FieldNodeType, v))
 }
 
-// TypeeGTE applies the GTE predicate on the "typee" field.
-func TypeeGTE(v uint8) predicate.ReviewProjectDetail {
-	return predicate.ReviewProjectDetail(sql.FieldGTE(FieldTypee, v))
+// NodeTypeGTE applies the GTE predicate on the "node_type" field.
+func NodeTypeGTE(v uint8) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldGTE(FieldNodeType, v))
 }
 
-// TypeeLT applies the LT predicate on the "typee" field.
-func TypeeLT(v uint8) predicate.ReviewProjectDetail {
-	return predicate.ReviewProjectDetail(sql.FieldLT(FieldTypee, v))
+// NodeTypeLT applies the LT predicate on the "node_type" field.
+func NodeTypeLT(v uint8) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldLT(FieldNodeType, v))
 }
 
-// TypeeLTE applies the LTE predicate on the "typee" field.
-func TypeeLTE(v uint8) predicate.ReviewProjectDetail {
-	return predicate.ReviewProjectDetail(sql.FieldLTE(FieldTypee, v))
+// NodeTypeLTE applies the LTE predicate on the "node_type" field.
+func NodeTypeLTE(v uint8) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldLTE(FieldNodeType, v))
+}
+
+// OpinionEQ applies the EQ predicate on the "opinion" field.
+func OpinionEQ(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldEQ(FieldOpinion, v))
+}
+
+// OpinionNEQ applies the NEQ predicate on the "opinion" field.
+func OpinionNEQ(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldNEQ(FieldOpinion, v))
+}
+
+// OpinionIn applies the In predicate on the "opinion" field.
+func OpinionIn(vs ...string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldIn(FieldOpinion, vs...))
+}
+
+// OpinionNotIn applies the NotIn predicate on the "opinion" field.
+func OpinionNotIn(vs ...string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldNotIn(FieldOpinion, vs...))
+}
+
+// OpinionGT applies the GT predicate on the "opinion" field.
+func OpinionGT(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldGT(FieldOpinion, v))
+}
+
+// OpinionGTE applies the GTE predicate on the "opinion" field.
+func OpinionGTE(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldGTE(FieldOpinion, v))
+}
+
+// OpinionLT applies the LT predicate on the "opinion" field.
+func OpinionLT(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldLT(FieldOpinion, v))
+}
+
+// OpinionLTE applies the LTE predicate on the "opinion" field.
+func OpinionLTE(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldLTE(FieldOpinion, v))
+}
+
+// OpinionContains applies the Contains predicate on the "opinion" field.
+func OpinionContains(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldContains(FieldOpinion, v))
+}
+
+// OpinionHasPrefix applies the HasPrefix predicate on the "opinion" field.
+func OpinionHasPrefix(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldHasPrefix(FieldOpinion, v))
+}
+
+// OpinionHasSuffix applies the HasSuffix predicate on the "opinion" field.
+func OpinionHasSuffix(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldHasSuffix(FieldOpinion, v))
+}
+
+// OpinionEqualFold applies the EqualFold predicate on the "opinion" field.
+func OpinionEqualFold(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldEqualFold(FieldOpinion, v))
+}
+
+// OpinionContainsFold applies the ContainsFold predicate on the "opinion" field.
+func OpinionContainsFold(v string) predicate.ReviewProjectDetail {
+	return predicate.ReviewProjectDetail(sql.FieldContainsFold(FieldOpinion, v))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.

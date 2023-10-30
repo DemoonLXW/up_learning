@@ -97,7 +97,7 @@ func (uru *UserRoleUpdate) ClearRole() *UserRoleUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (uru *UserRoleUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, uru.sqlSave, uru.mutation, uru.hooks)
+	return withHooks[int, UserRoleMutation](ctx, uru.sqlSave, uru.mutation, uru.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -306,7 +306,7 @@ func (uruo *UserRoleUpdateOne) Select(field string, fields ...string) *UserRoleU
 
 // Save executes the query and returns the updated UserRole entity.
 func (uruo *UserRoleUpdateOne) Save(ctx context.Context) (*UserRole, error) {
-	return withHooks(ctx, uruo.sqlSave, uruo.mutation, uruo.hooks)
+	return withHooks[*UserRole, UserRoleMutation](ctx, uruo.sqlSave, uruo.mutation, uruo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

@@ -170,7 +170,7 @@ func (fc *FileCreate) Mutation() *FileMutation {
 // Save creates the File in the database.
 func (fc *FileCreate) Save(ctx context.Context) (*File, error) {
 	fc.defaults()
-	return withHooks(ctx, fc.sqlSave, fc.mutation, fc.hooks)
+	return withHooks[*File, FileMutation](ctx, fc.sqlSave, fc.mutation, fc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

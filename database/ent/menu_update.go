@@ -153,7 +153,7 @@ func (mu *MenuUpdate) ClearRole() *MenuUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (mu *MenuUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, mu.sqlSave, mu.mutation, mu.hooks)
+	return withHooks[int, MenuMutation](ctx, mu.sqlSave, mu.mutation, mu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -419,7 +419,7 @@ func (muo *MenuUpdateOne) Select(field string, fields ...string) *MenuUpdateOne 
 
 // Save executes the query and returns the updated Menu entity.
 func (muo *MenuUpdateOne) Save(ctx context.Context) (*Menu, error) {
-	return withHooks(ctx, muo.sqlSave, muo.mutation, muo.hooks)
+	return withHooks[*Menu, MenuMutation](ctx, muo.sqlSave, muo.mutation, muo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

@@ -26,7 +26,7 @@ func (urd *UserRoleDelete) Where(ps ...predicate.UserRole) *UserRoleDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (urd *UserRoleDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, urd.sqlExec, urd.mutation, urd.hooks)
+	return withHooks[int, UserRoleMutation](ctx, urd.sqlExec, urd.mutation, urd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

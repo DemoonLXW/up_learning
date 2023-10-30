@@ -28,8 +28,10 @@ type ReviewProjectDetail struct {
 	Reviewer *entity.Reviewer `json:"reviewer,omitempty"`
 	// Executor holds the value of the "executor" field.
 	Executor *entity.Executor `json:"executor,omitempty"`
-	// Typee holds the value of the "typee" field.
-	Typee uint8 `json:"typee,omitempty"`
+	// NodeType holds the value of the "node_type" field.
+	NodeType uint8 `json:"node_type,omitempty"`
+	// Opinion holds the value of the "opinion" field.
+	Opinion string `json:"opinion,omitempty"`
 	// Status holds the value of the "status" field.
 	Status uint8 `json:"status,omitempty"`
 	// CreatedTime holds the value of the "created_time" field.
@@ -73,8 +75,10 @@ func (*ReviewProjectDetail) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case reviewprojectdetail.FieldReviewer, reviewprojectdetail.FieldExecutor:
 			values[i] = new([]byte)
-		case reviewprojectdetail.FieldID, reviewprojectdetail.FieldReviewProjectID, reviewprojectdetail.FieldOrder, reviewprojectdetail.FieldTypee, reviewprojectdetail.FieldStatus:
+		case reviewprojectdetail.FieldID, reviewprojectdetail.FieldReviewProjectID, reviewprojectdetail.FieldOrder, reviewprojectdetail.FieldNodeType, reviewprojectdetail.FieldStatus:
 			values[i] = new(sql.NullInt64)
+		case reviewprojectdetail.FieldOpinion:
+			values[i] = new(sql.NullString)
 		case reviewprojectdetail.FieldCreatedTime, reviewprojectdetail.FieldDeletedTime, reviewprojectdetail.FieldModifiedTime:
 			values[i] = new(sql.NullTime)
 		default:
@@ -126,11 +130,17 @@ func (rpd *ReviewProjectDetail) assignValues(columns []string, values []any) err
 					return fmt.Errorf("unmarshal field executor: %w", err)
 				}
 			}
-		case reviewprojectdetail.FieldTypee:
+		case reviewprojectdetail.FieldNodeType:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field typee", values[i])
+				return fmt.Errorf("unexpected type %T for field node_type", values[i])
 			} else if value.Valid {
-				rpd.Typee = uint8(value.Int64)
+				rpd.NodeType = uint8(value.Int64)
+			}
+		case reviewprojectdetail.FieldOpinion:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field opinion", values[i])
+			} else if value.Valid {
+				rpd.Opinion = value.String
 			}
 		case reviewprojectdetail.FieldStatus:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -212,8 +222,11 @@ func (rpd *ReviewProjectDetail) String() string {
 	builder.WriteString("executor=")
 	builder.WriteString(fmt.Sprintf("%v", rpd.Executor))
 	builder.WriteString(", ")
-	builder.WriteString("typee=")
-	builder.WriteString(fmt.Sprintf("%v", rpd.Typee))
+	builder.WriteString("node_type=")
+	builder.WriteString(fmt.Sprintf("%v", rpd.NodeType))
+	builder.WriteString(", ")
+	builder.WriteString("opinion=")
+	builder.WriteString(rpd.Opinion)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", rpd.Status))

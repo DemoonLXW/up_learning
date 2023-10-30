@@ -142,7 +142,7 @@ func (sc *SchoolCreate) Mutation() *SchoolMutation {
 // Save creates the School in the database.
 func (sc *SchoolCreate) Save(ctx context.Context) (*School, error) {
 	sc.defaults()
-	return withHooks(ctx, sc.sqlSave, sc.mutation, sc.hooks)
+	return withHooks[*School, SchoolMutation](ctx, sc.sqlSave, sc.mutation, sc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

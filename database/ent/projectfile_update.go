@@ -97,7 +97,7 @@ func (pfu *ProjectFileUpdate) ClearFiles() *ProjectFileUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pfu *ProjectFileUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, pfu.sqlSave, pfu.mutation, pfu.hooks)
+	return withHooks[int, ProjectFileMutation](ctx, pfu.sqlSave, pfu.mutation, pfu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -306,7 +306,7 @@ func (pfuo *ProjectFileUpdateOne) Select(field string, fields ...string) *Projec
 
 // Save executes the query and returns the updated ProjectFile entity.
 func (pfuo *ProjectFileUpdateOne) Save(ctx context.Context) (*ProjectFile, error) {
-	return withHooks(ctx, pfuo.sqlSave, pfuo.mutation, pfuo.hooks)
+	return withHooks[*ProjectFile, ProjectFileMutation](ctx, pfuo.sqlSave, pfuo.mutation, pfuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

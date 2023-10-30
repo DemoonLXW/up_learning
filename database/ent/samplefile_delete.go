@@ -27,7 +27,7 @@ func (sfd *SampleFileDelete) Where(ps ...predicate.SampleFile) *SampleFileDelete
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (sfd *SampleFileDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, sfd.sqlExec, sfd.mutation, sfd.hooks)
+	return withHooks[int, SampleFileMutation](ctx, sfd.sqlExec, sfd.mutation, sfd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

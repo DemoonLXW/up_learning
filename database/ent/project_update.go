@@ -286,7 +286,7 @@ func (pu *ProjectUpdate) RemoveReviewProject(r ...*ReviewProject) *ProjectUpdate
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *ProjectUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
+	return withHooks[int, ProjectMutation](ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -784,7 +784,7 @@ func (puo *ProjectUpdateOne) Select(field string, fields ...string) *ProjectUpda
 
 // Save executes the query and returns the updated Project entity.
 func (puo *ProjectUpdateOne) Save(ctx context.Context) (*Project, error) {
-	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
+	return withHooks[*Project, ProjectMutation](ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

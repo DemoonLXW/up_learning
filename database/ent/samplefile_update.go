@@ -133,7 +133,7 @@ func (sfu *SampleFileUpdate) ClearFile() *SampleFileUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (sfu *SampleFileUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, sfu.sqlSave, sfu.mutation, sfu.hooks)
+	return withHooks[int, SampleFileMutation](ctx, sfu.sqlSave, sfu.mutation, sfu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -365,7 +365,7 @@ func (sfuo *SampleFileUpdateOne) Select(field string, fields ...string) *SampleF
 
 // Save executes the query and returns the updated SampleFile entity.
 func (sfuo *SampleFileUpdateOne) Save(ctx context.Context) (*SampleFile, error) {
-	return withHooks(ctx, sfuo.sqlSave, sfuo.mutation, sfuo.hooks)
+	return withHooks[*SampleFile, SampleFileMutation](ctx, sfuo.sqlSave, sfuo.mutation, sfuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

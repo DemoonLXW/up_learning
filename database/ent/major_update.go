@@ -170,7 +170,7 @@ func (mu *MajorUpdate) RemoveClasses(c ...*Class) *MajorUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (mu *MajorUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, mu.sqlSave, mu.mutation, mu.hooks)
+	return withHooks[int, MajorMutation](ctx, mu.sqlSave, mu.mutation, mu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -483,7 +483,7 @@ func (muo *MajorUpdateOne) Select(field string, fields ...string) *MajorUpdateOn
 
 // Save executes the query and returns the updated Major entity.
 func (muo *MajorUpdateOne) Save(ctx context.Context) (*Major, error) {
-	return withHooks(ctx, muo.sqlSave, muo.mutation, muo.hooks)
+	return withHooks[*Major, MajorMutation](ctx, muo.sqlSave, muo.mutation, muo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.

@@ -29,7 +29,8 @@ func (ReviewProjectDetail) Fields() []ent.Field {
 		field.Uint8("order"),
 		field.JSON("reviewer", &entity.Reviewer{}),
 		field.JSON("executor", &entity.Executor{}),
-		field.Uint8("typee"),
+		field.Uint8("node_type"),
+		field.String("opinion"),
 		field.Uint8("status"),
 		field.Time("created_time").
 			Nillable().

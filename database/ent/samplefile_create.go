@@ -114,7 +114,7 @@ func (sfc *SampleFileCreate) Mutation() *SampleFileMutation {
 // Save creates the SampleFile in the database.
 func (sfc *SampleFileCreate) Save(ctx context.Context) (*SampleFile, error) {
 	sfc.defaults()
-	return withHooks(ctx, sfc.sqlSave, sfc.mutation, sfc.hooks)
+	return withHooks[*SampleFile, SampleFileMutation](ctx, sfc.sqlSave, sfc.mutation, sfc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.

@@ -136,7 +136,7 @@ func (cc *ClassCreate) Mutation() *ClassMutation {
 // Save creates the Class in the database.
 func (cc *ClassCreate) Save(ctx context.Context) (*Class, error) {
 	cc.defaults()
-	return withHooks(ctx, cc.sqlSave, cc.mutation, cc.hooks)
+	return withHooks[*Class, ClassMutation](ctx, cc.sqlSave, cc.mutation, cc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
