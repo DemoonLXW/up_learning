@@ -75,7 +75,7 @@ func TestAddProject(t *testing.T) {
 	err = writer.Close()
 	assert.Nil(t, err)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "1"}
-	token_cookie := &http.Cookie{Name: "token", Value: "c07ecb8dd6d63d50ab834f0303c1e282"}
+	token_cookie := &http.Cookie{Name: "token", Value: "f052dda02f37d4a5b5585e52e9719260"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

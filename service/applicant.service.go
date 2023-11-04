@@ -11,6 +11,8 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
+	"github.com/DemoonLXW/up_learning/database/ent/student"
+	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 	"github.com/DemoonLXW/up_learning/entity"
 )
@@ -156,7 +158,7 @@ func (serv *ApplicantService) CreateReviewProject(ctx context.Context, client *e
 			SetProjectID(toCreates[i].ProjectID).
 			SetWorkflowID(toCreates[i].WorkflowID).
 			SetRunID(toCreates[i].RunID).
-			SetStatus(database.ReviewProjectStarted).
+			SetStatus(database.ReviewProjectCreated).
 			Exec(ctx)
 
 		if err != nil {
@@ -226,4 +228,31 @@ func (serv *ApplicantService) CreateReviewProjectDetail(ctx context.Context, cli
 	}
 
 	return nil
+}
+
+func (serv *ApplicantService) FindUserWithTeacherOrStudentById(ctx context.Context, client *ent.Client, userID uint32) (*ent.User, error) {
+	if ctx == nil || client == nil {
+		return nil, fmt.Errorf("context or client is nil")
+	}
+
+	user, err := client.User.Query().Where(
+		user.IDEQ(userID),
+		func(s *sql.Selector) {
+			s.Where(sql.IsNull(user.FieldDeletedTime))
+		},
+	).WithStudent(func(sq *ent.StudentQuery) {
+		sq.Where(func(s *sql.Selector) {
+			s.Where(sql.IsNull(student.FieldDeletedTime))
+		})
+	}).WithTeacher(func(tq *ent.TeacherQuery) {
+		tq.Where(func(s *sql.Selector) {
+			s.Where(sql.IsNull(teacher.FieldDeletedTime))
+		})
+	}).First(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("find user with teacher or student by id failed: %w", err)
+	}
+
+	return user, nil
 }
