@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 )
 
@@ -618,29 +617,6 @@ func ModifiedTimeIsNil() predicate.School {
 // ModifiedTimeNotNil applies the NotNil predicate on the "modified_time" field.
 func ModifiedTimeNotNil() predicate.School {
 	return predicate.School(sql.FieldNotNull(FieldModifiedTime))
-}
-
-// HasStudents applies the HasEdge predicate on the "students" edge.
-func HasStudents() predicate.School {
-	return predicate.School(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasStudentsWith applies the HasEdge predicate on the "students" edge with a given conditions (other predicates).
-func HasStudentsWith(preds ...predicate.Student) predicate.School {
-	return predicate.School(func(s *sql.Selector) {
-		step := newStudentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
 }
 
 // And groups predicates with the AND operator between them.

@@ -2363,22 +2363,6 @@ func (c *SchoolClient) GetX(ctx context.Context, id uint16) *School {
 	return obj
 }
 
-// QueryStudents queries the students edge of a School.
-func (c *SchoolClient) QueryStudents(s *School) *StudentQuery {
-	query := (&StudentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(school.Table, school.FieldID, id),
-			sqlgraph.To(student.Table, student.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, school.StudentsTable, school.StudentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *SchoolClient) Hooks() []Hook {
 	return c.hooks.School

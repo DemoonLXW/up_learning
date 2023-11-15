@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
-	"github.com/DemoonLXW/up_learning/database/ent/student"
 )
 
 // SchoolCreate is the builder for creating a School entity.
@@ -117,21 +116,6 @@ func (sc *SchoolCreate) SetNillableModifiedTime(t *time.Time) *SchoolCreate {
 func (sc *SchoolCreate) SetID(u uint16) *SchoolCreate {
 	sc.mutation.SetID(u)
 	return sc
-}
-
-// AddStudentIDs adds the "students" edge to the Student entity by IDs.
-func (sc *SchoolCreate) AddStudentIDs(ids ...uint32) *SchoolCreate {
-	sc.mutation.AddStudentIDs(ids...)
-	return sc
-}
-
-// AddStudents adds the "students" edges to the Student entity.
-func (sc *SchoolCreate) AddStudents(s ...*Student) *SchoolCreate {
-	ids := make([]uint32, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return sc.AddStudentIDs(ids...)
 }
 
 // Mutation returns the SchoolMutation object of the builder.
@@ -276,22 +260,6 @@ func (sc *SchoolCreate) createSpec() (*School, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.ModifiedTime(); ok {
 		_spec.SetField(school.FieldModifiedTime, field.TypeTime, value)
 		_node.ModifiedTime = &value
-	}
-	if nodes := sc.mutation.StudentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   school.StudentsTable,
-			Columns: []string{school.StudentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(student.FieldID, field.TypeUint32),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

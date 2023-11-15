@@ -25,7 +25,6 @@ type StudentQuery struct {
 	predicates []predicate.Student
 	withClass  *ClassQuery
 	withUser   *UserQuery
-	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -405,16 +404,12 @@ func (sq *StudentQuery) prepareQuery(ctx context.Context) error {
 func (sq *StudentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Student, error) {
 	var (
 		nodes       = []*Student{}
-		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
 		loadedTypes = [2]bool{
 			sq.withClass != nil,
 			sq.withUser != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, student.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Student).scanValues(nil, columns)
 	}

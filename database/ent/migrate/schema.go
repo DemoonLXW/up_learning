@@ -354,7 +354,6 @@ var (
 		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
 		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
 		{Name: "cid", Type: field.TypeUint32},
-		{Name: "school_students", Type: field.TypeUint16, Nullable: true},
 		{Name: "uid", Type: field.TypeUint32, Unique: true, Nullable: true},
 	}
 	// StudentTable holds the schema information for the "student" table.
@@ -370,14 +369,8 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "student_school_students",
-				Columns:    []*schema.Column{StudentColumns[9]},
-				RefColumns: []*schema.Column{SchoolColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "student_user_student",
-				Columns:    []*schema.Column{StudentColumns[10]},
+				Columns:    []*schema.Column{StudentColumns[9]},
 				RefColumns: []*schema.Column{UserColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -542,8 +535,7 @@ func init() {
 		Table: "school",
 	}
 	StudentTable.ForeignKeys[0].RefTable = ClassTable
-	StudentTable.ForeignKeys[1].RefTable = SchoolTable
-	StudentTable.ForeignKeys[2].RefTable = UserTable
+	StudentTable.ForeignKeys[1].RefTable = UserTable
 	StudentTable.Annotation = &entsql.Annotation{
 		Table: "student",
 	}

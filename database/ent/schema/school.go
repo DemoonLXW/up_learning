@@ -6,7 +6,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -50,7 +49,5 @@ func (School) Fields() []ent.Field {
 
 // Edges of the School.
 func (School) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("students", Student.Type),
-	}
+	return nil
 }

@@ -37,28 +37,7 @@ type School struct {
 	DeletedTime *time.Time `json:"deleted_time,omitempty"`
 	// ModifiedTime holds the value of the "modified_time" field.
 	ModifiedTime *time.Time `json:"modified_time,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the SchoolQuery when eager-loading is set.
-	Edges        SchoolEdges `json:"edges"`
 	selectValues sql.SelectValues
-}
-
-// SchoolEdges holds the relations/edges for other nodes in the graph.
-type SchoolEdges struct {
-	// Students holds the value of the students edge.
-	Students []*Student `json:"students,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
-}
-
-// StudentsOrErr returns the Students value or an error if the edge
-// was not loaded in eager-loading.
-func (e SchoolEdges) StudentsOrErr() ([]*Student, error) {
-	if e.loadedTypes[0] {
-		return e.Students, nil
-	}
-	return nil, &NotLoadedError{edge: "students"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -169,11 +148,6 @@ func (s *School) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (s *School) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
-}
-
-// QueryStudents queries the "students" edge of the School entity.
-func (s *School) QueryStudents() *StudentQuery {
-	return NewSchoolClient(s.config).QueryStudents(s)
 }
 
 // Update returns a builder for updating this School.

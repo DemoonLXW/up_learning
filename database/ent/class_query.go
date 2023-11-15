@@ -484,7 +484,6 @@ func (cq *ClassQuery) loadStudents(ctx context.Context, query *StudentQuery, nod
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(student.FieldCid)
 	}

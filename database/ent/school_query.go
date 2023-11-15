@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -13,17 +12,15 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/school"
-	"github.com/DemoonLXW/up_learning/database/ent/student"
 )
 
 // SchoolQuery is the builder for querying School entities.
 type SchoolQuery struct {
 	config
-	ctx          *QueryContext
-	order        []school.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.School
-	withStudents *StudentQuery
+	ctx        *QueryContext
+	order      []school.OrderOption
+	inters     []Interceptor
+	predicates []predicate.School
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,28 +55,6 @@ func (sq *SchoolQuery) Unique(unique bool) *SchoolQuery {
 func (sq *SchoolQuery) Order(o ...school.OrderOption) *SchoolQuery {
 	sq.order = append(sq.order, o...)
 	return sq
-}
-
-// QueryStudents chains the current query on the "students" edge.
-func (sq *SchoolQuery) QueryStudents() *StudentQuery {
-	query := (&StudentClient{config: sq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := sq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(school.Table, school.FieldID, selector),
-			sqlgraph.To(student.Table, student.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, school.StudentsTable, school.StudentsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first School entity from the query.
@@ -269,27 +244,15 @@ func (sq *SchoolQuery) Clone() *SchoolQuery {
 		return nil
 	}
 	return &SchoolQuery{
-		config:       sq.config,
-		ctx:          sq.ctx.Clone(),
-		order:        append([]school.OrderOption{}, sq.order...),
-		inters:       append([]Interceptor{}, sq.inters...),
-		predicates:   append([]predicate.School{}, sq.predicates...),
-		withStudents: sq.withStudents.Clone(),
+		config:     sq.config,
+		ctx:        sq.ctx.Clone(),
+		order:      append([]school.OrderOption{}, sq.order...),
+		inters:     append([]Interceptor{}, sq.inters...),
+		predicates: append([]predicate.School{}, sq.predicates...),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
 	}
-}
-
-// WithStudents tells the query-builder to eager-load the nodes that are connected to
-// the "students" edge. The optional arguments are used to configure the query builder of the edge.
-func (sq *SchoolQuery) WithStudents(opts ...func(*StudentQuery)) *SchoolQuery {
-	query := (&StudentClient{config: sq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	sq.withStudents = query
-	return sq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -368,11 +331,8 @@ func (sq *SchoolQuery) prepareQuery(ctx context.Context) error {
 
 func (sq *SchoolQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*School, error) {
 	var (
-		nodes       = []*School{}
-		_spec       = sq.querySpec()
-		loadedTypes = [1]bool{
-			sq.withStudents != nil,
-		}
+		nodes = []*School{}
+		_spec = sq.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*School).scanValues(nil, columns)
@@ -380,7 +340,6 @@ func (sq *SchoolQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Schoo
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &School{config: sq.config}
 		nodes = append(nodes, node)
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -392,46 +351,7 @@ func (sq *SchoolQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Schoo
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := sq.withStudents; query != nil {
-		if err := sq.loadStudents(ctx, query, nodes,
-			func(n *School) { n.Edges.Students = []*Student{} },
-			func(n *School, e *Student) { n.Edges.Students = append(n.Edges.Students, e) }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
-}
-
-func (sq *SchoolQuery) loadStudents(ctx context.Context, query *StudentQuery, nodes []*School, init func(*School), assign func(*School, *Student)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uint16]*School)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Student(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(school.StudentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.school_students
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "school_students" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "school_students" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
 }
 
 func (sq *SchoolQuery) sqlCount(ctx context.Context) (int, error) {

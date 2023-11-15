@@ -39,9 +39,8 @@ type Student struct {
 	ModifiedTime *time.Time `json:"modified_time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StudentQuery when eager-loading is set.
-	Edges           StudentEdges `json:"edges"`
-	school_students *uint16
-	selectValues    sql.SelectValues
+	Edges        StudentEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // StudentEdges holds the relations/edges for other nodes in the graph.
@@ -94,8 +93,6 @@ func (*Student) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case student.FieldCreatedTime, student.FieldDeletedTime, student.FieldModifiedTime:
 			values[i] = new(sql.NullTime)
-		case student.ForeignKeys[0]: // school_students
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -173,13 +170,6 @@ func (s *Student) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.ModifiedTime = new(time.Time)
 				*s.ModifiedTime = value.Time
-			}
-		case student.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field school_students", value)
-			} else if value.Valid {
-				s.school_students = new(uint16)
-				*s.school_students = uint16(value.Int64)
 			}
 		default:
 			s.selectValues.Set(columns[i], values[i])

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -34,17 +33,8 @@ const (
 	FieldDeletedTime = "deleted_time"
 	// FieldModifiedTime holds the string denoting the modified_time field in the database.
 	FieldModifiedTime = "modified_time"
-	// EdgeStudents holds the string denoting the students edge name in mutations.
-	EdgeStudents = "students"
 	// Table holds the table name of the school in the database.
 	Table = "school"
-	// StudentsTable is the table that holds the students relation/edge.
-	StudentsTable = "student"
-	// StudentsInverseTable is the table name for the Student entity.
-	// It exists in this package in order to avoid circular dependency with the "student" package.
-	StudentsInverseTable = "student"
-	// StudentsColumn is the table column denoting the students relation/edge.
-	StudentsColumn = "school_students"
 )
 
 // Columns holds all SQL columns for school fields.
@@ -135,25 +125,4 @@ func ByDeletedTime(opts ...sql.OrderTermOption) OrderOption {
 // ByModifiedTime orders the results by the modified_time field.
 func ByModifiedTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModifiedTime, opts...).ToFunc()
-}
-
-// ByStudentsCount orders the results by students count.
-func ByStudentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newStudentsStep(), opts...)
-	}
-}
-
-// ByStudents orders the results by students terms.
-func ByStudents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newStudentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-func newStudentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(StudentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, StudentsTable, StudentsColumn),
-	)
 }
