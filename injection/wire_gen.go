@@ -12,7 +12,6 @@ import (
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/service"
-	"github.com/DemoonLXW/up_learning/workflow"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
@@ -29,14 +28,6 @@ func ProvideDataBase() (*ent.Client, error) {
 		return nil, err
 	}
 	return client, nil
-}
-
-func ProvideWorkflowHelper() (*workflow.WorkflowHelper, error) {
-	workflowHelper, err := workflow.ProvideWorkflowHelper()
-	if err != nil {
-		return nil, err
-	}
-	return workflowHelper, nil
 }
 
 func ProvideRedis() (*redis.Client, error) {
@@ -81,13 +72,8 @@ func ProvideService() (*service.Services, error) {
 		Common: commonService,
 		DB:     client,
 	}
-	workflowHelper, err := workflow.ProvideWorkflowHelper()
-	if err != nil {
-		return nil, err
-	}
 	workflowService := &service.WorkflowService{
 		DB: client,
-		WH: workflowHelper,
 	}
 	services := &service.Services{
 		Management:  managementService,
@@ -130,13 +116,8 @@ func ProvideController() (*controller.Controllers, error) {
 		Common: commonService,
 		DB:     client,
 	}
-	workflowHelper, err := workflow.ProvideWorkflowHelper()
-	if err != nil {
-		return nil, err
-	}
 	workflowService := &service.WorkflowService{
 		DB: client,
-		WH: workflowHelper,
 	}
 	services := &service.Services{
 		Management:  managementService,
@@ -199,13 +180,8 @@ func ProvideApplication() (*gin.Engine, error) {
 		Common: commonService,
 		DB:     client,
 	}
-	workflowHelper, err := workflow.ProvideWorkflowHelper()
-	if err != nil {
-		return nil, err
-	}
 	workflowService := &service.WorkflowService{
 		DB: client,
-		WH: workflowHelper,
 	}
 	services := &service.Services{
 		Management:  managementService,
@@ -235,7 +211,7 @@ func ProvideApplication() (*gin.Engine, error) {
 		Common:     commonController,
 		Applicant:  applicantController,
 	}
-	engine, err := application.SetupApplication(controllers, workflowHelper)
+	engine, err := application.SetupApplication(controllers)
 	if err != nil {
 		return nil, err
 	}
