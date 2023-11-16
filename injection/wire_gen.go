@@ -8,6 +8,7 @@ package injection
 
 import (
 	"github.com/DemoonLXW/up_learning/application"
+	"github.com/DemoonLXW/up_learning/config"
 	"github.com/DemoonLXW/up_learning/controller"
 	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
@@ -68,12 +69,21 @@ func ProvideService() (*service.Services, error) {
 	applicantService := &service.ApplicantService{
 		DB: client,
 	}
-	applicantFacade := &service.ApplicantFacade{
-		Common: commonService,
-		DB:     client,
+	applicationConfig, err := config.ProvideApplicationConfig()
+	if err != nil {
+		return nil, err
+	}
+	flowableConfig, err := config.ProvideFlowableConfig(applicationConfig)
+	if err != nil {
+		return nil, err
 	}
 	workflowService := &service.WorkflowService{
-		DB: client,
+		FlowableConfig: flowableConfig,
+	}
+	applicantFacade := &service.ApplicantFacade{
+		Common:   commonService,
+		Workflow: workflowService,
+		DB:       client,
 	}
 	services := &service.Services{
 		Management:  managementService,
@@ -112,12 +122,21 @@ func ProvideController() (*controller.Controllers, error) {
 	applicantService := &service.ApplicantService{
 		DB: client,
 	}
-	applicantFacade := &service.ApplicantFacade{
-		Common: commonService,
-		DB:     client,
+	applicationConfig, err := config.ProvideApplicationConfig()
+	if err != nil {
+		return nil, err
+	}
+	flowableConfig, err := config.ProvideFlowableConfig(applicationConfig)
+	if err != nil {
+		return nil, err
 	}
 	workflowService := &service.WorkflowService{
-		DB: client,
+		FlowableConfig: flowableConfig,
+	}
+	applicantFacade := &service.ApplicantFacade{
+		Common:   commonService,
+		Workflow: workflowService,
+		DB:       client,
 	}
 	services := &service.Services{
 		Management:  managementService,
@@ -176,12 +195,21 @@ func ProvideApplication() (*gin.Engine, error) {
 	applicantService := &service.ApplicantService{
 		DB: client,
 	}
-	applicantFacade := &service.ApplicantFacade{
-		Common: commonService,
-		DB:     client,
+	applicationConfig, err := config.ProvideApplicationConfig()
+	if err != nil {
+		return nil, err
+	}
+	flowableConfig, err := config.ProvideFlowableConfig(applicationConfig)
+	if err != nil {
+		return nil, err
 	}
 	workflowService := &service.WorkflowService{
-		DB: client,
+		FlowableConfig: flowableConfig,
+	}
+	applicantFacade := &service.ApplicantFacade{
+		Common:   commonService,
+		Workflow: workflowService,
+		DB:       client,
 	}
 	services := &service.Services{
 		Management:  managementService,

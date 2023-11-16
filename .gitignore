@@ -1,8 +1,6 @@
-database.config.json
-domain.config.json
+*.config.json
 *.log
 up_learning
 temp/
 *.xlsx
 files/
-workflow.config.yaml
