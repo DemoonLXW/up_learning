@@ -14,8 +14,9 @@ import (
 )
 
 type ApplicantFacade struct {
-	Common *CommonService
-	DB     *ent.Client
+	Common   *CommonService
+	Workflow *WorkflowService
+	DB       *ent.Client
 }
 
 func (faca *ApplicantFacade) createProjectAttachments(ctx context.Context, client *ent.Client, attachments []*entity.ToAddFile, projectID uint32) error {
@@ -316,6 +317,33 @@ func (faca *ApplicantFacade) UpdateProject(ctx context.Context, client *ent.Clie
 		if err != nil {
 			return fmt.Errorf("update project attachments failed: %w", err)
 		}
+	}
+
+	return nil
+}
+
+func (faca *ApplicantFacade) SubmitProjectForReview(userID, projectID uint32) error {
+
+	businessKey := fmt.Sprint(projectID)
+
+	body := map[string]interface{}{
+		"processDefinitionKey": entity.REVIEW_PROJECT,
+		"businessKey":          businessKey,
+		"variables": []interface{}{
+			map[string]interface{}{
+				"name":  "userID",
+				"value": userID,
+			},
+			map[string]interface{}{
+				"name":  "dueDate",
+				"value": time.Now().Add(7 * 24 * time.Hour),
+			},
+		},
+	}
+
+	err := faca.Workflow.startAProcessInstance(body)
+	if err != nil {
+		return fmt.Errorf("submit project for review failed: %w", err)
 	}
 
 	return nil

@@ -14,7 +14,7 @@ var ConfigProvider = wire.NewSet(
 )
 
 type FlowableConfig struct {
-	URL string `json:"url"`
+	URL *string `json:"url"`
 }
 
 type ApplicationConfig struct {
@@ -40,8 +40,12 @@ func ProvideApplicationConfig() (*ApplicationConfig, error) {
 }
 
 func ProvideFlowableConfig(applicationConfig *ApplicationConfig) (*FlowableConfig, error) {
-	if applicationConfig.FlowableConfig == nil {
+	config := applicationConfig.FlowableConfig
+	if config == nil {
 		return nil, fmt.Errorf("config of flowable is nil")
+	}
+	if config.URL == nil {
+		return nil, fmt.Errorf("config of flowable.url is nil")
 	}
 
 	return applicationConfig.FlowableConfig, nil

@@ -13,21 +13,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func CreateTestTeacherFacade() (*service.ApplicantFacade, error) {
+func CreateTestApplicantFacade() (*service.ApplicantFacade, error) {
 	os.Chdir("../")
-	os.Setenv("DB_CONFIG", "./database.config.json")
-	faca := new(service.ApplicantFacade)
-	db, err := injection.ProvideDataBase()
+	// os.Setenv("DB_CONFIG", "./database.config.json")
+	s, err := injection.ProvideService()
 	if err != nil {
 		return nil, err
 	}
-	faca.DB = db
 
-	return faca, nil
+	return s.ApplicantFa, nil
 }
 
 func TestCreateProject(t *testing.T) {
-	faca, err := CreateTestTeacherFacade()
+	faca, err := CreateTestApplicantFacade()
 	assert.Nil(t, err)
 
 	project1 := entity.ToAddProject{
@@ -87,7 +85,7 @@ func TestCreateProject(t *testing.T) {
 }
 
 func TestDeleteProject(t *testing.T) {
-	faca, err := CreateTestTeacherFacade()
+	faca, err := CreateTestApplicantFacade()
 	assert.Nil(t, err)
 
 	ctx := context.Background()
@@ -108,7 +106,7 @@ func TestDeleteProject(t *testing.T) {
 }
 
 func TestUpdateProject(t *testing.T) {
-	faca, err := CreateTestTeacherFacade()
+	faca, err := CreateTestApplicantFacade()
 	assert.Nil(t, err)
 
 	id := uint32(4)
@@ -148,4 +146,16 @@ func TestUpdateProject(t *testing.T) {
 	})
 	// err = serv.CreateProject(nil, nil, adds)
 	assert.Nil(t, err)
+}
+
+func TestSubmitProjectForReview(t *testing.T) {
+	faca, err := CreateTestApplicantFacade()
+	assert.Nil(t, err)
+
+	userID := uint32(4)
+	projectID := uint32(5)
+
+	err = faca.SubmitProjectForReview(userID, projectID)
+	assert.Nil(t, err)
+
 }
