@@ -324,15 +324,16 @@ func (faca *ApplicantFacade) UpdateProject(ctx context.Context, client *ent.Clie
 
 func (faca *ApplicantFacade) SubmitProjectForReview(userID, projectID uint32) error {
 
-	businessKey := fmt.Sprint(projectID)
-
 	body := map[string]interface{}{
 		"processDefinitionKey": entity.REVIEW_PROJECT,
-		"businessKey":          businessKey,
 		"variables": []interface{}{
 			map[string]interface{}{
 				"name":  "userID",
 				"value": userID,
+			},
+			map[string]interface{}{
+				"name":  "projectID",
+				"value": projectID,
 			},
 			map[string]interface{}{
 				"name":  "dueDate",
@@ -341,10 +342,62 @@ func (faca *ApplicantFacade) SubmitProjectForReview(userID, projectID uint32) er
 		},
 	}
 
-	err := faca.Workflow.startAProcessInstance(body)
+	err := faca.Workflow.StartAProcessInstance(body)
 	if err != nil {
 		return fmt.Errorf("submit project for review failed: %w", err)
 	}
 
 	return nil
+}
+
+func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *entity.SearchReviewProjectRecord, projectID uint32) (map[string]interface{}, error) {
+	body := map[string]interface{}{
+		"processDefinitionKey":    entity.REVIEW_PROJECT,
+		"includeProcessVariables": true,
+	}
+
+	variables := []interface{}{
+		map[string]interface{}{
+			"name":      "projectID",
+			"value":     projectID,
+			"operation": "equals",
+			"type":      "integer",
+		},
+	}
+	if search.ReviewStatus != nil {
+		variables = append(variables, map[string]interface{}{
+			"name":      "reviewStatus",
+			"value":     *search.ReviewStatus,
+			"operation": "equals",
+			"type":      "integer",
+		})
+	}
+	body["variables"] = variables
+
+	if search.IsFinished != nil {
+		body["finished"] = search.IsFinished
+	}
+	if search.PageSize != nil && search.Current != nil {
+		offset := int((*search.Current - 1) * (*search.PageSize))
+		body["start"] = offset
+		body["size"] = *search.PageSize
+	}
+
+	isSorted := search.Sort != "" && (search.Sort == "processInstanceId" || search.Sort == "startTime" || search.Sort == "endTime")
+	if isSorted && search.Order != nil {
+		if *search.Order {
+			body["sort"] = search.Sort
+			body["order"] = "desc"
+		} else {
+			body["sort"] = search.Sort
+			body["order"] = "asc"
+		}
+	}
+
+	m, err := faca.Workflow.QueryForHistoricProcessInstances(body)
+	if err != nil {
+		return nil, fmt.Errorf("submit project for review failed: %w", err)
+	}
+
+	return m, nil
 }

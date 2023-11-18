@@ -14,7 +14,7 @@ type WorkflowService struct {
 	*config.FlowableConfig
 }
 
-func (serv *WorkflowService) startAProcessInstance(reqBody map[string]interface{}) error {
+func (serv *WorkflowService) StartAProcessInstance(reqBody map[string]interface{}) error {
 
 	reqBodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
@@ -41,4 +41,41 @@ func (serv *WorkflowService) startAProcessInstance(reqBody map[string]interface{
 	}
 
 	return nil
+}
+func (serv *WorkflowService) QueryForHistoricProcessInstances(reqBody map[string]interface{}) (map[string]interface{}, error) {
+	reqBodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("query for historic process instances failed: %w", err)
+	}
+	reqBodyBuffer := bytes.NewBuffer(reqBodyBytes)
+
+	req, err := http.NewRequest(http.MethodPost, *serv.FlowableConfig.URL+"/"+"query/historic-process-instances", reqBodyBuffer)
+	if err != nil {
+		return nil, fmt.Errorf("query for historic process instances failed: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	c := http.Client{}
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("query for historic process instances failed: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("query for historic process instances failed: %d", resp.StatusCode)
+	}
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("query for historic process instances failed: %w", err)
+	}
+	resp.Body.Close()
+
+	var respBody map[string]interface{}
+	err = json.Unmarshal(b, &respBody)
+	if err != nil {
+		return nil, fmt.Errorf("query for historic process instances failed: %w", err)
+	}
+
+	return respBody, nil
 }

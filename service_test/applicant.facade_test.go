@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
@@ -158,4 +159,29 @@ func TestSubmitProjectForReview(t *testing.T) {
 	err = faca.SubmitProjectForReview(userID, projectID)
 	assert.Nil(t, err)
 
+}
+
+func TestRetrieveReviewProjectRecordByProjectID(t *testing.T) {
+	faca, err := CreateTestApplicantFacade()
+	assert.Nil(t, err)
+
+	pageSize := uint(5)
+	current := uint(1)
+	sort := "startTime"
+	order := false
+
+	projectID := uint32(5)
+
+	m, err := faca.RetrieveReviewProjectRecordByProjectID(&entity.SearchReviewProjectRecord{
+		PageSize: &pageSize,
+		Current:  &current,
+		Sort:     sort,
+		Order:    &order,
+	}, projectID)
+	assert.Nil(t, err)
+
+	for _, v := range m["data"].([]interface{}) {
+		mm := v.(map[string]interface{})
+		fmt.Printf("%v\n", mm["id"].(string))
+	}
 }
