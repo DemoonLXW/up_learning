@@ -350,7 +350,7 @@ func (faca *ApplicantFacade) SubmitProjectForReview(userID, projectID uint32) er
 	return nil
 }
 
-func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *entity.SearchReviewProjectRecord, projectID uint32) (map[string]interface{}, error) {
+func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *entity.SearchReviewProjectRecord) (map[string]interface{}, error) {
 	body := map[string]interface{}{
 		"processDefinitionKey":    entity.REVIEW_PROJECT,
 		"includeProcessVariables": true,
@@ -359,7 +359,7 @@ func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *enti
 	variables := []interface{}{
 		map[string]interface{}{
 			"name":      "projectID",
-			"value":     projectID,
+			"value":     *search.ProjectID,
 			"operation": "equals",
 			"type":      "integer",
 		},
@@ -396,8 +396,34 @@ func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *enti
 
 	m, err := faca.Workflow.QueryForHistoricProcessInstances(body)
 	if err != nil {
-		return nil, fmt.Errorf("submit project for review failed: %w", err)
+		return nil, fmt.Errorf("retrieve review project record failed: %w", err)
 	}
 
 	return m, nil
+}
+
+func (faca *ApplicantFacade) FindReviewProjectRecordDetailById(id string) (map[string]interface{}, map[string]interface{}, error) {
+	processbody := map[string]interface{}{
+		"processDefinitionKey":    entity.REVIEW_PROJECT,
+		"includeProcessVariables": true,
+		"processInstanceId":       id,
+	}
+
+	processMap, err := faca.Workflow.QueryForHistoricProcessInstances(processbody)
+	if err != nil {
+		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
+	}
+
+	taskbody := map[string]interface{}{
+		"processDefinitionKey":      entity.REVIEW_PROJECT,
+		"includeTaskLocalVariables": true,
+		"processInstanceId":         id,
+	}
+
+	taskMap, err := faca.Workflow.QueryForHistoricTaskInstances(taskbody)
+	if err != nil {
+		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
+	}
+
+	return processMap, taskMap, nil
 }

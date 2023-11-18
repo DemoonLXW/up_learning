@@ -324,8 +324,9 @@ type ToAddReviewProjectDetail struct {
 }
 
 type SearchReviewProjectRecord struct {
-	Current  *uint `form:"current"`
-	PageSize *uint `form:"page_size"`
+	ProjectID *uint32 `form:"project_id"  binding:"required"`
+	Current   *uint   `form:"current"`
+	PageSize  *uint   `form:"page_size"`
 	// Like         string `form:"like"`
 	Sort         string `form:"sort"`
 	Order        *bool  `form:"order"`
