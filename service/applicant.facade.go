@@ -322,7 +322,7 @@ func (faca *ApplicantFacade) UpdateProject(ctx context.Context, client *ent.Clie
 	return nil
 }
 
-func (faca *ApplicantFacade) SubmitProjectForReview(userID, projectID uint32) error {
+func (faca *ApplicantFacade) StartReviewProjectProcess(userID, projectID uint32) error {
 
 	body := map[string]interface{}{
 		"processDefinitionKey": entity.REVIEW_PROJECT,

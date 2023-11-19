@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/entity"
@@ -163,9 +164,18 @@ func (cont *ApplicantController) ModifyAProject(c *gin.Context) {
 
 	ctx := context.Background()
 	client := cont.ApplicantFa.DB
-	// can not change review status here
-	project.ReviewStatus = nil
+
 	err = service.WithTx(ctx, client, func(tx *ent.Tx) error {
+		p, err := cont.Applicant.FindOneProjectWithFileAndUserById(ctx, client, project.ID)
+		if err != nil {
+			return err
+		}
+		if p.ReviewStatus == database.ProjectReviewStatusPending || p.ReviewStatus == database.ProjectReviewStatusSucceeded {
+			return fmt.Errorf("the project whose review status is invalid: [%d]", p.ReviewStatus)
+		}
+
+		// can not change review status here
+		project.ReviewStatus = nil
 		return cont.ApplicantFa.UpdateProject(ctx, tx.Client(), &project)
 	})
 	if err != nil {
@@ -322,6 +332,56 @@ func (cont *ApplicantController) UploadDocumentImage(c *gin.Context) {
 	var res entity.Result
 	res.Data = gin.H{"url": url, "alt": fname, "href": url}
 	res.Message = "Save Upload Image Successfully"
+
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *ApplicantController) SubmitProjectForReview(c *gin.Context) {
+	uid, err := c.Cookie("uid")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	userID, err := strconv.ParseUint(uid, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var project entity.ToModifyProject
+	if err := c.ShouldBindWith(&project, binding.Query); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx := context.Background()
+	client := cont.Applicant.DB
+	p, err := cont.Applicant.FindOneProjectWithFileAndUserById(ctx, client, project.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if p.ReviewStatus == database.ProjectReviewStatusPending || p.ReviewStatus == database.ProjectReviewStatusSucceeded {
+
+		status := ""
+		switch p.ReviewStatus {
+		case database.ProjectReviewStatusPending:
+			status = "pending"
+		case database.ProjectReviewStatusSucceeded:
+			status = "succeeded"
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("the project whose review status is invalid: [%s]", status)})
+		return
+	}
+
+	err = cont.ApplicantFa.StartReviewProjectProcess(uint32(userID), project.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Submit Project For Review Successfully"
 
 	c.JSON(http.StatusOK, res)
 }

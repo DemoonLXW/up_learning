@@ -107,6 +107,7 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 				project.GET("/get/:id", Check(authService, []string{entity.ApplicantGetAProjectById}), controllers.Applicant.GetAProjectById)
 				project.GET("/get-list", Check(authService, []string{entity.ApplicantGetProjectListByUserID}), controllers.Applicant.GetProjectListByUserID)
 				project.POST("/upload-image", Check(authService, []string{entity.ApplicantUploadDocumentImage}), controllers.Applicant.UploadDocumentImage)
+				project.POST("/submit-for-review", Check(authService, []string{entity.ApplicantSubmitProjectForReview}), controllers.Applicant.SubmitProjectForReview)
 			}
 		}
 	}

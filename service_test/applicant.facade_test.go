@@ -149,14 +149,14 @@ func TestUpdateProject(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestSubmitProjectForReview(t *testing.T) {
+func TestStartReviewProjectProcess(t *testing.T) {
 	faca, err := CreateTestApplicantFacade()
 	assert.Nil(t, err)
 
 	userID := uint32(4)
 	projectID := uint32(5)
 
-	err = faca.SubmitProjectForReview(userID, projectID)
+	err = faca.StartReviewProjectProcess(userID, projectID)
 	assert.Nil(t, err)
 
 }

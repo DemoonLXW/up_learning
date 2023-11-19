@@ -221,3 +221,21 @@ func TestUploadDocumentImage(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestSubmitProjectForReview(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	req, _ := http.NewRequest(http.MethodPost, "/applicant/project/submit-for-review?id=5", nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "4"}
+	token_cookie := &http.Cookie{Name: "token", Value: "065454edbee17c417f585c121355e12f"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}

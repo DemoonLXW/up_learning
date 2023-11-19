@@ -9,12 +9,13 @@ const (
 )
 
 const (
-	ReviewProjectCreated   = uint8(0)
-	ReviewProjectStarted   = uint8(1)
-	ReviewProjectCompleted = uint8(2)
-	ReviewProjectFailed    = uint8(3)
+	ProjectReviewStatusUnaudited = uint8(0)
+	ProjectReviewStatusPending   = uint8(1)
+	ProjectReviewStatusSucceeded = uint8(2)
+	ProjectReviewStatusFailed    = uint8(3)
+	ProjectReviewStatusTimeout   = uint8(4)
 )
 
-const (
-	ReviewProjectDetailPending = uint8(0)
-)
+// const (
+// 	ReviewProjectDetailPending = uint8(0)
+// )

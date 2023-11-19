@@ -3,14 +3,11 @@ package service
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/DemoonLXW/up_learning/database"
 	"github.com/DemoonLXW/up_learning/database/ent"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
-	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/student"
 	"github.com/DemoonLXW/up_learning/database/ent/teacher"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
@@ -135,100 +132,100 @@ func (serv *ApplicantService) FindOneProjectWithFileAndUserById(ctx context.Cont
 	return res, nil
 }
 
-func (serv *ApplicantService) CreateReviewProject(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddReviewProject) ([]uint32, error) {
-	if ctx == nil || client == nil {
-		return nil, fmt.Errorf("context or client is nil")
-	}
+// func (serv *ApplicantService) CreateReviewProject(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddReviewProject) ([]uint32, error) {
+// 	if ctx == nil || client == nil {
+// 		return nil, fmt.Errorf("context or client is nil")
+// 	}
 
-	length := len(toCreates)
+// 	length := len(toCreates)
 
-	createIDs := make([]uint32, 0, length)
+// 	createIDs := make([]uint32, 0, length)
 
-	num, err := client.ReviewProject.Query().Aggregate(ent.Count()).Int(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("create review project count failed: %w", err)
-	}
+// 	num, err := client.ReviewProject.Query().Aggregate(ent.Count()).Int(ctx)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("create review project count failed: %w", err)
+// 	}
 
-	for i := 0; i < length; i++ {
-		reviewProjectID := uint32(num + i + 1)
+// 	for i := 0; i < length; i++ {
+// 		reviewProjectID := uint32(num + i + 1)
 
-		err := client.ReviewProject.Create().
-			SetID(reviewProjectID).
-			SetApplicantID(toCreates[i].ApplicantID).
-			SetProjectID(toCreates[i].ProjectID).
-			SetWorkflowID(toCreates[i].WorkflowID).
-			SetRunID(toCreates[i].RunID).
-			SetStatus(database.ReviewProjectCreated).
-			Exec(ctx)
+// 		err := client.ReviewProject.Create().
+// 			SetID(reviewProjectID).
+// 			SetApplicantID(toCreates[i].ApplicantID).
+// 			SetProjectID(toCreates[i].ProjectID).
+// 			SetWorkflowID(toCreates[i].WorkflowID).
+// 			SetRunID(toCreates[i].RunID).
+// 			SetStatus(database.ReviewProjectCreated).
+// 			Exec(ctx)
 
-		if err != nil {
-			return nil, fmt.Errorf("create review project failed: %w", err)
-		}
+// 		if err != nil {
+// 			return nil, fmt.Errorf("create review project failed: %w", err)
+// 		}
 
-		createIDs = append(createIDs, reviewProjectID)
-	}
+// 		createIDs = append(createIDs, reviewProjectID)
+// 	}
 
-	return createIDs, nil
-}
+// 	return createIDs, nil
+// }
 
-func (serv *ApplicantService) UpdateReviewProject(ctx context.Context, client *ent.Client, toUpdate *entity.ToModifyReviewProject) error {
-	if ctx == nil || client == nil {
-		return fmt.Errorf("context or client is nil")
-	}
+// func (serv *ApplicantService) UpdateReviewProject(ctx context.Context, client *ent.Client, toUpdate *entity.ToModifyReviewProject) error {
+// 	if ctx == nil || client == nil {
+// 		return fmt.Errorf("context or client is nil")
+// 	}
 
-	updater := client.ReviewProject.Update().Where(
-		reviewproject.IDEQ(toUpdate.ID),
-		func(s *sql.Selector) {
-			s.Where(sql.IsNull(project.FieldDeletedTime))
-		},
-	)
-	if toUpdate.RunID != nil {
-		updater.SetRunID(*toUpdate.RunID)
-	}
-	if toUpdate.WorkflowID != nil {
-		updater.SetWorkflowID(*toUpdate.WorkflowID)
-	}
-	if toUpdate.Status != nil {
-		updater.SetStatus(*toUpdate.Status)
-	}
-	updater.SetModifiedTime(time.Now())
+// 	updater := client.ReviewProject.Update().Where(
+// 		reviewproject.IDEQ(toUpdate.ID),
+// 		func(s *sql.Selector) {
+// 			s.Where(sql.IsNull(project.FieldDeletedTime))
+// 		},
+// 	)
+// 	if toUpdate.RunID != nil {
+// 		updater.SetRunID(*toUpdate.RunID)
+// 	}
+// 	if toUpdate.WorkflowID != nil {
+// 		updater.SetWorkflowID(*toUpdate.WorkflowID)
+// 	}
+// 	if toUpdate.Status != nil {
+// 		updater.SetStatus(*toUpdate.Status)
+// 	}
+// 	updater.SetModifiedTime(time.Now())
 
-	uNum, err := updater.Save(ctx)
-	if err != nil {
-		return fmt.Errorf("update review project failed: %w", err)
-	}
-	if uNum == 0 {
-		return fmt.Errorf("update review project affect 0 row")
-	}
+// 	uNum, err := updater.Save(ctx)
+// 	if err != nil {
+// 		return fmt.Errorf("update review project failed: %w", err)
+// 	}
+// 	if uNum == 0 {
+// 		return fmt.Errorf("update review project affect 0 row")
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func (serv *ApplicantService) CreateReviewProjectDetail(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddReviewProjectDetail) error {
-	if ctx == nil || client == nil {
-		return fmt.Errorf("context or client is nil")
-	}
+// func (serv *ApplicantService) CreateReviewProjectDetail(ctx context.Context, client *ent.Client, toCreates []*entity.ToAddReviewProjectDetail) error {
+// 	if ctx == nil || client == nil {
+// 		return fmt.Errorf("context or client is nil")
+// 	}
 
-	length := len(toCreates)
+// 	length := len(toCreates)
 
-	for i := 0; i < length; i++ {
+// 	for i := 0; i < length; i++ {
 
-		err := client.ReviewProjectDetail.Create().
-			SetReviewProjectID(toCreates[i].ReviewProjectID).
-			SetNodeType(toCreates[i].NodeType).
-			SetOrder(toCreates[i].Order).
-			SetReviewer(toCreates[i].Reviewer).
-			SetStatus(database.ReviewProjectDetailPending).
-			Exec(ctx)
+// 		err := client.ReviewProjectDetail.Create().
+// 			SetReviewProjectID(toCreates[i].ReviewProjectID).
+// 			SetNodeType(toCreates[i].NodeType).
+// 			SetOrder(toCreates[i].Order).
+// 			SetReviewer(toCreates[i].Reviewer).
+// 			SetStatus(database.ReviewProjectDetailPending).
+// 			Exec(ctx)
 
-		if err != nil {
-			return fmt.Errorf("create review project failed: %w", err)
-		}
+// 		if err != nil {
+// 			return fmt.Errorf("create review project failed: %w", err)
+// 		}
 
-	}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (serv *ApplicantService) FindUserWithTeacherOrStudentById(ctx context.Context, client *ent.Client, userID uint32) (*ent.User, error) {
 	if ctx == nil || client == nil {
