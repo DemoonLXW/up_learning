@@ -85,13 +85,18 @@ func ProvideService() (*service.Services, error) {
 		Workflow: workflowService,
 		DB:       client,
 	}
+	projectReviewerFacade := &service.ProjectReviewerFacade{
+		Workflow: workflowService,
+		DB:       client,
+	}
 	services := &service.Services{
-		Management:  managementService,
-		Auth:        authService,
-		Common:      commonService,
-		Applicant:   applicantService,
-		ApplicantFa: applicantFacade,
-		Workflow:    workflowService,
+		Management:        managementService,
+		Auth:              authService,
+		Common:            commonService,
+		Applicant:         applicantService,
+		ApplicantFa:       applicantFacade,
+		Workflow:          workflowService,
+		ProjectReviewerFa: projectReviewerFacade,
 	}
 	return services, nil
 }
@@ -138,13 +143,18 @@ func ProvideController() (*controller.Controllers, error) {
 		Workflow: workflowService,
 		DB:       client,
 	}
+	projectReviewerFacade := &service.ProjectReviewerFacade{
+		Workflow: workflowService,
+		DB:       client,
+	}
 	services := &service.Services{
-		Management:  managementService,
-		Auth:        authService,
-		Common:      commonService,
-		Applicant:   applicantService,
-		ApplicantFa: applicantFacade,
-		Workflow:    workflowService,
+		Management:        managementService,
+		Auth:              authService,
+		Common:            commonService,
+		Applicant:         applicantService,
+		ApplicantFa:       applicantFacade,
+		Workflow:          workflowService,
+		ProjectReviewerFa: projectReviewerFacade,
 	}
 	authController := &controller.AuthController{
 		Services: services,
@@ -211,13 +221,18 @@ func ProvideApplication() (*gin.Engine, error) {
 		Workflow: workflowService,
 		DB:       client,
 	}
+	projectReviewerFacade := &service.ProjectReviewerFacade{
+		Workflow: workflowService,
+		DB:       client,
+	}
 	services := &service.Services{
-		Management:  managementService,
-		Auth:        authService,
-		Common:      commonService,
-		Applicant:   applicantService,
-		ApplicantFa: applicantFacade,
-		Workflow:    workflowService,
+		Management:        managementService,
+		Auth:              authService,
+		Common:            commonService,
+		Applicant:         applicantService,
+		ApplicantFa:       applicantFacade,
+		Workflow:          workflowService,
+		ProjectReviewerFa: projectReviewerFacade,
 	}
 	authController := &controller.AuthController{
 		Services: services,

@@ -349,3 +349,11 @@ type RetrievedReviewProjectRecord struct {
 	CreatedTime         *time.Time       `json:"created_time,omitempty"`
 	ModifiedTime        *time.Time       `json:"modified_time,omitempty"`
 }
+
+type SearchReviewProjectTask struct {
+	Current  *uint `form:"current"`
+	PageSize *uint `form:"page_size"`
+	// Like         string `form:"like"`
+	Sort  string `form:"sort"`
+	Order *bool  `form:"order"`
+}
