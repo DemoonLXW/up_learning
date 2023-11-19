@@ -374,9 +374,9 @@ func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *enti
 	}
 	body["variables"] = variables
 
-	if search.IsFinished != nil {
-		body["finished"] = search.IsFinished
-	}
+	// if search.IsFinished != nil {
+	// 	body["finished"] = search.IsFinished
+	// }
 	if search.PageSize != nil && search.Current != nil {
 		offset := int((*search.Current - 1) * (*search.PageSize))
 		body["start"] = offset

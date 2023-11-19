@@ -109,6 +109,11 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 				project.POST("/upload-image", Check(authService, []string{entity.ApplicantUploadDocumentImage}), controllers.Applicant.UploadDocumentImage)
 				project.POST("/submit-for-review", Check(authService, []string{entity.ApplicantSubmitProjectForReview}), controllers.Applicant.SubmitProjectForReview)
 			}
+
+			reviewProjectRecord := applicant.Group("/review-project-record")
+			{
+				reviewProjectRecord.GET("/get-list", Check(authService, []string{entity.ApplicantGetReviewProjectRecordByProjectID}), controllers.Applicant.GetReviewProjectRecordByProjectID)
+			}
 		}
 	}
 

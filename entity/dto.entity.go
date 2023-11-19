@@ -285,7 +285,7 @@ type ToRemoveProjectIDs struct {
 }
 
 type RetrievedProject struct {
-	ID                  *uint32          `json:"id,omitempty" uri:"id" binding:"required"`
+	ID                  *uint32          `json:"id,omitempty" form:"id" uri:"id" binding:"required"`
 	User                *RetrievedUser   `json:"user,omitempty" `
 	Title               *string          `json:"title,omitempty"`
 	Goal                *string          `json:"goal,omitempty" `
@@ -301,53 +301,23 @@ type RetrievedProject struct {
 	ModifiedTime        *time.Time       `json:"modified_time,omitempty"`
 }
 
-type ToAddReviewProject struct {
-	ProjectID   uint32 `json:"project_id"  binding:"required"`
-	WorkflowID  string `json:"workflow_id"`
-	RunID       string `json:"run_id"`
-	ApplicantID uint32 `json:"applicant_id"`
-}
-
-type ToModifyReviewProject struct {
-	ID         uint32  `json:"id" binding:"required"`
-	WorkflowID *string `json:"workflow_id"`
-	RunID      *string `json:"run_id"`
-	Status     *uint8  `json:"status"`
-}
-
-type ToAddReviewProjectDetail struct {
-	ReviewProjectID uint32    `json:"review_project_id"`
-	Order           uint8     `json:"order"`
-	Reviewer        *Reviewer `json:"reviewer"`
-	Executor        *Executor `json:"executor"`
-	NodeType        uint8     `json:"node_type"`
-}
-
 type SearchReviewProjectRecord struct {
 	ProjectID *uint32 `form:"project_id"  binding:"required"`
 	Current   *uint   `form:"current"`
 	PageSize  *uint   `form:"page_size"`
 	// Like         string `form:"like"`
-	Sort         string `form:"sort"`
-	Order        *bool  `form:"order"`
-	IsFinished   *bool  `form:"is_finished"`
+	Sort  string `form:"sort"`
+	Order *bool  `form:"order"`
+	// IsFinished   *bool  `form:"is_finished"`
 	ReviewStatus *uint8 `form:"review_status"`
 }
 
 type RetrievedReviewProjectRecord struct {
-	ID                  *uint32          `json:"id,omitempty" uri:"id" binding:"required"`
-	Title               *string          `json:"title,omitempty"`
-	Goal                *string          `json:"goal,omitempty" `
-	Principle           *string          `json:"principle,omitempty" `
-	ProcessAndMethod    *string          `json:"process_and_method,omitempty" `
-	Step                *string          `json:"step,omitempty" `
-	ResultAndConclusion *string          `json:"result_and_conclusion,omitempty" `
-	Requirement         *string          `json:"requirement,omitempty"`
-	Attachments         []*RetrievedFile `json:"attachments,omitempty"`
-	IsDisabled          *bool            `json:"is_disabled,omitempty"`
-	ReviewStatus        *uint8           `json:"review_status,omitempty"`
-	CreatedTime         *time.Time       `json:"created_time,omitempty"`
-	ModifiedTime        *time.Time       `json:"modified_time,omitempty"`
+	ID           *string    `json:"id,omitempty" uri:"id" binding:"required"`
+	ReviewStatus *uint8     `json:"review_status,omitempty"`
+	StartTime    *time.Time `json:"start_time,omitempty"`
+	EndTime      *time.Time `json:"end_time,omitempty"`
+	DueDate      *time.Time `json:"due_date,omitempty"`
 }
 
 type SearchReviewProjectTask struct {

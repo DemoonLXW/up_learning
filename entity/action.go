@@ -42,11 +42,12 @@ const (
 
 	CommomDownloadFile = "common download file"
 
-	ApplicantAddProject             = "applicant add project"
-	ApplicantRemoveProjectsByIds    = "applicant remove projects by ids"
-	ApplicantModifyAProject         = "applicant modify a project"
-	ApplicantGetAProjectById        = "applicant get a project by id"
-	ApplicantGetProjectListByUserID = "applicant get project list by user id"
-	ApplicantUploadDocumentImage    = "applicant upload document image"
-	ApplicantSubmitProjectForReview = "applicant submit project for review"
+	ApplicantAddProject                        = "applicant add project"
+	ApplicantRemoveProjectsByIds               = "applicant remove projects by ids"
+	ApplicantModifyAProject                    = "applicant modify a project"
+	ApplicantGetAProjectById                   = "applicant get a project by id"
+	ApplicantGetProjectListByUserID            = "applicant get project list by user id"
+	ApplicantUploadDocumentImage               = "applicant upload document image"
+	ApplicantSubmitProjectForReview            = "applicant submit project for review"
+	ApplicantGetReviewProjectRecordByProjectID = "applicant get review project record list by project id"
 )

@@ -230,7 +230,27 @@ func TestSubmitProjectForReview(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodPost, "/applicant/project/submit-for-review?id=5", nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "4"}
-	token_cookie := &http.Cookie{Name: "token", Value: "065454edbee17c417f585c121355e12f"}
+	token_cookie := &http.Cookie{Name: "token", Value: "23ee603cc127e5018d899444f8d62b4e"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
+
+func TestGetReviewProjectRecordByProjectID(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	query := "?current=1&page_size=3&project_id=5&sort=startTime&order=true&review_status=3"
+
+	req, _ := http.NewRequest(http.MethodGet, "/applicant/review-project-record/get-list"+query, nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "4"}
+	token_cookie := &http.Cookie{Name: "token", Value: "23ee603cc127e5018d899444f8d62b4e"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

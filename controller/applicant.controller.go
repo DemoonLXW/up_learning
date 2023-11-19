@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/DemoonLXW/up_learning/database"
@@ -348,7 +349,7 @@ func (cont *ApplicantController) SubmitProjectForReview(c *gin.Context) {
 		return
 	}
 
-	var project entity.ToModifyProject
+	var project entity.RetrievedProject
 	if err := c.ShouldBindWith(&project, binding.Query); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -356,7 +357,7 @@ func (cont *ApplicantController) SubmitProjectForReview(c *gin.Context) {
 
 	ctx := context.Background()
 	client := cont.Applicant.DB
-	p, err := cont.Applicant.FindOneProjectWithFileAndUserById(ctx, client, project.ID)
+	p, err := cont.Applicant.FindOneProjectWithFileAndUserById(ctx, client, *project.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -374,7 +375,7 @@ func (cont *ApplicantController) SubmitProjectForReview(c *gin.Context) {
 		return
 	}
 
-	err = cont.ApplicantFa.StartReviewProjectProcess(uint32(userID), project.ID)
+	err = cont.ApplicantFa.StartReviewProjectProcess(uint32(userID), *project.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -384,4 +385,72 @@ func (cont *ApplicantController) SubmitProjectForReview(c *gin.Context) {
 	res.Message = "Submit Project For Review Successfully"
 
 	c.JSON(http.StatusOK, res)
+}
+
+func (cont *ApplicantController) GetReviewProjectRecordByProjectID(c *gin.Context) {
+	var search entity.SearchReviewProjectRecord
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	m, err := cont.ApplicantFa.RetrieveReviewProjectRecordByProjectID(&search)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	recordData := m["data"].([]interface{})
+	var records []entity.RetrievedReviewProjectRecord
+	for _, v := range recordData {
+		vm := v.(map[string]interface{})
+
+		id := vm["id"].(string)
+		startTime, _ := time.Parse(time.RFC3339, vm["startTime"].(string))
+
+		endTimeStr, ok := vm["endTime"].(string)
+		var endTime time.Time
+		if ok {
+			endTime, _ = time.Parse(time.RFC3339, endTimeStr)
+		}
+
+		var reviewStatus *uint8
+		var dueDate *time.Time
+		variables := vm["variables"].([]interface{})
+		for _, vv := range variables {
+			vvm := vv.(map[string]interface{})
+			switch vvm["name"].(string) {
+			case "dueDate":
+				t, _ := time.Parse(time.RFC3339, vvm["value"].(string))
+				dueDate = &t
+			case "reviewStatus":
+				s := vvm["value"].(float64)
+				status := uint8(s)
+				reviewStatus = &status
+			}
+		}
+
+		records = append(records, entity.RetrievedReviewProjectRecord{
+			ID:           &id,
+			ReviewStatus: reviewStatus,
+			StartTime:    &startTime,
+			EndTime:      &endTime,
+			DueDate:      dueDate,
+		})
+	}
+
+	var data entity.RetrievedListData
+	data.Record = records
+	total := m["total"].(float64)
+	data.Total = int(total)
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < uint(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
+
+	var res entity.Result
+	res.Message = "Get List of ReviewProjectRecord By ProjectID Successfully"
+	res.Data = data
+	c.JSON(http.StatusOK, res)
+
 }
