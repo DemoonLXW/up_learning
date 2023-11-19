@@ -15,21 +15,19 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/predicate"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
-	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
 
 // ProjectQuery is the builder for querying Project entities.
 type ProjectQuery struct {
 	config
-	ctx               *QueryContext
-	order             []project.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.Project
-	withUser          *UserQuery
-	withAttachments   *FileQuery
-	withReviewProject *ReviewProjectQuery
-	withProjectFile   *ProjectFileQuery
+	ctx             *QueryContext
+	order           []project.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.Project
+	withUser        *UserQuery
+	withAttachments *FileQuery
+	withProjectFile *ProjectFileQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -103,28 +101,6 @@ func (pq *ProjectQuery) QueryAttachments() *FileQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(file.Table, file.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, project.AttachmentsTable, project.AttachmentsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryReviewProject chains the current query on the "review_project" edge.
-func (pq *ProjectQuery) QueryReviewProject() *ReviewProjectQuery {
-	query := (&ReviewProjectClient{config: pq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := pq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(project.Table, project.FieldID, selector),
-			sqlgraph.To(reviewproject.Table, reviewproject.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, project.ReviewProjectTable, project.ReviewProjectColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -341,15 +317,14 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 		return nil
 	}
 	return &ProjectQuery{
-		config:            pq.config,
-		ctx:               pq.ctx.Clone(),
-		order:             append([]project.OrderOption{}, pq.order...),
-		inters:            append([]Interceptor{}, pq.inters...),
-		predicates:        append([]predicate.Project{}, pq.predicates...),
-		withUser:          pq.withUser.Clone(),
-		withAttachments:   pq.withAttachments.Clone(),
-		withReviewProject: pq.withReviewProject.Clone(),
-		withProjectFile:   pq.withProjectFile.Clone(),
+		config:          pq.config,
+		ctx:             pq.ctx.Clone(),
+		order:           append([]project.OrderOption{}, pq.order...),
+		inters:          append([]Interceptor{}, pq.inters...),
+		predicates:      append([]predicate.Project{}, pq.predicates...),
+		withUser:        pq.withUser.Clone(),
+		withAttachments: pq.withAttachments.Clone(),
+		withProjectFile: pq.withProjectFile.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -375,17 +350,6 @@ func (pq *ProjectQuery) WithAttachments(opts ...func(*FileQuery)) *ProjectQuery 
 		opt(query)
 	}
 	pq.withAttachments = query
-	return pq
-}
-
-// WithReviewProject tells the query-builder to eager-load the nodes that are connected to
-// the "review_project" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *ProjectQuery) WithReviewProject(opts ...func(*ReviewProjectQuery)) *ProjectQuery {
-	query := (&ReviewProjectClient{config: pq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	pq.withReviewProject = query
 	return pq
 }
 
@@ -478,10 +442,9 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	var (
 		nodes       = []*Project{}
 		_spec       = pq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [3]bool{
 			pq.withUser != nil,
 			pq.withAttachments != nil,
-			pq.withReviewProject != nil,
 			pq.withProjectFile != nil,
 		}
 	)
@@ -513,13 +476,6 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 		if err := pq.loadAttachments(ctx, query, nodes,
 			func(n *Project) { n.Edges.Attachments = []*File{} },
 			func(n *Project, e *File) { n.Edges.Attachments = append(n.Edges.Attachments, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := pq.withReviewProject; query != nil {
-		if err := pq.loadReviewProject(ctx, query, nodes,
-			func(n *Project) { n.Edges.ReviewProject = []*ReviewProject{} },
-			func(n *Project, e *ReviewProject) { n.Edges.ReviewProject = append(n.Edges.ReviewProject, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -620,36 +576,6 @@ func (pq *ProjectQuery) loadAttachments(ctx context.Context, query *FileQuery, n
 		for kn := range nodes {
 			assign(kn, n)
 		}
-	}
-	return nil
-}
-func (pq *ProjectQuery) loadReviewProject(ctx context.Context, query *ReviewProjectQuery, nodes []*Project, init func(*Project), assign func(*Project, *ReviewProject)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uint32]*Project)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(reviewproject.FieldProjectID)
-	}
-	query.Where(predicate.ReviewProject(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(project.ReviewProjectColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ProjectID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

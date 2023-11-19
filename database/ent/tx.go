@@ -28,10 +28,6 @@ type Tx struct {
 	Project *ProjectClient
 	// ProjectFile is the client for interacting with the ProjectFile builders.
 	ProjectFile *ProjectFileClient
-	// ReviewProject is the client for interacting with the ReviewProject builders.
-	ReviewProject *ReviewProjectClient
-	// ReviewProjectDetail is the client for interacting with the ReviewProjectDetail builders.
-	ReviewProjectDetail *ReviewProjectDetailClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// RolePermission is the client for interacting with the RolePermission builders.
@@ -187,8 +183,6 @@ func (tx *Tx) init() {
 	tx.Permission = NewPermissionClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
 	tx.ProjectFile = NewProjectFileClient(tx.config)
-	tx.ReviewProject = NewReviewProjectClient(tx.config)
-	tx.ReviewProjectDetail = NewReviewProjectDetailClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.RolePermission = NewRolePermissionClient(tx.config)
 	tx.SampleFile = NewSampleFileClient(tx.config)

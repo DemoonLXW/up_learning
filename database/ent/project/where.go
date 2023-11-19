@@ -841,29 +841,6 @@ func HasAttachmentsWith(preds ...predicate.File) predicate.Project {
 	})
 }
 
-// HasReviewProject applies the HasEdge predicate on the "review_project" edge.
-func HasReviewProject() predicate.Project {
-	return predicate.Project(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ReviewProjectTable, ReviewProjectColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasReviewProjectWith applies the HasEdge predicate on the "review_project" edge with a given conditions (other predicates).
-func HasReviewProjectWith(preds ...predicate.ReviewProject) predicate.Project {
-	return predicate.Project(func(s *sql.Selector) {
-		step := newReviewProjectStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasProjectFile applies the HasEdge predicate on the "project_file" edge.
 func HasProjectFile() predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {

@@ -20,8 +20,6 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/permission"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
-	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
-	"github.com/DemoonLXW/up_learning/database/ent/reviewprojectdetail"
 	"github.com/DemoonLXW/up_learning/database/ent/role"
 	"github.com/DemoonLXW/up_learning/database/ent/rolepermission"
 	"github.com/DemoonLXW/up_learning/database/ent/samplefile"
@@ -90,24 +88,22 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			class.Table:               class.ValidColumn,
-			college.Table:             college.ValidColumn,
-			file.Table:                file.ValidColumn,
-			major.Table:               major.ValidColumn,
-			menu.Table:                menu.ValidColumn,
-			permission.Table:          permission.ValidColumn,
-			project.Table:             project.ValidColumn,
-			projectfile.Table:         projectfile.ValidColumn,
-			reviewproject.Table:       reviewproject.ValidColumn,
-			reviewprojectdetail.Table: reviewprojectdetail.ValidColumn,
-			role.Table:                role.ValidColumn,
-			rolepermission.Table:      rolepermission.ValidColumn,
-			samplefile.Table:          samplefile.ValidColumn,
-			school.Table:              school.ValidColumn,
-			student.Table:             student.ValidColumn,
-			teacher.Table:             teacher.ValidColumn,
-			user.Table:                user.ValidColumn,
-			userrole.Table:            userrole.ValidColumn,
+			class.Table:          class.ValidColumn,
+			college.Table:        college.ValidColumn,
+			file.Table:           file.ValidColumn,
+			major.Table:          major.ValidColumn,
+			menu.Table:           menu.ValidColumn,
+			permission.Table:     permission.ValidColumn,
+			project.Table:        project.ValidColumn,
+			projectfile.Table:    projectfile.ValidColumn,
+			role.Table:           role.ValidColumn,
+			rolepermission.Table: rolepermission.ValidColumn,
+			samplefile.Table:     samplefile.ValidColumn,
+			school.Table:         school.ValidColumn,
+			student.Table:        student.ValidColumn,
+			teacher.Table:        teacher.ValidColumn,
+			user.Table:           user.ValidColumn,
+			userrole.Table:       userrole.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

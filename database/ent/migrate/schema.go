@@ -197,66 +197,6 @@ var (
 			},
 		},
 	}
-	// ReviewProjectColumns holds the columns for the "review_project" table.
-	ReviewProjectColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUint32, Increment: true},
-		{Name: "workflow_id", Type: field.TypeString},
-		{Name: "run_id", Type: field.TypeString},
-		{Name: "status", Type: field.TypeUint8},
-		{Name: "created_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
-		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
-		{Name: "project_id", Type: field.TypeUint32},
-		{Name: "applicant_id", Type: field.TypeUint32},
-	}
-	// ReviewProjectTable holds the schema information for the "review_project" table.
-	ReviewProjectTable = &schema.Table{
-		Name:       "review_project",
-		Columns:    ReviewProjectColumns,
-		PrimaryKey: []*schema.Column{ReviewProjectColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "review_project_project_review_project",
-				Columns:    []*schema.Column{ReviewProjectColumns[7]},
-				RefColumns: []*schema.Column{ProjectColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "review_project_user_review_project",
-				Columns:    []*schema.Column{ReviewProjectColumns[8]},
-				RefColumns: []*schema.Column{UserColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
-	// ReviewProjectDetailColumns holds the columns for the "review_project_detail" table.
-	ReviewProjectDetailColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "order", Type: field.TypeUint8},
-		{Name: "reviewer", Type: field.TypeJSON},
-		{Name: "executor", Type: field.TypeJSON},
-		{Name: "node_type", Type: field.TypeUint8},
-		{Name: "opinion", Type: field.TypeString},
-		{Name: "status", Type: field.TypeUint8},
-		{Name: "created_time", Type: field.TypeTime},
-		{Name: "deleted_time", Type: field.TypeTime, Nullable: true},
-		{Name: "modified_time", Type: field.TypeTime, Nullable: true},
-		{Name: "review_project_id", Type: field.TypeUint32},
-	}
-	// ReviewProjectDetailTable holds the schema information for the "review_project_detail" table.
-	ReviewProjectDetailTable = &schema.Table{
-		Name:       "review_project_detail",
-		Columns:    ReviewProjectDetailColumns,
-		PrimaryKey: []*schema.Column{ReviewProjectDetailColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "review_project_detail_review_project_review_project_detail",
-				Columns:    []*schema.Column{ReviewProjectDetailColumns[10]},
-				RefColumns: []*schema.Column{ReviewProjectColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
 	// RoleColumns holds the columns for the "role" table.
 	RoleColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint8, Increment: true},
@@ -465,8 +405,6 @@ var (
 		PermissionTable,
 		ProjectTable,
 		ProjectFileTable,
-		ReviewProjectTable,
-		ReviewProjectDetailTable,
 		RoleTable,
 		RolePermissionTable,
 		SampleFileTable,
@@ -509,15 +447,6 @@ func init() {
 	ProjectFileTable.ForeignKeys[1].RefTable = FileTable
 	ProjectFileTable.Annotation = &entsql.Annotation{
 		Table: "project_file",
-	}
-	ReviewProjectTable.ForeignKeys[0].RefTable = ProjectTable
-	ReviewProjectTable.ForeignKeys[1].RefTable = UserTable
-	ReviewProjectTable.Annotation = &entsql.Annotation{
-		Table: "review_project",
-	}
-	ReviewProjectDetailTable.ForeignKeys[0].RefTable = ReviewProjectTable
-	ReviewProjectDetailTable.Annotation = &entsql.Annotation{
-		Table: "review_project_detail",
 	}
 	RoleTable.Annotation = &entsql.Annotation{
 		Table: "role",

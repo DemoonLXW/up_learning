@@ -70,6 +70,5 @@ func (User) Edges() []ent.Edge {
 			Unique(),
 		edge.To("files", File.Type),
 		edge.To("projects", Project.Type),
-		edge.To("review_project", ReviewProject.Type),
 	}
 }

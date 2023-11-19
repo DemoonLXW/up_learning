@@ -56,13 +56,11 @@ type ProjectEdges struct {
 	User *User `json:"user,omitempty"`
 	// Attachments holds the value of the attachments edge.
 	Attachments []*File `json:"attachments,omitempty"`
-	// ReviewProject holds the value of the review_project edge.
-	ReviewProject []*ReviewProject `json:"review_project,omitempty"`
 	// ProjectFile holds the value of the project_file edge.
 	ProjectFile []*ProjectFile `json:"project_file,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [3]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -87,19 +85,10 @@ func (e ProjectEdges) AttachmentsOrErr() ([]*File, error) {
 	return nil, &NotLoadedError{edge: "attachments"}
 }
 
-// ReviewProjectOrErr returns the ReviewProject value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProjectEdges) ReviewProjectOrErr() ([]*ReviewProject, error) {
-	if e.loadedTypes[2] {
-		return e.ReviewProject, nil
-	}
-	return nil, &NotLoadedError{edge: "review_project"}
-}
-
 // ProjectFileOrErr returns the ProjectFile value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProjectEdges) ProjectFileOrErr() ([]*ProjectFile, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.ProjectFile, nil
 	}
 	return nil, &NotLoadedError{edge: "project_file"}
@@ -241,11 +230,6 @@ func (pr *Project) QueryUser() *UserQuery {
 // QueryAttachments queries the "attachments" edge of the Project entity.
 func (pr *Project) QueryAttachments() *FileQuery {
 	return NewProjectClient(pr.config).QueryAttachments(pr)
-}
-
-// QueryReviewProject queries the "review_project" edge of the Project entity.
-func (pr *Project) QueryReviewProject() *ReviewProjectQuery {
-	return NewProjectClient(pr.config).QueryReviewProject(pr)
 }
 
 // QueryProjectFile queries the "project_file" edge of the Project entity.

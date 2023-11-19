@@ -60,6 +60,5 @@ func (Project) Edges() []ent.Edge {
 			Field("uid"),
 		edge.To("attachments", File.Type).
 			Through("project_file", ProjectFile.Type),
-		edge.To("review_project", ReviewProject.Type),
 	}
 }

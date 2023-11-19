@@ -44,8 +44,6 @@ const (
 	EdgeUser = "user"
 	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
 	EdgeAttachments = "attachments"
-	// EdgeReviewProject holds the string denoting the review_project edge name in mutations.
-	EdgeReviewProject = "review_project"
 	// EdgeProjectFile holds the string denoting the project_file edge name in mutations.
 	EdgeProjectFile = "project_file"
 	// Table holds the table name of the project in the database.
@@ -62,13 +60,6 @@ const (
 	// AttachmentsInverseTable is the table name for the File entity.
 	// It exists in this package in order to avoid circular dependency with the "file" package.
 	AttachmentsInverseTable = "file"
-	// ReviewProjectTable is the table that holds the review_project relation/edge.
-	ReviewProjectTable = "review_project"
-	// ReviewProjectInverseTable is the table name for the ReviewProject entity.
-	// It exists in this package in order to avoid circular dependency with the "reviewproject" package.
-	ReviewProjectInverseTable = "review_project"
-	// ReviewProjectColumn is the table column denoting the review_project relation/edge.
-	ReviewProjectColumn = "project_id"
 	// ProjectFileTable is the table that holds the project_file relation/edge.
 	ProjectFileTable = "project_file"
 	// ProjectFileInverseTable is the table name for the ProjectFile entity.
@@ -215,20 +206,6 @@ func ByAttachments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByReviewProjectCount orders the results by review_project count.
-func ByReviewProjectCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newReviewProjectStep(), opts...)
-	}
-}
-
-// ByReviewProject orders the results by review_project terms.
-func ByReviewProject(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newReviewProjectStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByProjectFileCount orders the results by project_file count.
 func ByProjectFileCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -254,13 +231,6 @@ func newAttachmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AttachmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, AttachmentsTable, AttachmentsPrimaryKey...),
-	)
-}
-func newReviewProjectStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ReviewProjectInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ReviewProjectTable, ReviewProjectColumn),
 	)
 }
 func newProjectFileStep() *sqlgraph.Step {

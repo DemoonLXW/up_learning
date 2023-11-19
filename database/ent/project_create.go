@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/DemoonLXW/up_learning/database/ent/file"
 	"github.com/DemoonLXW/up_learning/database/ent/project"
-	"github.com/DemoonLXW/up_learning/database/ent/reviewproject"
 	"github.com/DemoonLXW/up_learning/database/ent/user"
 )
 
@@ -187,21 +186,6 @@ func (pc *ProjectCreate) AddAttachments(f ...*File) *ProjectCreate {
 		ids[i] = f[i].ID
 	}
 	return pc.AddAttachmentIDs(ids...)
-}
-
-// AddReviewProjectIDs adds the "review_project" edge to the ReviewProject entity by IDs.
-func (pc *ProjectCreate) AddReviewProjectIDs(ids ...uint32) *ProjectCreate {
-	pc.mutation.AddReviewProjectIDs(ids...)
-	return pc
-}
-
-// AddReviewProject adds the "review_project" edges to the ReviewProject entity.
-func (pc *ProjectCreate) AddReviewProject(r ...*ReviewProject) *ProjectCreate {
-	ids := make([]uint32, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return pc.AddReviewProjectIDs(ids...)
 }
 
 // Mutation returns the ProjectMutation object of the builder.
@@ -400,22 +384,6 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := pc.mutation.ReviewProjectIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   project.ReviewProjectTable,
-			Columns: []string{project.ReviewProjectColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(reviewproject.FieldID, field.TypeUint32),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
