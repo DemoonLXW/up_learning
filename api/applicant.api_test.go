@@ -246,11 +246,31 @@ func TestGetReviewProjectRecordByProjectID(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 
-	query := "?current=1&page_size=3&project_id=5&sort=startTime&order=true&review_status=3"
+	query := "?current=1&page_size=1&project_id=5&sort=startTime&order=true"
 
 	req, _ := http.NewRequest(http.MethodGet, "/applicant/review-project-record/get-list"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "4"}
-	token_cookie := &http.Cookie{Name: "token", Value: "8d42ab43affe73baf3b87e7e784cda65"}
+	token_cookie := &http.Cookie{Name: "token", Value: "61e5787bd6c0075729a3bbfcdbfffbcb"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}
+
+func TestGetAReviewProjectRecordDetailByID(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+
+	id := "5bc739da-86c0-11ee-8812-0242aec148e6"
+
+	req, _ := http.NewRequest(http.MethodGet, "/applicant/review-project-record/get/"+id, nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "4"}
+	token_cookie := &http.Cookie{Name: "token", Value: "61e5787bd6c0075729a3bbfcdbfffbcb"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

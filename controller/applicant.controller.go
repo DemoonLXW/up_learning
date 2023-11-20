@@ -440,3 +440,81 @@ func (cont *ApplicantController) GetReviewProjectRecordByProjectID(c *gin.Contex
 	c.JSON(http.StatusOK, res)
 
 }
+
+func (cont *ApplicantController) GetAReviewProjectRecordDetailByID(c *gin.Context) {
+	var record entity.RetrievedReviewProjectRecordDetail
+	if err := c.ShouldBindUri(&record); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	hpi, htipl, err := cont.ApplicantFa.FindReviewProjectRecordDetailById(*record.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	detail := entity.RetrievedReviewProjectRecordDetail{}
+	detail.ID = record.ID
+	detail.StartTime = hpi.StartTime
+	detail.EndTime = hpi.EndTime
+	for _, v := range hpi.Variables {
+		switch v.Name {
+		case "dueDate":
+			t, _ := time.Parse(time.RFC3339, v.Value.(string))
+			detail.DueDate = &t
+		case "reviewStatus":
+			s := v.Value.(float64)
+			status := uint8(s)
+			detail.ReviewStatus = &status
+		}
+	}
+
+	for _, v := range htipl.Data {
+		var assignee *entity.RetrievedUser
+		if v.Assignee != "" {
+			uid, err := strconv.ParseUint(v.Assignee, 10, 32)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("uid convertion failed: [%s]", v.Assignee)})
+				return
+			}
+			ctx := context.Background()
+			client := cont.Applicant.DB
+			u, err := cont.Applicant.FindUserWithTeacherOrStudentById(ctx, client, uint32(uid))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			assignee = &entity.RetrievedUser{
+				ID:       &u.ID,
+				Account:  &u.Account,
+				Username: &u.Username,
+			}
+		}
+		var action *uint8
+		for _, vv := range v.Variables {
+			if vv.Name == "action" {
+				value := vv.Value.(float64)
+				a := uint8(value)
+				action = &a
+				break
+			}
+		}
+
+		detail.Progress = append(detail.Progress, entity.RetrievedReviewProjectTask{
+			ID:        &v.ID,
+			Name:      &v.Name,
+			Assignee:  assignee,
+			StartTime: v.StartTime,
+			EndTime:   v.EndTime,
+			Action:    action,
+		})
+
+	}
+
+	var res entity.Result
+	res.Message = "Get A ReviewProjectRecordDetail By ID Successfully"
+	res.Data = detail
+	c.JSON(http.StatusOK, res)
+
+}

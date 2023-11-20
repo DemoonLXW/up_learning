@@ -320,6 +320,24 @@ type RetrievedReviewProjectRecord struct {
 	DueDate      *time.Time `json:"due_date,omitempty"`
 }
 
+type RetrievedReviewProjectRecordDetail struct {
+	ID           *string                      `json:"id,omitempty" uri:"id" binding:"required"`
+	ReviewStatus *uint8                       `json:"review_status,omitempty"`
+	StartTime    *time.Time                   `json:"start_time,omitempty"`
+	EndTime      *time.Time                   `json:"end_time,omitempty"`
+	DueDate      *time.Time                   `json:"due_date,omitempty"`
+	Progress     []RetrievedReviewProjectTask `json:"progress,omitempty"`
+}
+
+type RetrievedReviewProjectTask struct {
+	ID        *string        `json:"id,omitempty"`
+	Name      *string        `json:"name,omitempty"`
+	Assignee  *RetrievedUser `json:"assignee,omitempty"`
+	Action    *uint8         `json:"action,omitempty"`
+	StartTime *time.Time     `json:"start_time,omitempty"`
+	EndTime   *time.Time     `json:"end_time,omitempty"`
+}
+
 type SearchReviewProjectTask struct {
 	Current  *uint `form:"current"`
 	PageSize *uint `form:"page_size"`

@@ -50,4 +50,5 @@ const (
 	ApplicantUploadDocumentImage               = "applicant upload document image"
 	ApplicantSubmitProjectForReview            = "applicant submit project for review"
 	ApplicantGetReviewProjectRecordByProjectID = "applicant get review project record list by project id"
+	ApplicantGetAReviewProjectRecordDetailByID = "applicant get a review project record detail by id"
 )

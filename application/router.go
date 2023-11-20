@@ -113,6 +113,8 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 			reviewProjectRecord := applicant.Group("/review-project-record")
 			{
 				reviewProjectRecord.GET("/get-list", Check(authService, []string{entity.ApplicantGetReviewProjectRecordByProjectID}), controllers.Applicant.GetReviewProjectRecordByProjectID)
+				reviewProjectRecord.GET("/get/:id", Check(authService, []string{entity.ApplicantGetAReviewProjectRecordDetailByID}), controllers.Applicant.GetAReviewProjectRecordDetailByID)
+
 			}
 		}
 	}

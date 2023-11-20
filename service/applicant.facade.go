@@ -433,6 +433,8 @@ func (faca *ApplicantFacade) FindReviewProjectRecordDetailById(id string) (*work
 		"processDefinitionKey":      entity.REVIEW_PROJECT,
 		"includeTaskLocalVariables": true,
 		"processInstanceId":         id,
+		"sort":                      "startTime",
+		"order":                     "asc",
 	}
 
 	taskByte, err := faca.Workflow.QueryForHistoricTaskInstances(taskBody)
