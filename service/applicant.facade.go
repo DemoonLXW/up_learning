@@ -410,28 +410,40 @@ func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *enti
 	return &list, nil
 }
 
-// func (faca *ApplicantFacade) FindReviewProjectRecordDetailById(id string) (*workflow.HistoricProcessInstances, map[string]interface{}, error) {
-// 	processbody := map[string]interface{}{
-// 		"processDefinitionKey":    entity.REVIEW_PROJECT,
-// 		"includeProcessVariables": true,
-// 		"processInstanceId":       id,
-// 	}
+func (faca *ApplicantFacade) FindReviewProjectRecordDetailById(id string) (*workflow.HistoricProcessInstances, *workflow.HistoricTaskInstancesPageList, error) {
+	processBody := map[string]interface{}{
+		"processDefinitionKey":    entity.REVIEW_PROJECT,
+		"includeProcessVariables": true,
+		"processInstanceId":       id,
+	}
+	processByte, err := faca.Workflow.QueryForHistoricProcessInstances(processBody)
+	if err != nil {
+		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
+	}
+	processList := workflow.HistoricProcessInstancesPageList{}
+	err = json.Unmarshal(processByte, &processList)
+	if err != nil {
+		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
+	}
+	if len(processList.Data) == 0 {
+		return nil, nil, fmt.Errorf("retrieve review project record detail not found")
+	}
 
-// 	processMap, err := faca.Workflow.QueryForHistoricProcessInstances(processbody)
-// 	if err != nil {
-// 		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
-// 	}
+	taskBody := map[string]interface{}{
+		"processDefinitionKey":      entity.REVIEW_PROJECT,
+		"includeTaskLocalVariables": true,
+		"processInstanceId":         id,
+	}
 
-// 	taskbody := map[string]interface{}{
-// 		"processDefinitionKey":      entity.REVIEW_PROJECT,
-// 		"includeTaskLocalVariables": true,
-// 		"processInstanceId":         id,
-// 	}
+	taskByte, err := faca.Workflow.QueryForHistoricTaskInstances(taskBody)
+	if err != nil {
+		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
+	}
+	taskList := workflow.HistoricTaskInstancesPageList{}
+	err = json.Unmarshal(taskByte, &taskList)
+	if err != nil {
+		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
+	}
 
-// 	taskMap, err := faca.Workflow.QueryForHistoricTaskInstances(taskbody)
-// 	if err != nil {
-// 		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
-// 	}
-
-// 	return processMap, taskMap, nil
-// }
+	return &processList.Data[0], &taskList, nil
+}

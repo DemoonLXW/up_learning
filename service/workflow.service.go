@@ -80,7 +80,7 @@ func (serv *WorkflowService) QueryForHistoricProcessInstances(reqBody map[string
 	return b, nil
 }
 
-func (serv *WorkflowService) QueryForHistoricTaskInstances(reqBody map[string]interface{}) (map[string]interface{}, error) {
+func (serv *WorkflowService) QueryForHistoricTaskInstances(reqBody map[string]interface{}) ([]byte, error) {
 	reqBodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("query for historic task instances failed: %w", err)
@@ -109,11 +109,5 @@ func (serv *WorkflowService) QueryForHistoricTaskInstances(reqBody map[string]in
 	}
 	resp.Body.Close()
 
-	var respBody map[string]interface{}
-	err = json.Unmarshal(b, &respBody)
-	if err != nil {
-		return nil, fmt.Errorf("query for historic task instances failed: %w", err)
-	}
-
-	return respBody, nil
+	return b, nil
 }

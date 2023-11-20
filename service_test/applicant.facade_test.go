@@ -191,22 +191,17 @@ func TestRetrieveReviewProjectRecordByProjectID(t *testing.T) {
 	fmt.Println(m.Total)
 }
 
-// func TestFindReviewProjectRecordDetailById(t *testing.T) {
-// 	faca, err := CreateTestApplicantFacade()
-// 	assert.Nil(t, err)
+func TestFindReviewProjectRecordDetailById(t *testing.T) {
+	faca, err := CreateTestApplicantFacade()
+	assert.Nil(t, err)
 
-// 	id := "2eb5fff3-83b6-11ee-8a6b-b66921bdcecd"
+	id := "7c7cb728-85ef-11ee-b0d7-b66921bdcecd"
 
-// 	pm, tm, err := faca.FindReviewProjectRecordDetailById(id)
-// 	assert.Nil(t, err)
+	process, tasks, err := faca.FindReviewProjectRecordDetailById(id)
+	assert.Nil(t, err)
 
-// 	for _, v := range pm["data"].([]interface{}) {
-// 		mm := v.(map[string]interface{})
-// 		fmt.Printf("%v\n", mm["variables"])
-// 	}
-
-// 	for _, v := range tm["data"].([]interface{}) {
-// 		mm := v.(map[string]interface{})
-// 		fmt.Printf("%v\n", mm["name"])
-// 	}
-// }
+	fmt.Println(process.ID, process.StartTime)
+	for _, v := range tasks.Data {
+		fmt.Println(v.ID, v.Name, v.Assignee)
+	}
+}
