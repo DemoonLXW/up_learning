@@ -182,13 +182,13 @@ func TestRetrieveReviewProjectRecordByProjectID(t *testing.T) {
 	assert.Nil(t, err)
 
 	for _, v := range m.Data {
-		fmt.Print(*v.ID, *v.StartTime, v.EndTime)
+		fmt.Print(v.ID, v.StartTime, v.EndTime)
 		for _, vv := range v.Variables {
-			fmt.Print(*vv.Name, vv.Value)
+			fmt.Print(vv.Name, vv.Value)
 		}
 		fmt.Println()
 	}
-	fmt.Println(*m.Total)
+	fmt.Println(m.Total)
 }
 
 // func TestFindReviewProjectRecordDetailById(t *testing.T) {

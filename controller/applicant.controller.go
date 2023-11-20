@@ -394,55 +394,41 @@ func (cont *ApplicantController) GetReviewProjectRecordByProjectID(c *gin.Contex
 		return
 	}
 
-	m, err := cont.ApplicantFa.RetrieveReviewProjectRecordByProjectID(&search)
+	hpipl, err := cont.ApplicantFa.RetrieveReviewProjectRecordByProjectID(&search)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	recordData := m["data"].([]interface{})
 	var records []entity.RetrievedReviewProjectRecord
-	for _, v := range recordData {
-		vm := v.(map[string]interface{})
-
-		id := vm["id"].(string)
-		startTime, _ := time.Parse(time.RFC3339, vm["startTime"].(string))
-
-		endTimeStr, ok := vm["endTime"].(string)
-		var endTime time.Time
-		if ok {
-			endTime, _ = time.Parse(time.RFC3339, endTimeStr)
-		}
-
-		var reviewStatus *uint8
+	for _, v := range hpipl.Data {
 		var dueDate *time.Time
-		variables := vm["variables"].([]interface{})
-		for _, vv := range variables {
-			vvm := vv.(map[string]interface{})
-			switch vvm["name"].(string) {
+		var reviewStatus *uint8
+		for _, vv := range v.Variables {
+			switch vv.Name {
 			case "dueDate":
-				t, _ := time.Parse(time.RFC3339, vvm["value"].(string))
+				t, _ := time.Parse(time.RFC3339, vv.Value.(string))
 				dueDate = &t
 			case "reviewStatus":
-				s := vvm["value"].(float64)
+				s := vv.Value.(float64)
 				status := uint8(s)
 				reviewStatus = &status
 			}
 		}
 
 		records = append(records, entity.RetrievedReviewProjectRecord{
-			ID:           &id,
+			ID:           &v.ID,
 			ReviewStatus: reviewStatus,
-			StartTime:    &startTime,
-			EndTime:      &endTime,
+			StartTime:    v.StartTime,
+			EndTime:      v.EndTime,
 			DueDate:      dueDate,
 		})
 	}
 
 	var data entity.RetrievedListData
 	data.Record = records
-	total := m["total"].(float64)
-	data.Total = int(total)
+	total := hpipl.Total
+	data.Total = total
 	if search.Current != nil && search.PageSize != nil {
 		data.IsPrevious = *search.Current > 1
 		data.IsNext = *search.Current < uint(math.Ceil(float64(total)/float64(*search.PageSize)))
