@@ -42,7 +42,7 @@ func (serv *WorkflowService) StartAProcessInstance(reqBody map[string]interface{
 
 	return nil
 }
-func (serv *WorkflowService) QueryForHistoricProcessInstances(reqBody map[string]interface{}) (map[string]interface{}, error) {
+func (serv *WorkflowService) QueryForHistoricProcessInstances(reqBody map[string]interface{}) ([]byte, error) {
 	reqBodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("query for historic process instances failed: %w", err)
@@ -71,13 +71,13 @@ func (serv *WorkflowService) QueryForHistoricProcessInstances(reqBody map[string
 	}
 	resp.Body.Close()
 
-	var respBody map[string]interface{}
-	err = json.Unmarshal(b, &respBody)
-	if err != nil {
-		return nil, fmt.Errorf("query for historic process instances failed: %w", err)
-	}
+	// var respBody map[string]interface{}
+	// err = json.Unmarshal(b, &respBody)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("query for historic process instances failed: %w", err)
+	// }
 
-	return respBody, nil
+	return b, nil
 }
 
 func (serv *WorkflowService) QueryForHistoricTaskInstances(reqBody map[string]interface{}) (map[string]interface{}, error) {

@@ -181,28 +181,32 @@ func TestRetrieveReviewProjectRecordByProjectID(t *testing.T) {
 	})
 	assert.Nil(t, err)
 
-	for _, v := range m["data"].([]interface{}) {
-		mm := v.(map[string]interface{})
-		fmt.Printf("%v\n", mm["id"].(string))
+	for _, v := range m.Data {
+		fmt.Print(*v.ID, *v.StartTime, v.EndTime)
+		for _, vv := range v.Variables {
+			fmt.Print(*vv.Name, vv.Value)
+		}
+		fmt.Println()
 	}
+	fmt.Println(*m.Total)
 }
 
-func TestFindReviewProjectRecordDetailById(t *testing.T) {
-	faca, err := CreateTestApplicantFacade()
-	assert.Nil(t, err)
+// func TestFindReviewProjectRecordDetailById(t *testing.T) {
+// 	faca, err := CreateTestApplicantFacade()
+// 	assert.Nil(t, err)
 
-	id := "2eb5fff3-83b6-11ee-8a6b-b66921bdcecd"
+// 	id := "2eb5fff3-83b6-11ee-8a6b-b66921bdcecd"
 
-	pm, tm, err := faca.FindReviewProjectRecordDetailById(id)
-	assert.Nil(t, err)
+// 	pm, tm, err := faca.FindReviewProjectRecordDetailById(id)
+// 	assert.Nil(t, err)
 
-	for _, v := range pm["data"].([]interface{}) {
-		mm := v.(map[string]interface{})
-		fmt.Printf("%v\n", mm["variables"])
-	}
+// 	for _, v := range pm["data"].([]interface{}) {
+// 		mm := v.(map[string]interface{})
+// 		fmt.Printf("%v\n", mm["variables"])
+// 	}
 
-	for _, v := range tm["data"].([]interface{}) {
-		mm := v.(map[string]interface{})
-		fmt.Printf("%v\n", mm["name"])
-	}
-}
+// 	for _, v := range tm["data"].([]interface{}) {
+// 		mm := v.(map[string]interface{})
+// 		fmt.Printf("%v\n", mm["name"])
+// 	}
+// }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/DemoonLXW/up_learning/database/ent/project"
 	"github.com/DemoonLXW/up_learning/database/ent/projectfile"
 	"github.com/DemoonLXW/up_learning/entity"
+	"github.com/DemoonLXW/up_learning/entity/workflow"
 )
 
 type ApplicantFacade struct {
@@ -350,7 +352,7 @@ func (faca *ApplicantFacade) StartReviewProjectProcess(userID, projectID uint32)
 	return nil
 }
 
-func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *entity.SearchReviewProjectRecord) (map[string]interface{}, error) {
+func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *entity.SearchReviewProjectRecord) (*workflow.HistoricProcessInstancesPageList, error) {
 	body := map[string]interface{}{
 		"processDefinitionKey":    entity.REVIEW_PROJECT,
 		"includeProcessVariables": true,
@@ -394,36 +396,42 @@ func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *enti
 		}
 	}
 
-	m, err := faca.Workflow.QueryForHistoricProcessInstances(body)
+	b, err := faca.Workflow.QueryForHistoricProcessInstances(body)
 	if err != nil {
 		return nil, fmt.Errorf("retrieve review project record failed: %w", err)
 	}
 
-	return m, nil
+	var list workflow.HistoricProcessInstancesPageList
+	err = json.Unmarshal(b, &list)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve review project record failed: %w", err)
+	}
+
+	return &list, nil
 }
 
-func (faca *ApplicantFacade) FindReviewProjectRecordDetailById(id string) (map[string]interface{}, map[string]interface{}, error) {
-	processbody := map[string]interface{}{
-		"processDefinitionKey":    entity.REVIEW_PROJECT,
-		"includeProcessVariables": true,
-		"processInstanceId":       id,
-	}
+// func (faca *ApplicantFacade) FindReviewProjectRecordDetailById(id string) (*workflow.HistoricProcessInstances, map[string]interface{}, error) {
+// 	processbody := map[string]interface{}{
+// 		"processDefinitionKey":    entity.REVIEW_PROJECT,
+// 		"includeProcessVariables": true,
+// 		"processInstanceId":       id,
+// 	}
 
-	processMap, err := faca.Workflow.QueryForHistoricProcessInstances(processbody)
-	if err != nil {
-		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
-	}
+// 	processMap, err := faca.Workflow.QueryForHistoricProcessInstances(processbody)
+// 	if err != nil {
+// 		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
+// 	}
 
-	taskbody := map[string]interface{}{
-		"processDefinitionKey":      entity.REVIEW_PROJECT,
-		"includeTaskLocalVariables": true,
-		"processInstanceId":         id,
-	}
+// 	taskbody := map[string]interface{}{
+// 		"processDefinitionKey":      entity.REVIEW_PROJECT,
+// 		"includeTaskLocalVariables": true,
+// 		"processInstanceId":         id,
+// 	}
 
-	taskMap, err := faca.Workflow.QueryForHistoricTaskInstances(taskbody)
-	if err != nil {
-		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
-	}
+// 	taskMap, err := faca.Workflow.QueryForHistoricTaskInstances(taskbody)
+// 	if err != nil {
+// 		return nil, nil, fmt.Errorf("retrieve review project record detail failed: %w", err)
+// 	}
 
-	return processMap, taskMap, nil
-}
+// 	return processMap, taskMap, nil
+// }
