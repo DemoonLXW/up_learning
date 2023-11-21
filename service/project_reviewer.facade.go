@@ -10,8 +10,9 @@ import (
 )
 
 type ProjectReviewerFacade struct {
-	Workflow *WorkflowService
-	DB       *ent.Client
+	Workflow  *WorkflowService
+	Applicant *ApplicantService
+	DB        *ent.Client
 }
 
 func (faca *ProjectReviewerFacade) RetrieveReviewProjectTaskOfTeacher(search *entity.SearchReviewProjectTask, userID uint32) (*workflow.TaskPageList, error) {
@@ -119,4 +120,27 @@ func (faca *ProjectReviewerFacade) RetrieveReviewProjectTaskOfPlatformReviewer(s
 	}
 
 	return &list, nil
+}
+
+func (faca *ProjectReviewerFacade) FindReviewProjectDetailByID(id string) (*workflow.HistoricTaskInstances, error) {
+	body := map[string]interface{}{
+		"processDefinitionKey":    workflow.DefinitionReviewProject,
+		"includeProcessVariables": true,
+		"taskId":                  id,
+	}
+
+	b, err := faca.Workflow.QueryForHistoricTaskInstances(body)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve review project detail by id failed: %w", err)
+	}
+	taskList := workflow.HistoricTaskInstancesPageList{}
+	err = json.Unmarshal(b, &taskList)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve review project detail by id failed: %w", err)
+	}
+	if len(taskList.Data) == 0 {
+		return nil, fmt.Errorf("retrieve review project detail by id not found")
+	}
+
+	return &taskList.Data[0], nil
 }

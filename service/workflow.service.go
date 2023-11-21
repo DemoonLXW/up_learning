@@ -14,6 +14,29 @@ type WorkflowService struct {
 	*config.FlowableConfig
 }
 
+func (serv *WorkflowService) doRequest(method string, url string, reqBody map[string]interface{}, header map[string]string) (*http.Response, error) {
+	var reqBodyBuffer *bytes.Buffer
+	if reqBody != nil {
+		reqBodyBytes, err := json.Marshal(reqBody)
+		if err != nil {
+			return nil, fmt.Errorf("do request failed: %w", err)
+		}
+		reqBodyBuffer = bytes.NewBuffer(reqBodyBytes)
+	}
+
+	req, err := http.NewRequest(method, url, reqBodyBuffer)
+	if err != nil {
+		return nil, fmt.Errorf("do request failed: %w", err)
+	}
+
+	for k, v := range header {
+		req.Header.Set(k, v)
+	}
+
+	c := http.Client{}
+	return c.Do(req)
+}
+
 func (serv *WorkflowService) StartAProcessInstance(reqBody map[string]interface{}) error {
 
 	reqBodyBytes, err := json.Marshal(reqBody)
@@ -81,24 +104,30 @@ func (serv *WorkflowService) QueryForHistoricProcessInstances(reqBody map[string
 }
 
 func (serv *WorkflowService) QueryForHistoricTaskInstances(reqBody map[string]interface{}) ([]byte, error) {
-	reqBodyBytes, err := json.Marshal(reqBody)
+	// reqBodyBytes, err := json.Marshal(reqBody)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("query for historic task instances failed: %w", err)
+	// }
+	// reqBodyBuffer := bytes.NewBuffer(reqBodyBytes)
+
+	// req, err := http.NewRequest(http.MethodPost, *serv.FlowableConfig.URL+"/"+"query/historic-task-instances", reqBodyBuffer)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("query for historic task instances failed: %w", err)
+	// }
+	// req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	// c := http.Client{}
+	// resp, err := c.Do(req)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("query for historic task instances failed: %w", err)
+	// }
+	header := map[string]string{
+		"Content-Type": "application/json; charset=utf-8",
+	}
+	resp, err := serv.doRequest(http.MethodPost, *serv.FlowableConfig.URL+"/"+"query/historic-task-instances", reqBody, header)
 	if err != nil {
 		return nil, fmt.Errorf("query for historic task instances failed: %w", err)
 	}
-	reqBodyBuffer := bytes.NewBuffer(reqBodyBytes)
-
-	req, err := http.NewRequest(http.MethodPost, *serv.FlowableConfig.URL+"/"+"query/historic-task-instances", reqBodyBuffer)
-	if err != nil {
-		return nil, fmt.Errorf("query for historic task instances failed: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-
-	c := http.Client{}
-	resp, err := c.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("query for historic task instances failed: %w", err)
-	}
-
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("query for historic task instances failed: %d", resp.StatusCode)
 	}
@@ -143,3 +172,26 @@ func (serv *WorkflowService) QueryForTasks(reqBody map[string]interface{}) ([]by
 
 	return b, nil
 }
+
+// func (serv *WorkflowService) GetATask(taskID string) ([]byte, error) {
+// 	header := map[string]string{
+// 		"Content-Type": "application/json; charset=utf-8",
+// 	}
+
+// 	resp, err := serv.doRequest(http.MethodGet, nil, *serv.FlowableConfig.URL+"/"+"runtime/tasks/"+taskID, header)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("query a task failed: %w", err)
+// 	}
+
+// 	if resp.StatusCode != http.StatusOK {
+// 		return nil, fmt.Errorf("query a task failed: %d", resp.StatusCode)
+// 	}
+
+// 	b, err := io.ReadAll(resp.Body)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("query a task failed: %w", err)
+// 	}
+// 	resp.Body.Close()
+
+// 	return b, nil
+// }

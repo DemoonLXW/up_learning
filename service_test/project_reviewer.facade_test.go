@@ -106,3 +106,19 @@ func TestRetrieveReviewProjectTaskOfPlatformReviewer(t *testing.T) {
 	}
 	fmt.Println(m.Total)
 }
+
+func TestFindReviewProjectDetailByID(t *testing.T) {
+	faca, err := CreateTestProjectReviewerFacade()
+	assert.Nil(t, err)
+
+	taskID := "a47b42e4-8840-11ee-97b1-0242aec148e6"
+
+	hti, err := faca.FindReviewProjectDetailByID(taskID)
+	assert.Nil(t, err)
+
+	fmt.Println(hti.ID, hti.Name)
+	for _, v := range hti.Variables {
+		fmt.Println(v.Name, v.Value)
+	}
+
+}
