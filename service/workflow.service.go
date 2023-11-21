@@ -195,3 +195,24 @@ func (serv *WorkflowService) QueryForTasks(reqBody map[string]interface{}) ([]by
 
 // 	return b, nil
 // }
+
+func (serv *WorkflowService) TaskActions(taskID string, reqBody map[string]interface{}) error {
+	header := map[string]string{
+		"Content-Type": "application/json; charset=utf-8",
+	}
+	resp, err := serv.doRequest(http.MethodPost, *serv.FlowableConfig.URL+"/"+"runtime/tasks/"+taskID, reqBody, header)
+	if err != nil {
+		return fmt.Errorf("task actions failed: %w", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		b, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("task actions failed: %w", err)
+		}
+		resp.Body.Close()
+		return fmt.Errorf("task actions failed: %d\n%s", resp.StatusCode, b)
+	}
+
+	return nil
+
+}

@@ -122,7 +122,7 @@ func (faca *ProjectReviewerFacade) RetrieveReviewProjectTaskOfPlatformReviewer(s
 	return &list, nil
 }
 
-func (faca *ProjectReviewerFacade) FindReviewProjectDetailByID(id string) (*workflow.HistoricTaskInstances, error) {
+func (faca *ProjectReviewerFacade) FindReviewProjectTaskDetailByID(id string) (*workflow.HistoricTaskInstances, error) {
 	body := map[string]interface{}{
 		"processDefinitionKey":    workflow.DefinitionReviewProject,
 		"includeProcessVariables": true,
@@ -143,4 +143,27 @@ func (faca *ProjectReviewerFacade) FindReviewProjectDetailByID(id string) (*work
 	}
 
 	return &taskList.Data[0], nil
+}
+
+func (faca *ProjectReviewerFacade) ReviewProjectBytaskID(taskID string, reviewerID uint32, action uint8) error {
+	body := map[string]interface{}{
+		"action": "complete",
+		"variables": []interface{}{
+			map[string]interface{}{
+				"name":  "reviewer",
+				"value": reviewerID,
+			},
+			map[string]interface{}{
+				"name":  "action",
+				"value": action,
+			},
+		},
+	}
+
+	err := faca.Workflow.TaskActions(taskID, body)
+	if err != nil {
+		return fmt.Errorf("retrieve review project detail by id failed: %w", err)
+	}
+
+	return nil
 }
