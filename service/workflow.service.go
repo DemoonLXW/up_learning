@@ -111,3 +111,35 @@ func (serv *WorkflowService) QueryForHistoricTaskInstances(reqBody map[string]in
 
 	return b, nil
 }
+
+func (serv *WorkflowService) QueryForTasks(reqBody map[string]interface{}) ([]byte, error) {
+	reqBodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("query for tasks failed: %w", err)
+	}
+	reqBodyBuffer := bytes.NewBuffer(reqBodyBytes)
+
+	req, err := http.NewRequest(http.MethodPost, *serv.FlowableConfig.URL+"/"+"query/tasks", reqBodyBuffer)
+	if err != nil {
+		return nil, fmt.Errorf("query for tasks failed: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	c := http.Client{}
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("query for tasks failed: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("query for tasks failed: %d", resp.StatusCode)
+	}
+
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("query for tasks failed: %w", err)
+	}
+	resp.Body.Close()
+
+	return b, nil
+}

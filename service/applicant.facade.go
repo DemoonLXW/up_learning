@@ -327,7 +327,7 @@ func (faca *ApplicantFacade) UpdateProject(ctx context.Context, client *ent.Clie
 func (faca *ApplicantFacade) StartReviewProjectProcess(userID, projectID uint32) error {
 
 	body := map[string]interface{}{
-		"processDefinitionKey": entity.REVIEW_PROJECT,
+		"processDefinitionKey": workflow.DefinitionReviewProject,
 		"variables": []interface{}{
 			map[string]interface{}{
 				"name":  "userID",
@@ -354,7 +354,7 @@ func (faca *ApplicantFacade) StartReviewProjectProcess(userID, projectID uint32)
 
 func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *entity.SearchReviewProjectRecord) (*workflow.HistoricProcessInstancesPageList, error) {
 	body := map[string]interface{}{
-		"processDefinitionKey":    entity.REVIEW_PROJECT,
+		"processDefinitionKey":    workflow.DefinitionReviewProject,
 		"includeProcessVariables": true,
 	}
 
@@ -385,7 +385,7 @@ func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *enti
 		body["size"] = *search.PageSize
 	}
 
-	isSorted := search.Sort != "" && (search.Sort == "processInstanceId" || search.Sort == "startTime" || search.Sort == "endTime")
+	isSorted := search.Sort != "" && (search.Sort == "id" || search.Sort == "processInstanceId" || search.Sort == "startTime" || search.Sort == "endTime")
 	if isSorted && search.Order != nil {
 		if *search.Order {
 			body["sort"] = search.Sort
@@ -401,7 +401,7 @@ func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *enti
 		return nil, fmt.Errorf("retrieve review project record failed: %w", err)
 	}
 
-	var list workflow.HistoricProcessInstancesPageList
+	list := workflow.HistoricProcessInstancesPageList{}
 	err = json.Unmarshal(b, &list)
 	if err != nil {
 		return nil, fmt.Errorf("retrieve review project record failed: %w", err)
@@ -412,7 +412,7 @@ func (faca *ApplicantFacade) RetrieveReviewProjectRecordByProjectID(search *enti
 
 func (faca *ApplicantFacade) FindReviewProjectRecordDetailById(id string) (*workflow.HistoricProcessInstances, *workflow.HistoricTaskInstancesPageList, error) {
 	processBody := map[string]interface{}{
-		"processDefinitionKey":    entity.REVIEW_PROJECT,
+		"processDefinitionKey":    workflow.DefinitionReviewProject,
 		"includeProcessVariables": true,
 		"processInstanceId":       id,
 	}
@@ -430,7 +430,7 @@ func (faca *ApplicantFacade) FindReviewProjectRecordDetailById(id string) (*work
 	}
 
 	taskBody := map[string]interface{}{
-		"processDefinitionKey":      entity.REVIEW_PROJECT,
+		"processDefinitionKey":      workflow.DefinitionReviewProject,
 		"includeTaskLocalVariables": true,
 		"processInstanceId":         id,
 		"sort":                      "startTime",

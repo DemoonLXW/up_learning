@@ -339,9 +339,9 @@ type RetrievedReviewProjectTask struct {
 }
 
 type SearchReviewProjectTask struct {
-	Current  *uint `form:"current"`
-	PageSize *uint `form:"page_size"`
-	// Like         string `form:"like"`
-	Sort  string `form:"sort"`
-	Order *bool  `form:"order"`
+	Current  *uint  `form:"current"`
+	PageSize *uint  `form:"page_size"`
+	Like     string `form:"like"`
+	Sort     string `form:"sort"`
+	Order    *bool  `form:"order"`
 }
