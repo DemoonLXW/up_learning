@@ -402,6 +402,9 @@ func (cont *ApplicantController) GetReviewProjectRecordByProjectID(c *gin.Contex
 
 	var records []entity.RetrievedReviewProjectRecord
 	for _, v := range hpipl.Data {
+		id := v.ID
+		startTime := v.StartTime
+		endTime := v.EndTime
 		var dueDate *time.Time
 		var reviewStatus *uint8
 		for _, vv := range v.Variables {
@@ -417,10 +420,10 @@ func (cont *ApplicantController) GetReviewProjectRecordByProjectID(c *gin.Contex
 		}
 
 		records = append(records, entity.RetrievedReviewProjectRecord{
-			ID:           &v.ID,
+			ID:           &id,
 			ReviewStatus: reviewStatus,
-			StartTime:    v.StartTime,
-			EndTime:      v.EndTime,
+			StartTime:    startTime,
+			EndTime:      endTime,
 			DueDate:      dueDate,
 		})
 	}
@@ -471,6 +474,10 @@ func (cont *ApplicantController) GetAReviewProjectRecordDetailByID(c *gin.Contex
 	}
 
 	for _, v := range htipl.Data {
+		id := v.ID
+		name := v.Name
+		startTime := v.StartTime
+		endTime := v.EndTime
 		var reviewer *entity.RetrievedUser
 		var action *uint8
 		for _, vv := range v.Variables {
@@ -498,11 +505,11 @@ func (cont *ApplicantController) GetAReviewProjectRecordDetailByID(c *gin.Contex
 		}
 
 		detail.Progress = append(detail.Progress, entity.RetrievedReviewProjectTask{
-			ID:        &v.ID,
-			Name:      &v.Name,
+			ID:        &id,
+			Name:      &name,
 			Reviewer:  reviewer,
-			StartTime: v.StartTime,
-			EndTime:   v.EndTime,
+			StartTime: startTime,
+			EndTime:   endTime,
 			Action:    action,
 		})
 

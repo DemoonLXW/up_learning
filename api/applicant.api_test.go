@@ -246,11 +246,11 @@ func TestGetReviewProjectRecordByProjectID(t *testing.T) {
 
 	recorder := httptest.NewRecorder()
 
-	query := "?current=1&page_size=1&project_id=5&sort=startTime&order=true"
+	query := "?current=1&page_size=5&project_id=5"
 
 	req, _ := http.NewRequest(http.MethodGet, "/applicant/review-project-record/get-list"+query, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "4"}
-	token_cookie := &http.Cookie{Name: "token", Value: "61e5787bd6c0075729a3bbfcdbfffbcb"}
+	token_cookie := &http.Cookie{Name: "token", Value: "7ce9eabfb52dfe2fa510ce7601fa2589"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)
