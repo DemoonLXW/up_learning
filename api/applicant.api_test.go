@@ -270,7 +270,7 @@ func TestGetAReviewProjectRecordDetailByID(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "/applicant/review-project-record/get/"+id, nil)
 	uid_cookie := &http.Cookie{Name: "uid", Value: "4"}
-	token_cookie := &http.Cookie{Name: "token", Value: "61e5787bd6c0075729a3bbfcdbfffbcb"}
+	token_cookie := &http.Cookie{Name: "token", Value: "f8c68778885e2e8abba877c0eebfed79"}
 	req.AddCookie(uid_cookie)
 	req.AddCookie(token_cookie)
 	app.ServeHTTP(recorder, req)

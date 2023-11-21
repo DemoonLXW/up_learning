@@ -332,7 +332,7 @@ type RetrievedReviewProjectRecordDetail struct {
 type RetrievedReviewProjectTask struct {
 	ID        *string        `json:"id,omitempty"`
 	Name      *string        `json:"name,omitempty"`
-	Assignee  *RetrievedUser `json:"assignee,omitempty"`
+	Reviewer  *RetrievedUser `json:"reviewer,omitempty"`
 	Action    *uint8         `json:"action,omitempty"`
 	StartTime *time.Time     `json:"start_time,omitempty"`
 	EndTime   *time.Time     `json:"end_time,omitempty"`
