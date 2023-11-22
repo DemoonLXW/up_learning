@@ -128,6 +128,7 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 				// project.GET("/get/:id", Check(authService, []string{entity.ApplicantGetAProjectById}), controllers.Applicant.GetAProjectById)
 				task.GET("/get-list", Check(authService, []string{entity.ProjectReviewerGetTaskListOfPlatformReviewer}), controllers.ProjectReviewer.GetTaskListOfPlatformReviewer)
 				task.GET("/get/:id", Check(authService, []string{entity.ProjectReviewerGetATaskDetailByID}), controllers.ProjectReviewer.GetATaskDetailByID)
+				task.POST("/complete", Check(authService, []string{entity.ProjectReviewerReviewProjectByTaskID}), controllers.ProjectReviewer.ReviewProjectByTaskID)
 			}
 		}
 	}

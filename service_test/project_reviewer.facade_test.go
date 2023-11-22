@@ -123,7 +123,7 @@ func TestFindReviewProjectTaskDetailByID(t *testing.T) {
 
 }
 
-func TestReviewProjectBytaskID(t *testing.T) {
+func TestCompleteReviewProjectBytaskID(t *testing.T) {
 	faca, err := CreateTestProjectReviewerFacade()
 	assert.Nil(t, err)
 
@@ -131,7 +131,7 @@ func TestReviewProjectBytaskID(t *testing.T) {
 	reviewerID := uint32(5)
 	action := uint8(1)
 
-	err = faca.ReviewProjectBytaskID(taskID, reviewerID, action)
+	err = faca.CompleteReviewProjectBytaskID(taskID, reviewerID, action)
 	assert.Nil(t, err)
 
 }

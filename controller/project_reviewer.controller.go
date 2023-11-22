@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/DemoonLXW/up_learning/entity"
@@ -166,5 +167,35 @@ func (cont *ProjectReviewerController) GetATaskDetailByID(c *gin.Context) {
 	var res entity.Result
 	res.Message = "Get a Task Detail By ID Successfully"
 	res.Data = task
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *ProjectReviewerController) ReviewProjectByTaskID(c *gin.Context) {
+
+	uid, err := c.Cookie("uid")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	userID, err := strconv.ParseUint(uid, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var r entity.Review
+	if err := c.ShouldBindJSON(&r); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = cont.ProjectReviewerFa.CompleteReviewProjectBytaskID(*r.ID, uint32(userID), *r.Action)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var res entity.Result
+	res.Message = "Review project by taskID successfully"
 	c.JSON(http.StatusOK, res)
 }

@@ -145,7 +145,7 @@ func (faca *ProjectReviewerFacade) FindReviewProjectTaskDetailByID(id string) (*
 	return &taskList.Data[0], nil
 }
 
-func (faca *ProjectReviewerFacade) ReviewProjectBytaskID(taskID string, reviewerID uint32, action uint8) error {
+func (faca *ProjectReviewerFacade) CompleteReviewProjectBytaskID(taskID string, reviewerID uint32, action uint8) error {
 	body := map[string]interface{}{
 		"action": "complete",
 		"variables": []interface{}{

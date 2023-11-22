@@ -54,4 +54,5 @@ const (
 
 	ProjectReviewerGetTaskListOfPlatformReviewer = "project reviewer get task list of platform reviewer"
 	ProjectReviewerGetATaskDetailByID            = "project reviewer get a task detail by id"
+	ProjectReviewerReviewProjectByTaskID         = "project reviewer review project by task id"
 )

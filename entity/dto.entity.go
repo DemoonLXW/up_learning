@@ -353,3 +353,8 @@ type RetrievedReviewProjectTask struct {
 	CreateTime *time.Time        `json:"create_time,omitempty"`
 	DueDate    *time.Time        `json:"due_date,omitempty"`
 }
+
+type Review struct {
+	Action *uint8  `json:"action" binding:"required,gte=0,lte=1"`
+	ID     *string `json:"id" binding:"required"`
+}
