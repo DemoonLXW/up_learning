@@ -53,4 +53,5 @@ const (
 	ApplicantGetAReviewProjectRecordDetailByID = "applicant get a review project record detail by id"
 
 	ProjectReviewerGetTaskListOfPlatformReviewer = "project reviewer get task list of platform reviewer"
+	ProjectReviewerGetATaskDetailByID            = "project reviewer get a task detail by id"
 )

@@ -26,3 +26,21 @@ func TestGetTaskListOfPlatformReviewer(t *testing.T) {
 	assert.Equal(t, 200, resp.StatusCode)
 	fmt.Println(recorder.Body.String())
 }
+
+func TestGetATaskDetailByID(t *testing.T) {
+	app, err := CreateTestApp()
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	taskID := "5bdc6f99-86c0-11ee-8812-0242aec148e6"
+	req, _ := http.NewRequest(http.MethodGet, "/project-reviewer/task/get/"+taskID, nil)
+	uid_cookie := &http.Cookie{Name: "uid", Value: "5"}
+	token_cookie := &http.Cookie{Name: "token", Value: "333e0f34f6a704c8c54a5bcc665fd135"}
+	req.AddCookie(uid_cookie)
+	req.AddCookie(token_cookie)
+	app.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	assert.Equal(t, 200, resp.StatusCode)
+	fmt.Println(recorder.Body.String())
+}

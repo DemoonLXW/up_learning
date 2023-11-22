@@ -90,3 +90,81 @@ func (cont *ProjectReviewerController) GetTaskListOfPlatformReviewer(c *gin.Cont
 	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
+
+func (cont *ProjectReviewerController) GetATaskDetailByID(c *gin.Context) {
+	type Task struct {
+		ID *string `uri:"id" binding:"required"`
+	}
+	var t Task
+	if err := c.ShouldBindUri(&t); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	hti, err := cont.ProjectReviewerFa.FindReviewProjectTaskDetailByID(*t.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	task := entity.RetrievedReviewProjectTask{}
+	task.ID = &hti.ID
+	task.CreateTime = hti.StartTime
+	task.Name = &hti.Name
+	var projectID *uint32
+	for _, v := range hti.Variables {
+		switch v.Name {
+		case "dueDate":
+			t, _ := time.Parse(time.RFC3339, v.Value.(string))
+			task.DueDate = &t
+		case "projectID":
+			value := v.Value.(float64)
+			pid := uint32(value)
+			projectID = &pid
+		}
+	}
+	if projectID == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "project id of task not found"})
+		return
+	}
+	ctx := context.Background()
+	client := cont.Applicant.DB
+	p, err := cont.Applicant.FindOneProjectWithFileAndUserById(ctx, client, *projectID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	project := &entity.RetrievedProject{
+		ID:                  &p.ID,
+		Title:               &p.Title,
+		Goal:                &p.Goal,
+		Principle:           &p.Principle,
+		ProcessAndMethod:    &p.ProcessAndMethod,
+		Step:                &p.Step,
+		ResultAndConclusion: &p.ResultAndConclusion,
+		Requirement:         &p.Requirement,
+		CreatedTime:         p.CreatedTime,
+	}
+	applicant := p.Edges.User
+	if applicant != nil {
+		project.Applicant = &entity.RetrievedUser{
+			ID:       &applicant.ID,
+			Account:  &applicant.Account,
+			Username: &applicant.Username,
+		}
+	}
+	attachments := p.Edges.Attachments
+	for _, v := range attachments {
+		project.Attachments = append(project.Attachments, &entity.RetrievedFile{
+			ID:   &v.ID,
+			Name: &v.Name,
+			Size: &v.Size,
+		})
+	}
+
+	task.Project = project
+
+	var res entity.Result
+	res.Message = "Get a Task Detail By ID Successfully"
+	res.Data = task
+	c.JSON(http.StatusOK, res)
+}
