@@ -130,6 +130,12 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 				task.GET("/get/:id", Check(authService, []string{entity.ProjectReviewerGetATaskDetailByID}), controllers.ProjectReviewer.GetATaskDetailByID)
 				task.POST("/complete", Check(authService, []string{entity.ProjectReviewerReviewProjectByTaskID}), controllers.ProjectReviewer.ReviewProjectByTaskID)
 			}
+
+			reviewedTask := projectReviewer.Group("/reviewed-task")
+			{
+				reviewedTask.GET("/get-list", Check(authService, []string{entity.ProjectReviewerGetReviewedTaskListByReviewerID}), controllers.ProjectReviewer.GetReviewedTaskListByReviewerID)
+
+			}
 		}
 	}
 

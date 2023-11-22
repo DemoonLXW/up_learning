@@ -52,7 +52,8 @@ const (
 	ApplicantGetReviewProjectRecordByProjectID = "applicant get review project record list by project id"
 	ApplicantGetAReviewProjectRecordDetailByID = "applicant get a review project record detail by id"
 
-	ProjectReviewerGetTaskListOfPlatformReviewer = "project reviewer get task list of platform reviewer"
-	ProjectReviewerGetATaskDetailByID            = "project reviewer get a task detail by id"
-	ProjectReviewerReviewProjectByTaskID         = "project reviewer review project by task id"
+	ProjectReviewerGetTaskListOfPlatformReviewer   = "project reviewer get task list of platform reviewer"
+	ProjectReviewerGetATaskDetailByID              = "project reviewer get a task detail by id"
+	ProjectReviewerReviewProjectByTaskID           = "project reviewer review project by task id"
+	ProjectReviewerGetReviewedTaskListByReviewerID = "project reviewer get reviewed task list by reviewer id"
 )

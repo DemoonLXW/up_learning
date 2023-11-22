@@ -354,6 +354,16 @@ type RetrievedReviewProjectTask struct {
 	DueDate    *time.Time        `json:"due_date,omitempty"`
 }
 
+type RetrievedReviewedProjectTask struct {
+	ID        *string           `json:"id,omitempty"`
+	Name      *string           `json:"name,omitempty"`
+	Project   *RetrievedProject `json:"project,omitempty"`
+	Action    *uint8            `json:"action,omitempty"`
+	StartTime *time.Time        `json:"start_time,omitempty"`
+	EndTime   *time.Time        `json:"end_time,omitempty"`
+	DueDate   *time.Time        `json:"due_date,omitempty"`
+}
+
 type Review struct {
 	Action *uint8  `json:"action" binding:"required,gte=0,lte=1"`
 	ID     *string `json:"id" binding:"required"`

@@ -107,9 +107,9 @@ func (cont *ProjectReviewerController) GetATaskDetailByID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	task := entity.RetrievedReviewProjectTask{}
+	task := entity.RetrievedReviewedProjectTask{}
 	task.ID = &hti.ID
-	task.CreateTime = hti.StartTime
+	task.StartTime = hti.StartTime
 	task.Name = &hti.Name
 	var projectID *uint32
 	for _, v := range hti.Variables {
@@ -197,5 +197,104 @@ func (cont *ProjectReviewerController) ReviewProjectByTaskID(c *gin.Context) {
 
 	var res entity.Result
 	res.Message = "Review project by taskID successfully"
+	c.JSON(http.StatusOK, res)
+}
+
+func (cont *ProjectReviewerController) GetReviewedTaskListByReviewerID(c *gin.Context) {
+	uid, err := c.Cookie("uid")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	userID, err := strconv.ParseUint(uid, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var search entity.SearchReviewProjectTask
+	if err := c.ShouldBindQuery(&search); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	htipl, err := cont.ProjectReviewerFa.RetrieveReviewProjectTaskHistoryByUserID(uint32(userID), &search)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx := context.Background()
+	client := cont.Applicant.DB
+
+	tasks := make([]entity.RetrievedReviewedProjectTask, 0)
+	for _, v := range htipl.Data {
+		id := v.ID
+		name := v.Name
+		startTime := v.StartTime
+		endTime := v.EndTime
+		var dueDate *time.Time
+		var projectID *uint32
+		var action *uint8
+		for _, vv := range v.Variables {
+			switch {
+			case vv.Name == "dueDate" && vv.Scope == "global":
+				t, _ := time.Parse(time.RFC3339, vv.Value.(string))
+				dueDate = &t
+			case vv.Name == "projectID" && vv.Scope == "global":
+				value := vv.Value.(float64)
+				pid := uint32(value)
+				projectID = &pid
+			case vv.Name == "action" && vv.Scope == "local":
+				value := vv.Value.(float64)
+				ac := uint8(value)
+				action = &ac
+			}
+		}
+		if projectID == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "project id of task not found"})
+			return
+		}
+		p, err := cont.Applicant.FindOneProjectWithFileAndUserById(ctx, client, *projectID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		project := &entity.RetrievedProject{
+			ID:          &p.ID,
+			Title:       &p.Title,
+			CreatedTime: p.CreatedTime,
+		}
+		applicant := p.Edges.User
+		if applicant != nil {
+			project.Applicant = &entity.RetrievedUser{
+				ID:       &applicant.ID,
+				Account:  &applicant.Account,
+				Username: &applicant.Username,
+			}
+		}
+
+		tasks = append(tasks, entity.RetrievedReviewedProjectTask{
+			ID:        &id,
+			Name:      &name,
+			Action:    action,
+			StartTime: startTime,
+			EndTime:   endTime,
+			DueDate:   dueDate,
+			Project:   project,
+		})
+	}
+
+	var data entity.RetrievedListData
+	data.Record = tasks
+	total := htipl.Total
+	data.Total = total
+	if search.Current != nil && search.PageSize != nil {
+		data.IsPrevious = *search.Current > 1
+		data.IsNext = *search.Current < uint(math.Ceil(float64(total)/float64(*search.PageSize)))
+	}
+
+	var res entity.Result
+	res.Message = "Get Reviewed Task List By ReviewerID Successfully"
+	res.Data = data
 	c.JSON(http.StatusOK, res)
 }
