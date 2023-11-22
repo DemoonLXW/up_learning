@@ -221,7 +221,7 @@ func (cont *ApplicantController) GetAProjectById(c *gin.Context) {
 	project.ModifiedTime = object.ModifiedTime
 	user := object.Edges.User
 	if user != nil {
-		project.User = &entity.RetrievedUser{
+		project.Applicant = &entity.RetrievedUser{
 			ID:       &user.ID,
 			Account:  &user.Account,
 			Username: &user.Username,
@@ -504,7 +504,7 @@ func (cont *ApplicantController) GetAReviewProjectRecordDetailByID(c *gin.Contex
 			}
 		}
 
-		detail.Progress = append(detail.Progress, entity.RetrievedReviewProjectTask{
+		detail.Progress = append(detail.Progress, entity.RetrievedReviewProjectRecordTask{
 			ID:        &id,
 			Name:      &name,
 			Reviewer:  reviewer,

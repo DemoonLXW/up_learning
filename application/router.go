@@ -117,6 +117,18 @@ func SetupRouter(app *gin.Engine, controllers *controller.Controllers) *gin.Engi
 
 			}
 		}
+
+		projectReviewer := auth.Group("/project-reviewer")
+		{
+			task := projectReviewer.Group("/task")
+			{
+				// project.POST("/add", Check(authService, []string{entity.ApplicantAddProject}), controllers.Applicant.AddProject)
+				// project.POST("/remove", Check(authService, []string{entity.ApplicantRemoveProjectsByIds}), controllers.Applicant.RemoveProjectsByIds)
+				// project.POST("/modify", Check(authService, []string{entity.ApplicantModifyAProject}), controllers.Applicant.ModifyAProject)
+				// project.GET("/get/:id", Check(authService, []string{entity.ApplicantGetAProjectById}), controllers.Applicant.GetAProjectById)
+				task.GET("/get-list", Check(authService, []string{entity.ProjectReviewerGetTaskListOfPlatformReviewer}), controllers.ProjectReviewer.GetTaskListOfPlatformReviewer)
+			}
+		}
 	}
 
 	return app

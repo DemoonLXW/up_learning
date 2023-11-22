@@ -286,7 +286,7 @@ type ToRemoveProjectIDs struct {
 
 type RetrievedProject struct {
 	ID                  *uint32          `json:"id,omitempty" form:"id" uri:"id" binding:"required"`
-	User                *RetrievedUser   `json:"user,omitempty" `
+	Applicant           *RetrievedUser   `json:"applicant,omitempty" `
 	Title               *string          `json:"title,omitempty"`
 	Goal                *string          `json:"goal,omitempty" `
 	Principle           *string          `json:"principle,omitempty" `
@@ -321,15 +321,15 @@ type RetrievedReviewProjectRecord struct {
 }
 
 type RetrievedReviewProjectRecordDetail struct {
-	ID           *string                      `json:"id,omitempty" uri:"id" binding:"required"`
-	ReviewStatus *uint8                       `json:"review_status,omitempty"`
-	StartTime    *time.Time                   `json:"start_time,omitempty"`
-	EndTime      *time.Time                   `json:"end_time,omitempty"`
-	DueDate      *time.Time                   `json:"due_date,omitempty"`
-	Progress     []RetrievedReviewProjectTask `json:"progress,omitempty"`
+	ID           *string                            `json:"id,omitempty" uri:"id" binding:"required"`
+	ReviewStatus *uint8                             `json:"review_status,omitempty"`
+	StartTime    *time.Time                         `json:"start_time,omitempty"`
+	EndTime      *time.Time                         `json:"end_time,omitempty"`
+	DueDate      *time.Time                         `json:"due_date,omitempty"`
+	Progress     []RetrievedReviewProjectRecordTask `json:"progress,omitempty"`
 }
 
-type RetrievedReviewProjectTask struct {
+type RetrievedReviewProjectRecordTask struct {
 	ID        *string        `json:"id,omitempty"`
 	Name      *string        `json:"name,omitempty"`
 	Reviewer  *RetrievedUser `json:"reviewer,omitempty"`
@@ -344,4 +344,12 @@ type SearchReviewProjectTask struct {
 	Like     string `form:"like"`
 	Sort     string `form:"sort"`
 	Order    *bool  `form:"order"`
+}
+
+type RetrievedReviewProjectTask struct {
+	ID         *string           `json:"id,omitempty"`
+	Name       *string           `json:"name,omitempty"`
+	Project    *RetrievedProject `json:"project,omitempty"`
+	CreateTime *time.Time        `json:"create_time,omitempty"`
+	DueDate    *time.Time        `json:"due_date,omitempty"`
 }

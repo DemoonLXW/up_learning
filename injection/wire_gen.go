@@ -86,8 +86,9 @@ func ProvideService() (*service.Services, error) {
 		DB:       client,
 	}
 	projectReviewerFacade := &service.ProjectReviewerFacade{
-		Workflow: workflowService,
-		DB:       client,
+		Workflow:  workflowService,
+		Applicant: applicantService,
+		DB:        client,
 	}
 	services := &service.Services{
 		Management:        managementService,
@@ -144,8 +145,9 @@ func ProvideController() (*controller.Controllers, error) {
 		DB:       client,
 	}
 	projectReviewerFacade := &service.ProjectReviewerFacade{
-		Workflow: workflowService,
-		DB:       client,
+		Workflow:  workflowService,
+		Applicant: applicantService,
+		DB:        client,
 	}
 	services := &service.Services{
 		Management:        managementService,
@@ -170,11 +172,16 @@ func ProvideController() (*controller.Controllers, error) {
 		Applicant:   applicantService,
 		Common:      commonService,
 	}
+	projectReviewerController := &controller.ProjectReviewerController{
+		ProjectReviewerFa: projectReviewerFacade,
+		Applicant:         applicantService,
+	}
 	controllers := &controller.Controllers{
-		Auth:       authController,
-		Management: managementController,
-		Common:     commonController,
-		Applicant:  applicantController,
+		Auth:            authController,
+		Management:      managementController,
+		Common:          commonController,
+		Applicant:       applicantController,
+		ProjectReviewer: projectReviewerController,
 	}
 	return controllers, nil
 }
@@ -222,8 +229,9 @@ func ProvideApplication() (*gin.Engine, error) {
 		DB:       client,
 	}
 	projectReviewerFacade := &service.ProjectReviewerFacade{
-		Workflow: workflowService,
-		DB:       client,
+		Workflow:  workflowService,
+		Applicant: applicantService,
+		DB:        client,
 	}
 	services := &service.Services{
 		Management:        managementService,
@@ -248,11 +256,16 @@ func ProvideApplication() (*gin.Engine, error) {
 		Applicant:   applicantService,
 		Common:      commonService,
 	}
+	projectReviewerController := &controller.ProjectReviewerController{
+		ProjectReviewerFa: projectReviewerFacade,
+		Applicant:         applicantService,
+	}
 	controllers := &controller.Controllers{
-		Auth:       authController,
-		Management: managementController,
-		Common:     commonController,
-		Applicant:  applicantController,
+		Auth:            authController,
+		Management:      managementController,
+		Common:          commonController,
+		Applicant:       applicantController,
+		ProjectReviewer: projectReviewerController,
 	}
 	engine, err := application.SetupApplication(controllers)
 	if err != nil {
