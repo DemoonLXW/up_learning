@@ -167,3 +167,48 @@ func (faca *ProjectReviewerFacade) ReviewProjectBytaskID(taskID string, reviewer
 
 	return nil
 }
+
+func (faca *ProjectReviewerFacade) RetrieveReviewProjectTaskHistoryByUserID(userID uint32, search *entity.SearchReviewProjectTask) (*workflow.HistoricTaskInstancesPageList, error) {
+	body := map[string]interface{}{
+		"processDefinitionKey":      workflow.DefinitionReviewProject,
+		"includeProcessVariables":   true,
+		"includeTaskLocalVariables": true,
+		"taskVariables": []interface{}{
+			map[string]interface{}{
+				"name":      "reviewer",
+				"value":     userID,
+				"operation": "equals",
+				"type":      "integer",
+			},
+		},
+	}
+
+	if search.PageSize != nil && search.Current != nil {
+		offset := int((*search.Current - 1) * (*search.PageSize))
+		body["start"] = offset
+		body["size"] = *search.PageSize
+	}
+	isSorted := search.Sort != "" && (search.Sort == "startTime")
+	if isSorted && search.Order != nil {
+		if *search.Order {
+			body["sort"] = search.Sort
+			body["order"] = "desc"
+		} else {
+			body["sort"] = search.Sort
+			body["order"] = "asc"
+		}
+	}
+
+	b, err := faca.Workflow.QueryForHistoricTaskInstances(body)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve review project task history failed: %w", err)
+	}
+
+	list := workflow.HistoricTaskInstancesPageList{}
+	err = json.Unmarshal(b, &list)
+	if err != nil {
+		return nil, fmt.Errorf("retrieve review project task history failed: %w", err)
+	}
+
+	return &list, nil
+}

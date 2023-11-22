@@ -128,15 +128,14 @@ func (serv *WorkflowService) QueryForHistoricTaskInstances(reqBody map[string]in
 	if err != nil {
 		return nil, fmt.Errorf("query for historic task instances failed: %w", err)
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("query for historic task instances failed: %d", resp.StatusCode)
-	}
-
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("query for historic task instances failed: %w", err)
 	}
 	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("query for historic task instances failed: %d\n%s", resp.StatusCode, b)
+	}
 
 	return b, nil
 }

@@ -135,3 +135,34 @@ func TestReviewProjectBytaskID(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
+func TestRetrieveReviewProjectTaskHistoryByUserID(t *testing.T) {
+	faca, err := CreateTestProjectReviewerFacade()
+	assert.Nil(t, err)
+
+	userID := uint32(5)
+	pageSize := uint(5)
+	current := uint(1)
+	sort := "startTime"
+	order := false
+
+	m, err := faca.RetrieveReviewProjectTaskHistoryByUserID(userID, &entity.SearchReviewProjectTask{
+		PageSize: &pageSize,
+		Current:  &current,
+		Sort:     sort,
+		Order:    &order,
+	})
+	assert.Nil(t, err)
+
+	for _, v := range m.Data {
+		fmt.Print(v.ID, v.StartTime, "---")
+		for _, vv := range v.Variables {
+			if vv.Scope == "global" {
+				fmt.Print(vv.Name, ": ", vv.Value, "  ")
+
+			}
+		}
+		fmt.Println()
+	}
+	fmt.Println(m.Total)
+}
